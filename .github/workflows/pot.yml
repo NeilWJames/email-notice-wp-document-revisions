@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - master
     paths: 
       - "*.php"
   workflow_dispatch: {}
@@ -23,7 +22,7 @@ jobs:
         run: script/generate-pot
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v5
         with:
             commit-message: "Update POT file"
             branch: update-pull-request/pot
