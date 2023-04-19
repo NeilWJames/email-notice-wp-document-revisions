@@ -1,0 +1,26 @@
+{
+  "name": "NeilWJames/wp-document-revisions-email-notice",
+  "description": "An add-on plugin to WP Document Revisions that allows notification e-mails to be sent on document publication",
+  "license": "GPLv3",
+  "authors": [
+      {
+          "name": "Neil W James",
+          "email": "neil@familyjames.com"
+      }
+  ],
+  "require": {
+  },
+  "require-dev": {
+    "wp-coding-standards/wpcs": "~2.3",
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "squizlabs/php_codesniffer": "~3.7",
+    "yoast/phpunit-polyfills": "*"
+  },
+  "config": {
+   "bin-dir": "bin",
+   "vendor-dir": "vendor",
+   "allow-plugins": {
+     "dealerdirect/phpcodesniffer-composer-installer": true
+   }
+ }
+}

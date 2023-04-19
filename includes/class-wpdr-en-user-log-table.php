@@ -1,0 +1,211 @@
+<?php
+/**
+ * WP Document Revisions Email Notice List Table Functionality
+ *
+ * @author  Neil W. James <neil@familyjames.com>
+ * @package WP Document Revisions Email Notice
+ */
+
+// Load WP_List_Table if not loaded.
+if ( ! class_exists( 'WP_List_Table' ) ) {
+	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
+	require_once ABSPATH . 'wp-admin/includes/class-wp-screen.php';
+	require_once ABSPATH . 'wp-admin/includes/screen.php';
+}
+
+/**
+ * Main WP_Document_Revisions_Email_Notice_List_Table class.
+ */
+class WPDR_EN_User_Log_Table extends WP_List_Table {
+
+	/**
+	 * Constructor
+	 *
+	 * @since 1.0
+	 * @param mixed[] $args  Arguments to List_Table.
+	 * @return void
+	 */
+	public function __construct( $args = array() ) {
+		$args = wp_parse_args(
+			$args,
+			array(
+				'singular' => __( 'Notification email sent', 'wpdr-email-notice' ),    // singular name of the listed records.
+				'plural'   => __( 'Notification emails sent', 'wpdr-email-notice' ),   // plural name of the listed records.
+				'ajax'     => false,
+				'screen'   => null,
+			)
+		);
+		parent::__construct( $args );
+	}
+
+	/**
+	 * Define columns for table.
+	 *
+	 * @since 1.0
+	 * @return string[]
+	 */
+	public function get_columns() {
+		$columns = array(
+			'id'                => '#',
+			'post_title'        => __( 'Post Title', 'wpdr-email-notice' ),
+			'time_mail_sent'    => __( 'E-mail sent', 'wpdr-email-notice' ),
+			'user_display_name' => __( 'User Name', 'wpdr-email-notice' ),
+			'user_email'        => __( 'User E-mail', 'wpdr-email-notice' ),
+			'status'            => __( 'Status', 'wpdr-email-notice' ),
+		);
+		return $columns;
+	}
+
+	/**
+	 * Define sortable columns for table.
+	 *
+	 * @since 1.0
+	 * @return string[]
+	 */
+	public function get_sortable_columns() {
+		$sortable_columns = array(
+			'post_title'        => array( 'post_title', false ),
+			'time_mail_sent'    => array( 'time_mail_sent', false ),
+			'user_display_name' => array( 'user_display_name', false ),
+			'user_email'        => array( 'user_email', false ),
+			'status'            => array( 'status', false ),
+		);
+		return $sortable_columns;
+	}
+
+	/**
+	 * Define defaults columns for table.
+	 *
+	 * @since 1.0
+	 * @param mixed[] $item        row in List Table.
+	 * @param string  $column_name column name.
+	 * @return string[]
+	 */
+	public function column_default( $item, $column_name ) {
+		switch ( $column_name ) {
+			case 'post_title':
+				if ( current_user_can( 'edit_document', $item['post_id'] ) ) {
+					return '<a href="' . get_edit_post_link( $item['post_id'] ) . '">' . $item[ $column_name ] . '</a>';
+				} else {
+					return '<a href="' . get_permalink( $item['post_id'] ) . '">' . $item[ $column_name ] . '</a>';
+				}
+			case 'user_display_name':
+				if ( current_user_can( 'list_users' ) ) {
+					return '<a href="' . get_edit_user_link( $item['user_id'] ) . '">' . ucwords( $item[ $column_name ] ) . '</a>';
+				} else {
+					return ucwords( $item[ $column_name ] );
+				}
+			case 'id':
+			case 'time_mail_sent':
+			case 'user_email':
+			case 'status':
+				return $item[ $column_name ];
+		}
+	}
+
+	/**
+	 * Define data to populate table.
+	 *
+	 * @since 1.0
+	 * @return void
+	 */
+	public function prepare_items() {
+		$per_page              = 20;
+		$columns               = $this->get_columns();
+		$hidden                = array();
+		$sortable              = $this->get_sortable_columns();
+		$this->_column_headers = array( $columns, $hidden, $sortable );
+
+		global $wpdb;
+		$log_items = null;
+		// sorting.
+		$orderby = 'time_mail_sent';
+		$order   = 'desc';
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$search = '';
+		if ( ! empty( $_GET['s'] ) ) {
+			$s      = sanitize_text_field( wp_unslash( $_GET['s'] ) );
+			$search = "AND (p.post_title LIKE '%{$s}%' OR u.display_name LIKE '%{$s}%' )";
+		}
+
+		if ( ! empty( $_GET['orderby'] ) ) {
+			switch ( $_GET['orderby'] ) {
+				case 'post_title':
+				case 'user_display_name':
+				case 'user_email':
+				case 'status':
+					$orderby = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
+					break;
+				default:
+					$orderby = 'time_mail_sent';
+					break;
+			}
+		}
+		if ( ! empty( $_GET['order'] ) ) {
+			switch ( sanitize_text_field( wp_unslash( $_GET['order'] ) ) ) {
+				case 'asc':
+				case 'desc':
+					$order = sanitize_text_field( wp_unslash( $_GET['order'] ) );
+					break;
+				default:
+					$order = 'desc';
+					break;
+			}
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		$sql = "SELECT 	l.id as id,
+				l.post_id as post_id,
+				p.post_title as post_title,
+				l.user_id as user_id,
+				u.display_name as user_display_name,						
+				l.time_mail_sent as time_mail_sent,
+				l.user_email as user_email,
+				l.status									   
+				FROM {$wpdb->prefix}wpdr_notification_log l,
+				{$wpdb->prefix}posts p,
+				{$wpdb->base_prefix}users u
+				WHERE l.post_id=p.id
+				AND   l.user_id=u.id
+				{$search}
+				ORDER BY {$orderby} {$order}";
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$log_items    = $wpdb->get_results( $sql, ARRAY_A ); // ARRAY_A will ensure that we get associated array instead of stdClass.
+		$current_page = $this->get_pagenum();
+		$total_items  = count( $log_items );
+		$log_items    = array_slice( $log_items, ( ( $current_page - 1 ) * $per_page ), $per_page );
+
+		$this->items = $log_items;
+		$this->set_pagination_args(
+			array(
+				'total_items' => $total_items,                      // WE have to calculate the total number of items.
+				'per_page'    => $per_page,                         // WE have to determine how many items to show on a page.
+				'total_pages' => ceil( $total_items / $per_page ),  // WE have to calculate the total number of pages.
+			)
+		);
+	}
+
+	/**
+	 * Define message if no items for table.
+	 *
+	 * @since 1.0
+	 * @return void
+	 */
+	public function no_items() {
+		esc_html_e( 'No e-mails sent out, yet.', 'wpdr-email-notice' );
+	}
+
+	/**
+	 * Define bulk actions for table.
+	 *
+	 * Should be get_block_actions.
+	 *
+	 * @since 1.0
+	 * @param string $which not yet defined.
+	 * @return void
+	 */
+	public function bulk_actions( $which = '' ) {
+		// Nothing here yet.
+	}
+
+}
