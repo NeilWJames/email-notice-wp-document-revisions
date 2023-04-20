@@ -73,6 +73,6 @@ Yes, it does, but in that case each site will have its own log in Documents -> D
 == Changelog ==
 
 = 1.0 =
-Release date: April 20, 2022
+Release date: April 20, 2023
 
 * Initial release based on recast of Janos Ver's plugin "WP JV Custom Email Settings"

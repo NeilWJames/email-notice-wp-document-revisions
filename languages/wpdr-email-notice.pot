@@ -1,0 +1,321 @@
+# Copyright (C) 2023 WP Document Revisions Email Notice 1.0
+# This file is distributed under the same license as the WP Document Revisions Email Notice 1.0 package.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP Document Revisions Email Notice 1.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2023-04-20 17:53+0000\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.js\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: includes/class-wpdr-email-notice.php:127
+msgid "Email From"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:128
+msgid "Email Address"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:132
+msgid "Notifications"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:133
+msgid "Notification mode"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:134
+msgid "Notify users about"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:135
+msgid "Notification e-mail subject"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:136
+msgid "Notification e-mail content"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:218, includes/class-wpdr-email-notice.php:521
+msgid "Sending email notifications..."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:219
+msgid "Error sending emails."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:220, includes/class-wpdr-email-notice.php:512, includes/class-wpdr-email-notice.php:505
+msgid "Re-send notification email(s)"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:221, includes/class-wpdr-email-notice.php:1201
+msgid "email(s) out of"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:222
+msgid "notification(s) sent. Check"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:223, includes/class-wpdr-email-notice.php:1201
+msgid "sent with"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:224
+msgid "log issues. Check"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:225
+msgid "log"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:226, includes/class-wpdr-email-notice.php:1206, includes/class-wpdr-email-notice.php:1201, includes/class-wpdr-email-notice.php:1197
+msgid "for details."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:247
+msgid "By default all notification e-mails received from \"WordPress\" < wordpress@"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:247
+msgid "You can change these below."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:285
+msgid "Tags available to make e-mail subject and/or content dynamic:"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:287
+msgid "means title of the post"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:288
+msgid "means URL of the post"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:289
+msgid "means URL with title of the post"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:290
+msgid "means the name of the post author"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:291
+msgid "means excerpt of the post"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:291
+msgid "Only available to those who can edit the document"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:292
+msgid "means the first n (must be an integer number) number of word(s) extracted from the post"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:293
+msgid "means display name of the user who receives the e-mail"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:304
+msgid "Auto"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:304
+msgid "(send e-mails automatically when you publish a post)"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:305
+msgid "Manual"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:305
+msgid "(you need to press a button to send notification)"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:330
+msgid "Public posts"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:331
+msgid "Password"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:331
+msgid "protected posts (password will"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:331
+msgid "NOT"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:331
+msgid "be included in notification e-mail)"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:332
+msgid "Private posts"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:333
+msgid "Notifications are sent only to those who can read the document"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:344
+msgid "Hint: HTML tags are not allowed here, e.g.: %title_with_permalink% will revert to %title%."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:356
+msgid "Hint: HTML tags are welcome here to make your notification e-mails more personalized."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:395
+msgid "Notify me by e-mail when a new document is published"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:397
+msgid "Also send me the document as an attachment by e-mail when a new document is published"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:487
+msgid "Document Email Settings"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:510, includes/class-wpdr-email-notice.php:508
+msgid "Send notification email(s)"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:558
+msgid "Document Notification Email Log"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:558
+msgid "Document Email Log"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:589
+msgid "You do not have sufficient permissions to access this page."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:596
+msgid "Document Email Notification Log"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:603
+msgid "Search"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:848
+msgid "New document: "
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:940
+msgid "Document too large to be attached."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:938
+msgid "Document attached."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:929
+msgid "Document not attached."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:957
+msgid "Failed"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:954
+msgid "Successful"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:954
+msgid "Success Attachment"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1098, includes/class-wpdr-email-notice.php:1114, includes/class-wpdr-email-notice.php:1138
+msgid "Something went wrong"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1079
+msgid "Not logged and/or sent out successfully any mails."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1206
+msgid "notification(s) sent."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1206, includes/class-wpdr-email-notice.php:1201, includes/class-wpdr-email-notice.php:1197
+msgid "Check log"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1201
+msgid "log issues."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1197
+msgid "Error sending notifications."
+msgstr ""
+
+#: includes/class-wpdr-en-all-users-bulk-action.php:35
+msgid "Subscribe to Document Email notifications"
+msgstr ""
+
+#: includes/class-wpdr-en-all-users-bulk-action.php:36
+msgid "Unsubscribe from Document Email notifications"
+msgstr ""
+
+#: includes/class-wpdr-en-all-users-bulk-action.php:63
+msgid "Error subscribing users."
+msgstr ""
+
+#: includes/class-wpdr-en-all-users-bulk-action.php:72
+msgid "Error unsubscribing users."
+msgstr ""
+
+#: includes/class-wpdr-en-user-log-table.php:32
+msgid "Notification email sent"
+msgstr ""
+
+#: includes/class-wpdr-en-user-log-table.php:33
+msgid "Notification emails sent"
+msgstr ""
+
+#: includes/class-wpdr-en-user-log-table.php:50
+msgid "Post Title"
+msgstr ""
+
+#: includes/class-wpdr-en-user-log-table.php:51
+msgid "E-mail sent"
+msgstr ""
+
+#: includes/class-wpdr-en-user-log-table.php:52
+msgid "User Name"
+msgstr ""
+
+#: includes/class-wpdr-en-user-log-table.php:53
+msgid "User E-mail"
+msgstr ""
+
+#: includes/class-wpdr-en-user-log-table.php:54
+msgid "Status"
+msgstr ""
+
+#: includes/class-wpdr-en-user-log-table.php:195
+msgid "No e-mails sent out, yet."
+msgstr ""
+
+#. translators: Do not translate WP Document Revisions Email Notice or WP Document Revisions.
+#: wpdr-email-notice.php:24
+msgid "Plugin WP Document Revisions Email Notice is activated but its required plugin WP Document Revisions is not."
+msgstr ""
+
+#. translators: Do not translate WP Document Revisions Email Notice.
+#: wpdr-email-notice.php:27
+msgid "Plugin WP Document Revisions Email Notice will not activate its functionality."
+msgstr ""

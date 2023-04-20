@@ -2,7 +2,7 @@ name: Generate POT file
 
 on:
   workflow_dispatch:
-    branches: [master]
+    branches: [main]
 
 jobs:
   generate-pot:
