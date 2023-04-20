@@ -7,6 +7,6 @@ VERSION=$(grep -i "Stable tag:" readme.txt | awk -F' ' '{print $NF}' | tr -d '\r
 wp-pot \
   --domain wpdr-email-notice \
   --dest-file languages/wpdr-email-notice.pot \
-  --src "includes/**.php" \
+  --src "wpdr-email-notice.php,includes/**.php" \
   --package "WP Document Revisions Email Notice $VERSION" --relative-to "." \
   --comment-keyword "translators:"

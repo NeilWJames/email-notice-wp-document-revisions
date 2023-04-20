@@ -16,6 +16,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
 
+// Check that WP Document Revisions is active.
+if ( ! in_array( 'wp-document-revisions/wp-document-revisions.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
+	if ( is_admin() ) {
+		echo wp_kses_post( '<div class="notice notice-warning is-dismissible"><p>' );
+		// translators: Do not translate WP Document Revisions Email Notice or WP Document Revisions.
+		esc_html_e( 'Plugin WP Document Revisions Email Notice is activated but its required plugin WP Document Revisions is not.', 'wpdr-email-notice' );
+		echo wp_kses_post( '</p><p>' );
+		// translators: Do not translate WP Document Revisions Email Notice.
+		esc_html_e( 'Plugin WP Document Revisions Email Notice will not activate its functionality.', 'wpdr-email-notice' );
+		echo wp_kses_post( '</p></div>' );
+	}
+	return;
+}
+
 /**
  * WP Document Revisions Email Notice.
  */
