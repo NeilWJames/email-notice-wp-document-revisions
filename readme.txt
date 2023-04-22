@@ -2,6 +2,7 @@
 Contributors: nwjames, janosver
 Tags: administration, email, e-mail, document, automatic, user, multisite
 Requires at least: 4.9
+Requires PHP: 7.1
 Tested up to: 6.2
 Stable tag: 1.0
 License: GPLv3 or later
@@ -38,6 +39,18 @@ This plugin will enable you to
 1. Download wp-document-revisions-email-notice
 2. Extract to `/wp-content/plugins/wp-document-revisions-email-notice` directory
 3. Activate the plugin through the 'Plugins' menu in WordPress
+
+== Upgrade Notice ==
+
+No specific instructions.
+
+== WP Document Revisions Email Notice Filters ==
+
+= Filter: wpdr_en_filesize =
+
+In /includes/class-wpdr-email-notice.php
+
+Filters whether to attach the file depending on its size and type of user.
 
 == Frequently Asked Questions ==
 
