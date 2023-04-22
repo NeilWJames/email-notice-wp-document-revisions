@@ -1,9 +1,9 @@
 <?php
 /**
- * WP Document Revisions Email Notice List Table Functionality
+ * Email Notice WP Document Revisions List Table Functionality
  *
  * @author  Neil W. James <neil@familyjames.com>
- * @package WP Document Revisions Email Notice
+ * @package Email Notice WP Document Revisions
  */
 
 // Load WP_List_Table if not loaded.

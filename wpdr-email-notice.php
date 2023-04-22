@@ -1,14 +1,14 @@
 <?php
 /**
- * Plugin Name: WP Document Revisions Email Notice
- * Plugin URI: http://github.com/NeilWJames/wp-document-revisions-email-notice
+ * Plugin Name: Email Notice WP Document Revisions
+ * Plugin URI: http://github.com/NeilWJames/email-notice-wp-document-revisions
  * Description: Notify users about new documents published and customize your e-mail notification settings
  * Version: 1.0
  * Author: Neil James based on Janos Ver
  * Author URI: http://github.com/NeilWJames
  * License: GPLv3 or later
  *
- * @package WP Document Revisions Email Notice
+ * @package Email Notice WP Document Revisions
  */
 
 // No direct access allowed to plugin php file.
@@ -20,18 +20,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! in_array( 'wp-document-revisions/wp-document-revisions.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
 	if ( is_admin() ) {
 		echo wp_kses_post( '<div class="notice notice-warning is-dismissible"><p>' );
-		// translators: Do not translate WP Document Revisions Email Notice or WP Document Revisions.
-		esc_html_e( 'Plugin WP Document Revisions Email Notice is activated but its required plugin WP Document Revisions is not.', 'wpdr-email-notice' );
+		// translators: Do not translate Email Notice WP Document Revisions or WP Document Revisions.
+		esc_html_e( 'Plugin Email Notice WP Document Revisions is activated but its required plugin WP Document Revisions is not.', 'wpdr-email-notice' );
 		echo wp_kses_post( '</p><p>' );
-		// translators: Do not translate WP Document Revisions Email Notice.
-		esc_html_e( 'Plugin WP Document Revisions Email Notice will not activate its functionality.', 'wpdr-email-notice' );
+		// translators: Do not translate Email Notice WP Document Revisions.
+		esc_html_e( 'Plugin Email Notice WP Document Revisions will not activate its functionality.', 'wpdr-email-notice' );
 		echo wp_kses_post( '</p></div>' );
 	}
 	return;
 }
 
 /**
- * WP Document Revisions Email Notice.
+ * Email Notice WP Document Revisions.
  */
 add_action( 'plugins_loaded', 'init_wpdr_en' );
 

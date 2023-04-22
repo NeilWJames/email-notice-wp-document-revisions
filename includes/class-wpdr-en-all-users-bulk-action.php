@@ -1,9 +1,9 @@
 <?php
 /**
- * WP Document Revisions Email Notice Bulk Action Functionality
+ * Email Notice WP Document Revisions Bulk Action Functionality
  *
  * @author  Neil W. James <neil@familyjames.com>
- * @package WP Document Revisions Email Notice
+ * @package Email Notice WP Document Revisions
  */
 
 /**

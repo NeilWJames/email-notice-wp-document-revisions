@@ -8,5 +8,5 @@ wp-pot \
   --domain wpdr-email-notice \
   --dest-file languages/wpdr-email-notice.pot \
   --src "wpdr-email-notice.php" --src "includes/*.php" \
-  --package "WP Document Revisions Email Notice $VERSION" --relative-to "." \
+  --package "Email Notice WP Document Revisions $VERSION" --relative-to "." \
   --comment-keyword "translators:"

@@ -6,7 +6,7 @@
  *
  * @version 1.0
  *
- * @package WP Document Revisions Email Notice
+ * @package Email Notice WP Document Revisions
  */
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {

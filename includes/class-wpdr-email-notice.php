@@ -1,14 +1,14 @@
 <?php
 /**
- * Plugin Name: WP Document Revisions Email Notice
- * Plugin URI: https://github.com/NeilWJames/wp-document-revisions-email-notice
+ * Plugin Name: Email Notice WP Document Revisions
+ * Plugin URI: https://github.com/NeilWJames/email-notice-wp-document-revisions
  * Description: Notify users about new documents published and customize your e-mail notification settings
  * Version: 1.0
  * Author: Neil James based on Janos Ver
  * Author URI: https://github.com/NeilWJames
  * License: GPLv3 or later
  *
- * @package WP Document Revisions Email Notice
+ * @package Email Notice WP Document Revisions
  */
 
 // No direct access allowed to plugin php file.
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WP Document Revisions Email Notice class.
+ * Email Notice WP Document Revisions class.
  */
 class WPDR_Email_Notice {
 

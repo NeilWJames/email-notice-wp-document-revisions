@@ -1,4 +1,4 @@
-=== WP Document Revisions Email Notice ===
+=== Email Notice WP Document Revisions ===
 Contributors: nwjames, janosver
 Tags: administration, email, e-mail, document, automatic, user, multisite
 Requires at least: 4.9
@@ -36,15 +36,15 @@ This plugin will enable you to
 
 == Installation ==
 
-1. Download wp-document-revisions-email-notice
-2. Extract to `/wp-content/plugins/wp-document-revisions-email-notice` directory
+1. Download email-notice-wp-document-revisions
+2. Extract to `/wp-content/plugins/email-notice-wp-document-revisions` directory
 3. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Upgrade Notice ==
 
 No specific instructions.
 
-== WP Document Revisions Email Notice Filters ==
+== Email Notice WP Document Revisions Filters ==
 
 = Filter: wpdr_en_filesize =
 
