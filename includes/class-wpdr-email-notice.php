@@ -934,7 +934,7 @@ class WPDR_Email_Notice {
 						 * @param int  $filesize attachment file size.
 						 * @param bool $internal indicates whether the notification is being sent to internal users..
 						 */
-					} elseif ( apply_filters( 'wpdr_en_filesize', true, filesize( $attachments ), true ) ) {
+					} elseif ( apply_filters( 'wpdr_en_filesize', true, filesize( $attachments[0] ), true ) ) {
 						$mail_content .= '<p>' . __( 'Document attached.', 'wpdr-email-notice' ) . '</p>';
 					} else {
 						$mail_content .= '<p>' . __( 'Document too large to be attached.', 'wpdr-email-notice' ) . '</p>';
