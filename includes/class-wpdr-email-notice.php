@@ -848,6 +848,20 @@ class WPDR_Email_Notice {
 			$template = __( 'New document: ', 'wpdr-email-notice' ) . get_the_title( $post_id );
 		}
 		$subject = wp_strip_all_tags( $this->resolve_tags( $template, $post_id, $user_id ) );
+		/**
+		 * Filter to ensure that the mail subject does not end in a number.
+		 *
+		 * Some spam checkers assign a penalty if the subject ends with a number, so by default add a period.
+		 *
+		 * @since 1.0
+		 * @param bool true     Default is to add a period if subject ends with a number.
+		 * @param int  $post_id Post ID.
+		 * @return boolean
+		 */
+		if ( apply_filters( 'wpdr_en_subject_trailing_number', true, $post_id ) && preg_match( '/.*[0-9]$/', $subject ) ) {
+			$subject .= '.';
+		};
+
 		// Revert to default mode.
 		add_filter( 'the_title', 'wptexturize' );
 		return $subject;
@@ -870,16 +884,6 @@ class WPDR_Email_Notice {
 		}
 		$content = '<html><body>' . $this->resolve_tags( $template, $post_id, $user_id ) . '</body></html>';
 		return $content;
-	}
-
-	/**
-	 * Set Email format to HTML
-	 *
-	 * @since 1.0
-	 * @return string
-	 */
-	public function html_email() {
-			return 'text/html';
 	}
 
 	/**
@@ -942,12 +946,10 @@ class WPDR_Email_Notice {
 					}
 				}
 				// Set mail type.
-				add_filter( 'wp_mail_content_type', array( $this, 'html_email' ) );
+				$headers = array( 'Content-type: text/html' );
 
 				// Send mail.
-				$mail_status = wp_mail( $value->display_name . '<' . $value->user_email . '>', $mail_subject, $mail_content, '', $attachments );
-				// Reinstate mail type.
-				remove_filter( 'wp_mail_content_type', array( $this, 'html_email' ) );
+				$mail_status = wp_mail( $value->display_name . '<' . $value->user_email . '>', $mail_subject, $mail_content, $headers, $attachments );
 
 				// Add log entry.
 				if ( $mail_status ) {
@@ -957,8 +959,13 @@ class WPDR_Email_Notice {
 					$status_text = __( 'Failed', 'wpdr-email-notice' );
 					$sending_error_count++;
 				}
-				// Add a small delay to stop flooding system.
-				usleep( 100000 );
+				// Add a small delay to stop flooding mail system.
+				/**
+				 * Filters the delay time introduced to avoid flooding the mail system.
+				 *
+				 * @param int 50000  default delay time (0.05 sec).
+				 */
+				usleep( apply_filters( 'wpdr_en_mail_delay', 50000 ) );
 				if ( $this->log_mail_sent( $value->user_id, $post_id, $value->user_email, $status_text ) ) {
 					$logged_count++;
 				}
