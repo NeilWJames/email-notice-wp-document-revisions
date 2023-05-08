@@ -176,8 +176,8 @@ class WPDR_Email_Notice {
 		add_action( 'save_post_document', array( $this, 'send_notification_auto' ), 20, 3 );
 		add_action( 'admin_notices', array( $this, 'admin_notice_auto_notification' ) );
 
-		// clear post cache on change.
-		add_action( 'save_post_document', array( $this, 'en_save_document' ) );
+		// help.
+		add_action( 'admin_head', array( $this, 'add_help_tab' ) );
 
 		// Delete related log entries when a post is being deleted.
 		add_action( 'delete_post', array( $this, 'delete_log_entry_on_post_delete' ), 10 );
@@ -1175,6 +1175,11 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function send_notification_auto( $post_id ) {
+		// ignore whilst doing autosave.
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+
 		// remove attachment file if set.
 		if ( ! empty( self::$attach_file ) ) {
 			unlink( self::$attach_file[0] );
@@ -1284,22 +1289,69 @@ class WPDR_Email_Notice {
 	}
 
 	/**
-	 * Callback to unlink previously loaded document (should do nothing).
+	 * Adds help tabs to help tab API.
 	 *
 	 * @since 1.0
-	 * @param int $doc_id the ID of the post being edited.
+	 * @uses get_help_text()
+	 * @return void
 	 */
-	public function save_document( $doc_id ) {
-		// ignore whilst doing autosave.
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+	public function add_help_tab() {
+		$screen = get_current_screen();
+
+		// only interested in document post_types.
+		if ( 'document' !== $screen->post_type ) {
 			return;
 		}
 
-		if ( ! empty( self::$attach_file ) ) {
-			unlink( self::$attach_file[0] );
-			self::$attach_file = '';
+		// loop through each tab in the help array and add.
+		foreach ( $this->get_help_text( $screen ) as $title => $content ) {
+			$screen->add_help_tab(
+				array(
+					'title'   => $title,
+					'id'      => str_replace( ' ', '_', $title ),
+					'content' => $content,
+				)
+			);
 		}
 	}
+
+	/**
+	 * Helper function to provide help text as an array.
+	 *
+	 * @since 1.0
+	 * @param WP_Screen $screen (optional) the current screen.
+	 * @returns array the help text
+	 */
+	public function get_help_text( $screen = null ) {
+		if ( is_null( $screen ) ) {
+			$screen = get_current_screen();
+		}
+
+		// parent key is the id of the current screen
+		// child key is the title of the tab
+		// value is the help text (as HTML).
+		$help = array(
+			'document'          => array(
+				__( 'Document Email Settings', 'wpdr-email-notice' ) =>
+				'<p>' . __( 'Notification emails can be sent (or re-sent) for published documents to internal users  by clicking on "Send notification emails".', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'Internal users are those with user-ids for the site. They can decide whether they wish to receive these notifications or not and whether the mail should include a copy of the document.', 'wpdr-email-notice' ) . '</p>',
+			),
+		);
+
+		// if we don't have any help text for this screen, just kick.
+		if ( ! isset( $help[ $screen->id ] ) ) {
+			return array();
+		}
+
+		/**
+		 * Filters the default help text for current screen.
+		 *
+		 * @param string[]  $help   default help text for current screen.
+		 * @param WP_Screen $screen current screen name.
+		 */
+		return apply_filters( 'wpdr_en_help_array', $help[ $screen->id ], $screen );
+	}
+
 }
 
 // #TODO: add export log functionality

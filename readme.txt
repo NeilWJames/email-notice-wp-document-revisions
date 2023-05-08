@@ -52,6 +52,12 @@ In /includes/class-wpdr-email-notice.php
 
 Filters whether to attach the file depending on its size and type of user.
 
+= Filter: wpdr_en_help_array =
+
+In /includes/class-wpdr-email-notice.php
+
+Filters the default help text for current screen.
+
 = Filter: wpdr_en_mail_delay =
 
 In /includes/class-wpdr-email-notice.php
