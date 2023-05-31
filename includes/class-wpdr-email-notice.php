@@ -1,19 +1,14 @@
 <?php
 /**
- * Plugin Name: Email Notice WP Document Revisions
- * Plugin URI: https://github.com/NeilWJames/email-notice-wp-document-revisions
- * Description: Notify users about new documents published and customize your e-mail notification settings
- * Version: 1.0
- * Author: Neil James based on Janos Ver
- * Author URI: https://github.com/NeilWJames
- * License: GPLv3 or later
+ * Email Notice WP Document Revisions Main Functionality
  *
+ * @author  Neil W. James <neil@familyjames.com>
  * @package Email Notice WP Document Revisions
  */
 
 // No direct access allowed to plugin php file.
 if ( ! defined( 'ABSPATH' ) ) {
-	die( 'You are not allowed to call this page directly.' );
+	die( esc_html__( 'You are not allowed to call this file directly.', 'wpdr-email-notice' ) );
 }
 
 /**
@@ -94,7 +89,7 @@ class WPDR_Email_Notice {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 
-		add_option( 'wpdr_en_db_version', '1.0' );
+		update_option( 'wpdr_en_db_version', '1.0' );
 	}
 
 	/* Settings */
@@ -107,7 +102,7 @@ class WPDR_Email_Notice {
 	 */
 	public function db_version_check() {
 		$current_db_ver = get_option( 'wpdr_en_db_version' );
-		if ( '1.0' !== $current_db_ver ) {
+		if ( '1.0' !== $current_db_ver || is_multisite() ) {
 			$this->install_notification_log();
 		}
 	}
@@ -1331,7 +1326,7 @@ class WPDR_Email_Notice {
 		// child key is the title of the tab
 		// value is the help text (as HTML).
 		$help = array(
-			'document'          => array(
+			'document' => array(
 				__( 'Document Email Settings', 'wpdr-email-notice' ) =>
 				'<p>' . __( 'Notification emails can be sent (or re-sent) for published documents to internal users  by clicking on "Send notification emails".', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'Internal users are those with user-ids for the site. They can decide whether they wish to receive these notifications or not and whether the mail should include a copy of the document.', 'wpdr-email-notice' ) . '</p>',

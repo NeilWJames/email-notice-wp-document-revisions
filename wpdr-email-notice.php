@@ -1,19 +1,23 @@
 <?php
 /**
- * Plugin Name: Email Notice WP Document Revisions
- * Plugin URI: http://github.com/NeilWJames/email-notice-wp-document-revisions
- * Description: Notify users about new documents published and customize your e-mail notification settings
- * Version: 1.0
- * Author: Neil James based on Janos Ver
- * Author URI: http://github.com/NeilWJames
- * License: GPLv3 or later
+ * Plugin Name:       Email Notice WP Document Revisions
+ * Plugin URI:        http://github.com/NeilWJames/email-notice-wp-document-revisions
+ * Description:       Add-on plugin to WP Document Revisions to notify users about new documents published.
+ * Version:           1.0
+ * Author:            Neil James based on Janos Ver
+ * Author URI:        http://github.com/NeilWJames
+ * License:           GPLv3 or later
+ * Requires at least: 4.9
+ * Requires PHP:      7.1
+ * Text Domain:       wpdr-email-notice
+ * Domain Path:       /languages
  *
  * @package Email Notice WP Document Revisions
  */
 
 // No direct access allowed to plugin php file.
 if ( ! defined( 'ABSPATH' ) ) {
-	die( 'You are not allowed to call this page directly.' );
+	die( 'You are not allowed to call this file directly.' );
 }
 
 // Check that WP Document Revisions is active.
@@ -33,14 +37,14 @@ if ( ! in_array( 'wp-document-revisions/wp-document-revisions.php', apply_filter
 /**
  * Email Notice WP Document Revisions.
  */
-add_action( 'plugins_loaded', 'init_wpdr_en' );
+add_action( 'plugins_loaded', 'wpdr_email_notice_init' );
 
 /**
  * Initialise classes.
  *
  * @since 1.0
  */
-function init_wpdr_en() {
+function wpdr_email_notice_init() {
 	// Admin (Load when needed).
 	if ( is_admin() ) {
 		require_once __DIR__ . '/includes/class-wpdr-email-notice.php';

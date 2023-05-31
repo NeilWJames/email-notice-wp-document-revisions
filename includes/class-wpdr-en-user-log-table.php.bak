@@ -8,7 +8,7 @@
 
 // No direct access allowed to plugin php file.
 if ( ! defined( 'ABSPATH' ) ) {
-	die( esc_html__( 'You are not allowed to call this file directly.', 'wpdr-email-notice' ) );
+	die( __( 'You are not allowed to call this file directly.', 'wpdr-email-notice' ) );
 }
 
 // Load WP_List_Table if not loaded.
@@ -128,19 +128,19 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 		$order   = 'desc';
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$search = '';
 		if ( ! empty( $_GET['s'] ) ) {
-			$parm = '%' . sanitize_text_field( wp_unslash( $_GET['s'] ) ) . '%';
-		} else {
-			$parm = '%%';
+			$s      = sanitize_text_field( wp_unslash( $_GET['s'] ) );
+			$search = "AND (p.post_title LIKE '%{$s}%' OR u.display_name LIKE '%{$s}%' )";
 		}
 
 		if ( ! empty( $_GET['orderby'] ) ) {
-			$orderby = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
-			switch ( $orderby ) {
+			switch ( $_GET['orderby'] ) {
 				case 'post_title':
 				case 'user_display_name':
 				case 'user_email':
 				case 'status':
+					$orderby = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
 					break;
 				default:
 					$orderby = 'time_mail_sent';
@@ -148,10 +148,10 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 			}
 		}
 		if ( ! empty( $_GET['order'] ) ) {
-			$order = sanitize_text_field( wp_unslash( $_GET['order'] ) );
-			switch ( $order ) {
+			switch ( sanitize_text_field( wp_unslash( $_GET['order'] ) ) ) {
 				case 'asc':
 				case 'desc':
+					$order = sanitize_text_field( wp_unslash( $_GET['order'] ) );
 					break;
 				default:
 					$order = 'desc';
@@ -159,29 +159,23 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 			}
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-		// SQL prepared for user-entered data. Ordering data constrained to specific values and camnot be hijacked.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$log_items    = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT 	l.id as id,
-				 l.post_id as post_id,
-				 p.post_title as post_title,
-				 l.user_id as user_id,
-				 u.display_name as user_display_name,						
-				 l.time_mail_sent as time_mail_sent,
-				 l.user_email as user_email,
-				 l.status									   
-				 FROM {$wpdb->prefix}wpdr_notification_log l,
-				 {$wpdb->prefix}posts p,
-				 {$wpdb->base_prefix}users u
-				 WHERE l.post_id=p.id
-				 AND   l.user_id=u.id
-				 AND   ( p.post_title LIKE %s OR u.display_name LIKE %s )",
-				$parm,
-				$parm
-			) . " ORDER BY {$orderby} {$order}",
-			ARRAY_A // ARRAY_A will ensure that we get associated array instead of stdClass.
-		);
+		$sql = "SELECT 	l.id as id,
+				l.post_id as post_id,
+				p.post_title as post_title,
+				l.user_id as user_id,
+				u.display_name as user_display_name,						
+				l.time_mail_sent as time_mail_sent,
+				l.user_email as user_email,
+				l.status									   
+				FROM {$wpdb->prefix}wpdr_notification_log l,
+				{$wpdb->prefix}posts p,
+				{$wpdb->base_prefix}users u
+				WHERE l.post_id=p.id
+				AND   l.user_id=u.id
+				{$search}
+				ORDER BY {$orderby} {$order}";
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$log_items    = $wpdb->get_results( $sql, ARRAY_A ); // ARRAY_A will ensure that we get associated array instead of stdClass.
 		$current_page = $this->get_pagenum();
 		$total_items  = count( $log_items );
 		$log_items    = array_slice( $log_items, ( ( $current_page - 1 ) * $per_page ), $per_page );

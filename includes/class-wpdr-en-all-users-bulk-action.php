@@ -6,6 +6,11 @@
  * @package Email Notice WP Document Revisions
  */
 
+// No direct access allowed to plugin php file.
+if ( ! defined( 'ABSPATH' ) ) {
+	die( esc_html__( 'You are not allowed to call this file directly.', 'wpdr-email-notice' ) );
+}
+
 /**
  * Main WP_Document_Revisions_Email_Notice_Bulk_Action class.
  */
