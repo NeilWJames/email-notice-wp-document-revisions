@@ -613,8 +613,8 @@ class WPDR_Email_Notice {
 	 */
 	public function wp_mail_from( $email ) {
 		// Get the site domain and get rid of www.
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
-		$sitename = strtolower( wp_strip_all_tags( stripslashes( filter_var( $_SERVER['SERVER_NAME'], FILTER_VALIDATE_URL ) ) ) );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput, WordPress.WP.DeprecatedFunctions
+		$sitename = strtolower( sanitize_url( $_SERVER['SERVER_NAME'] ) );
 		if ( 'www.' === substr( $sitename, 0, 4 ) ) {
 			$sitename = substr( $sitename, 4 );
 		}
