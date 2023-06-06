@@ -8,11 +8,13 @@ Stable tag: 1.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Notify users about new documents published and customise your e-mail notification settings
+Add-on to WP Document Revisions. Notify users about new documents published and customise your e-mail notification settings
 
 == Description ==
 
-By default when you send any notification from your blog (including many of the plugins as well) sender is "WordPress" and the sender e-mail address is <wordpress@yourdomain.com>. This supports personalised sender name and e-mail address to send out e-mail notifications about newly published documents to users who are interested either automatically (on publish) or manually.
+This plugin is an add-on to WP Document Revisions. This supports sending out e-mail notifications about newly published documents to users who are interested to receive notifications either automatically (on publish) or manually.
+
+By default when you send any notification from your blog (including many of the plugins as well) sender is "WordPress" and the sender e-mail address is <wordpress@yourdomain.com>. 
 
 This plugin will enable you to 
 
