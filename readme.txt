@@ -1,4 +1,4 @@
-=== Email Notice WP Document Revisions ===
+=== Email Notice for WP Document Revisions ===
 Contributors: nwjames, janosver
 Tags: administration, email, e-mail, document, automatic, user, multisite
 Requires at least: 4.9
@@ -34,7 +34,7 @@ This plugin will enable you to
 
 * Bulk subscribe/unsubscribe users to/from e-mail notifications (go to Users->All Users and see bulk actions)
 
-* Maintain e-mail log about sent e-mail notifications
+* Maintain e-mail log about sent e-mail notifications.
 
 == Installation ==
 
@@ -106,6 +106,6 @@ Yes, it does, but in that case each site will have its own log in Documents -> D
 == Changelog ==
 
 = 1.0 =
-Release date: April 20, 2023
+Release date: June 6, 2023
 
 * Initial release based on recast of Janos Ver's plugin "WP JV Custom Email Settings"

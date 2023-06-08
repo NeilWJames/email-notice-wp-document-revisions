@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name:       Email Notice WP Document Revisions
+ * Plugin Name:       Email Notice for WP Document Revisions
  * Plugin URI:        http://github.com/NeilWJames/email-notice-wp-document-revisions
  * Description:       Add-on plugin to WP Document Revisions to notify users about new documents published.
  * Version:           1.0
- * Author:            Neil James based on Janos Ver
+ * Author:            Neil James
  * Author URI:        http://github.com/NeilWJames
  * License:           GPLv3 or later
  * Requires at least: 4.9
