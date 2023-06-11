@@ -22,7 +22,7 @@ This plugin will enable you to
 
 * Replace default e-mail from "WordPress" name to anything you want
 
-* Send e-mail notifications automatically/manually to all registered users about new public posts
+* Send e-mail notifications automatically/manually to all registered users about new public documents
 
 * Easily customize notification e-mail subject and content templates
 
@@ -35,6 +35,9 @@ This plugin will enable you to
 * Bulk subscribe/unsubscribe users to/from e-mail notifications (go to Users->All Users and see bulk actions)
 
 * Maintain e-mail log about sent e-mail notifications.
+
+Initial release based on plugin "WP JV Custom Email Settings" by Janos Ver. 
+
 
 == Installation ==
 
@@ -108,4 +111,3 @@ Yes, it does, but in that case each site will have its own log in Documents -> D
 = 1.0 =
 Release date: June 6, 2023
 
-* Initial release based on recast of Janos Ver's plugin "WP JV Custom Email Settings"
