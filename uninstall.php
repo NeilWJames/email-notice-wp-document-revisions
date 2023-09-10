@@ -112,4 +112,3 @@ foreach ( $wp_roles->role_names as $wrole => $label ) {
 		$wp_roles->remove_cap( $wrole, 'edit_doc_ext_list' );
 	}
 }
-
