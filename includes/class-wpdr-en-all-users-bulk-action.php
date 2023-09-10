@@ -67,7 +67,7 @@ class WPDR_EN_All_Users_Bulk_Action {
 					if ( ! $this->perform_subscribe( $user_id ) ) {
 						wp_die( esc_html__( 'Error subscribing users.', 'wpdr-email-notice' ) );
 					}
-					$subscribed++;
+					++$subscribed;
 				}
 				break;
 			case 'wpdr_unsubscribe':
@@ -76,7 +76,7 @@ class WPDR_EN_All_Users_Bulk_Action {
 					if ( ! $this->perform_unsubscribe( $user_id ) ) {
 						wp_die( esc_html__( 'Error unsubscribing users.', 'wpdr-email-notice' ) );
 					}
-					$subscribed++;
+					++$subscribed;
 				}
 				break;
 		}
@@ -88,10 +88,21 @@ class WPDR_EN_All_Users_Bulk_Action {
 	 * Subscribe the given user from mailing.
 	 *
 	 * @since 1.0
+	 * @global $wpdr_en;
 	 * @param int $user_id User id.
 	 * @return boolean
 	 */
 	private function perform_subscribe( $user_id ) {
+		global $wpdr_en;
+		// Does the user have the choice.
+		$user = get_user_by( 'ID', $user_id );
+		if ( ! (bool) array_intersect( $user->roles, $wpdr_en::$internal_roles ) ) {
+			// remove if was present due to change of roles.
+			delete_user_meta( $user_id, 'wpdr_en_user_notification' );
+			delete_user_meta( $user_id, 'wpdr_en_user_attachment' );
+			return false;
+		}
+
 		update_user_meta( $user_id, 'wpdr_en_user_notification', true );
 		if ( (bool) get_user_meta( $user_id, 'wpdr_en_user_notification', true ) !== true ) {
 			return false;
@@ -103,10 +114,21 @@ class WPDR_EN_All_Users_Bulk_Action {
 	 * Unsubscribe the given user from mailing.
 	 *
 	 * @since 1.0
+	 * @global $wpdr_en;
 	 * @param int $user_id User id.
 	 * @return boolean
 	 */
 	private function perform_unsubscribe( $user_id ) {
+		global $wpdr_en;
+		// Does the user have the choice.
+		$user = get_user_by( 'ID', $user_id );
+		if ( ! (bool) array_intersect( $user->roles, $wpdr_en::$internal_roles ) ) {
+			// remove if was present due to change of roles.
+			delete_user_meta( $user_id, 'wpdr_en_user_notification' );
+			delete_user_meta( $user_id, 'wpdr_en_user_attachment' );
+			return false;
+		}
+
 		update_user_meta( $user_id, 'wpdr_en_user_notification', false );
 		// switch off attachment.
 		update_user_meta( $user_id, 'wpdr_en_user_attachment', false );

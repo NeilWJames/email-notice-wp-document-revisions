@@ -5,6 +5,8 @@
  * WPDR Custom Email Settings Uninstaller
  *
  * @version 1.0
+ * @global wpdb $wpdb WordPress database abstraction object.
+ * @global WP_Role[] $wp_roles WP_Roles array object.
  *
  * @package Email Notice WP Document Revisions
  */
@@ -18,7 +20,7 @@ global $wpdb;
 /**
  * Remove individual settings on plugin delete.
  *
- * @version 1.0
+ * @version 2.0
  */
 function wpdr_en_del_options() {
 	global $wpdb;
@@ -34,21 +36,30 @@ function wpdr_en_del_options() {
 	delete_option( 'wpdr_en_set_content' );
 	// phpcs:ignore Squiz.PHP.CommentedOutCode
 	// #TODO: purge
-	// delete_option('wpdr_en_set_notification_log');
 
 	// delete wpdr_en_notification_sent flags.
 	delete_post_meta_by_key( 'wpdr_en_notification_sent' );
 
-	// drop notifications log.
+	// drop notifications logs.
 	$table_name = $wpdb->prefix . 'wpdr_notification_log';
-	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
+	// %1$s should be changed to %i when all WP supported >= 6.2.
 	$wpdb->query(
 		$wpdb->prepare(
-			'DROP TABLE IF EXISTS %s',
+			'DROP TABLE IF EXISTS %1$s',
 			$table_name
 		)
 	);
-	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+
+	$table_name = $wpdb->prefix . 'wpdr_ext_notice_log';
+	// %1$s should be changed to %i when all WP supported >= 6.2.
+	$wpdb->query(
+		$wpdb->prepare(
+			'DROP TABLE IF EXISTS %1$s',
+			$table_name
+		)
+	);
+	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
 }
 
 if ( ! is_multisite() ) {
@@ -88,5 +99,17 @@ foreach ( $all_user_ids as $user ) {
 }
 // phpcs:enable WordPress.DB.SlowDBQuery
 
+global $wp_roles;
+if ( ! is_object( $wp_roles ) ) {
+	// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	$wp_roles = new WP_Roles();
+}
 
+// $wrole is each role.
+foreach ( $wp_roles->role_names as $wrole => $label ) {
+	$role_caps = $wp_roles->roles[ $wrole ]['capabilities'];
+	if ( array_key_exists( 'edit_doc_ext_list', $role_caps ) ) {
+		$wp_roles->remove_cap( $wrole, 'edit_doc_ext_list' );
+	}
+}
 

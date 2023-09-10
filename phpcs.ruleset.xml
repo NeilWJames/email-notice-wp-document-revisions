@@ -3,7 +3,31 @@
 
 	<extensions>*/php</extensions>
 
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="wpdr-email-notice"/>
+				<element value="wp-document-revisions"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array">
+				<element value="edit_doc_ext_list"/>
+				<element value="edit_doc_ext_lists"/>
+				<element value="read_document"/>
+				<element value="edit_document"/>
+				<element value="edit_documents"/>
+			</property>
+		</properties>
+	</rule>
+
 	<rule ref="WordPress"/>
+
+	<config name="testVersion" value="7.4"/>
+	<rule ref="PHPCompatibilityWP"/>
 
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/vendor/autoload.php</exclude-pattern>

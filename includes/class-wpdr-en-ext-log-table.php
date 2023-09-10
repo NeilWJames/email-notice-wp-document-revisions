@@ -1,15 +1,10 @@
 <?php
 /**
- * Email Notice WP Document Revisions List Table Functionality
+ * WP Document Revisions Email Notice Log Table Functionality
  *
  * @author  Neil W. James <neil@familyjames.com>
- * @package Email Notice WP Document Revisions
+ * @package WP Document Revisions Email Notice
  */
-
-// No direct access allowed to plugin php file.
-if ( ! defined( 'ABSPATH' ) ) {
-	die( esc_html__( 'You are not allowed to call this file directly.', 'wpdr-email-notice' ) );
-}
 
 // Load WP_List_Table if not loaded.
 if ( ! class_exists( 'WP_List_Table' ) ) {
@@ -19,14 +14,14 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 }
 
 /**
- * Main WP_Document_Revisions_Email_Notice_List_Table class.
+ * Main WP_Document_Revisions_Email_Notice_Log_Table class.
  */
-class WPDR_EN_User_Log_Table extends WP_List_Table {
+class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 
 	/**
 	 * Constructor
 	 *
-	 * @since 1.0
+	 * @since 2.0
 	 * @param mixed[] $args  Arguments to List_Table.
 	 * @return void
 	 */
@@ -34,8 +29,8 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 		$args = wp_parse_args(
 			$args,
 			array(
-				'singular' => __( 'Notification email sent', 'wpdr-email-notice' ),    // singular name of the listed records.
-				'plural'   => __( 'Notification emails sent', 'wpdr-email-notice' ),   // plural name of the listed records.
+				'singular' => __( 'External Notification email sent', 'wpdr-email-notice' ),    // singular name of the listed records.
+				'plural'   => __( 'External Notification emails sent', 'wpdr-email-notice' ),   // plural name of the listed records.
 				'ajax'     => false,
 				'screen'   => null,
 			)
@@ -46,17 +41,18 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	/**
 	 * Define columns for table.
 	 *
-	 * @since 1.0
+	 * @since 2.0
 	 * @return string[]
 	 */
 	public function get_columns() {
 		$columns = array(
-			'id'                => '#',
-			'post_title'        => __( 'Post Title', 'wpdr-email-notice' ),
-			'time_mail_sent'    => __( 'E-mail sent', 'wpdr-email-notice' ),
-			'user_display_name' => __( 'User Name', 'wpdr-email-notice' ),
-			'user_email'        => __( 'User E-mail', 'wpdr-email-notice' ),
-			'status'            => __( 'Status', 'wpdr-email-notice' ),
+			'id'             => '#',
+			'post_title'     => __( 'Post Title', 'wpdr-email-notice' ),
+			'list_title'     => __( 'List Title', 'wpdr-email-notice' ),
+			'time_mail_sent' => __( 'E-mail sent', 'wpdr-email-notice' ),
+			'user_name'      => __( 'User Name', 'wpdr-email-notice' ),
+			'user_email'     => __( 'User E-mail', 'wpdr-email-notice' ),
+			'status'         => __( 'Status', 'wpdr-email-notice' ),
 		);
 		return $columns;
 	}
@@ -64,16 +60,17 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	/**
 	 * Define sortable columns for table.
 	 *
-	 * @since 1.0
+	 * @since 2.0
 	 * @return string[]
 	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
-			'post_title'        => array( 'post_title', false ),
-			'time_mail_sent'    => array( 'time_mail_sent', false ),
-			'user_display_name' => array( 'user_display_name', false ),
-			'user_email'        => array( 'user_email', false ),
-			'status'            => array( 'status', false ),
+			'post_title'     => array( 'post_title', true ),
+			'list_title'     => array( 'list_title', true ),
+			'time_mail_sent' => array( 'time_mail_sent', true ),
+			'user_name'      => array( 'user_display_name', true ),
+			'user_email'     => array( 'user_email', true ),
+			'status'         => array( 'status', false ),
 		);
 		return $sortable_columns;
 	}
@@ -81,7 +78,7 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	/**
 	 * Define defaults columns for table.
 	 *
-	 * @since 1.0
+	 * @since 2.0
 	 * @param mixed[] $item        row in List Table.
 	 * @param string  $column_name column name.
 	 * @return string[]
@@ -94,12 +91,14 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 				} else {
 					return '<a href="' . get_permalink( $item['post_id'] ) . '">' . $item[ $column_name ] . '</a>';
 				}
-			case 'user_display_name':
-				if ( current_user_can( 'list_users' ) ) {
-					return '<a href="' . get_edit_user_link( $item['user_id'] ) . '">' . ucwords( $item[ $column_name ] ) . '</a>';
+			case 'list_title':
+				if ( current_user_can( 'edit_document', $item['list_id'] ) ) {
+					return '<a href="' . get_edit_post_link( $item['list_id'] ) . '">' . $item[ $column_name ] . '</a>';
 				} else {
-					return ucwords( $item[ $column_name ] );
+					return '<a href="' . get_permalink( $item['list_id'] ) . '">' . $item[ $column_name ] . '</a>';
 				}
+			case 'user_name':
+				return ucwords( $item[ $column_name ] );
 			case 'id':
 			case 'time_mail_sent':
 			case 'user_email':
@@ -111,7 +110,7 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	/**
 	 * Define data to populate table.
 	 *
-	 * @since 1.0
+	 * @since 2.0
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 * @return void
 	 */
@@ -129,19 +128,19 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 		$order   = 'desc';
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$search = '';
 		if ( ! empty( $_GET['s'] ) ) {
-			$parm = '%' . sanitize_text_field( wp_unslash( $_GET['s'] ) ) . '%';
-		} else {
-			$parm = '%%';
+			$s      = sanitize_text_field( wp_unslash( $_GET['s'] ) );
+			$search = "AND (p.post_title LIKE '%{$s}%' OR l.user_name LIKE '%{$s}%' OR l.user_email LIKE '%{$s}%' )";
 		}
 
 		if ( ! empty( $_GET['orderby'] ) ) {
-			$orderby = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
-			switch ( $orderby ) {
+			switch ( $_GET['orderby'] ) {
 				case 'post_title':
-				case 'user_display_name':
+				case 'user_name':
 				case 'user_email':
 				case 'status':
+					$orderby = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
 					break;
 				default:
 					$orderby = 'time_mail_sent';
@@ -149,10 +148,10 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 			}
 		}
 		if ( ! empty( $_GET['order'] ) ) {
-			$order = sanitize_text_field( wp_unslash( $_GET['order'] ) );
-			switch ( $order ) {
+			switch ( sanitize_text_field( wp_unslash( $_GET['order'] ) ) ) {
 				case 'asc':
 				case 'desc':
+					$order = sanitize_text_field( wp_unslash( $_GET['order'] ) );
 					break;
 				default:
 					$order = 'desc';
@@ -160,29 +159,24 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 			}
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-		// SQL prepared for user-entered data. Ordering data constrained to specific values and camnot be hijacked.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$log_items    = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT 	l.id as id,
-				 l.post_id as post_id,
-				 p.post_title as post_title,
-				 l.user_id as user_id,
-				 u.display_name as user_display_name,						
-				 l.time_mail_sent as time_mail_sent,
-				 l.user_email as user_email,
-				 l.status									   
-				 FROM {$wpdb->prefix}wpdr_notification_log l,
-				 {$wpdb->prefix}posts p,
-				 {$wpdb->base_prefix}users u
-				 WHERE l.post_id=p.id
-				 AND   l.user_id=u.id
-				 AND   ( p.post_title LIKE %s OR u.display_name LIKE %s )",
-				$parm,
-				$parm
-			) . " ORDER BY {$orderby} {$order}",
-			ARRAY_A // ARRAY_A will ensure that we get associated array instead of stdClass.
-		);
+		$sql = "SELECT 	l.id as id,
+				l.post_id as post_id,
+				p.post_title as post_title,
+				l.doc_ext_list_id as list_id,
+				t.post_title as list_title,
+				l.user_name as user_name,						
+				l.time_mail_sent as time_mail_sent,
+				l.user_email as user_email,
+				l.status									   
+				FROM {$wpdb->prefix}wpdr_ext_notice_log l,
+				{$wpdb->prefix}posts p,
+				{$wpdb->prefix}posts t
+				WHERE l.post_id = p.ID
+				AND   l.doc_ext_list_id = t.ID
+				{$search}
+				ORDER BY {$orderby} {$order}";
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$log_items    = $wpdb->get_results( $sql, ARRAY_A ); // ARRAY_A will ensure that we get associated array instead of stdClass.
 		$current_page = $this->get_pagenum();
 		$total_items  = count( $log_items );
 		$log_items    = array_slice( $log_items, ( ( $current_page - 1 ) * $per_page ), $per_page );
@@ -200,7 +194,7 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	/**
 	 * Define message if no items for table.
 	 *
-	 * @since 1.0
+	 * @since 2.0
 	 * @return void
 	 */
 	public function no_items() {
@@ -212,7 +206,7 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	 *
 	 * Should be get_block_actions.
 	 *
-	 * @since 1.0
+	 * @since 2.0
 	 * @param string $which not yet defined.
 	 * @return void
 	 */
