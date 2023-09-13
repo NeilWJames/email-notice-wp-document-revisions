@@ -51,65 +51,7 @@ No specific instructions.
 
 == Email Notice WP Document Revisions Filters ==
 
-= Filter: wpdr_en_doc_ext_list_caps =
-
-In /includes/class-wpdr-email-notice.php
-
-Filter the default capabilities for each role.
-
-= Filter: wpdr_en_filesize =
-
-In /includes/class-wpdr-email-notice.php
-
-Filters whether to attach the file depending on its size and type of user.
-
-= Filter: wpdr_en_help_array =
-
-In /includes/class-wpdr-email-notice.php
-
-Filters the default help text for current screen.
-
-= Filter: wpdr_en_mail_delay =
-
-In /includes/class-wpdr-email-notice.php
-
-Filters the delay time introduced to avoid flooding the mail system.
-
-= Filter: wpdr_en_no_send_email =
-
-In /includes/class-wpdr-email-notice.php
-
-Filters whether to actually send the email - useful for testing.
-
-= Filter: wpdr_en_register_del =
-
-In /includes/class-wpdr-email-notice.php
-
-Filters the delivered document external list type definition prior to registering it.
-
-= Filter: wpdr_en_remove_taxonomy_menu_items =
-
-In /includes/class-wpdr-email-notice.php
-
-Filters whether to remove the taxonomy menu items from the list.
-
-= Filter: wpdr_en_roles_email =
-
-In /includes/class-wpdr-email-notice.php
-
-Filter all roles to determine those who can choose to receive mails.
-
-= Filter: wpdr_en_subject_trailing_number =
-
-In /includes/class-wpdr-email-notice.php
-
-Filter to ensure that the mail subject does not end in a number.
-
-= Filter: wpdr_en_taxonomies =
-
-In /includes/class-wpdr-email-notice.php
-
-Filter to select subset of document taxonomies used for the lists.
+These are listed and described in the [Plugin Repository - Filters](https://github.com/NeilWJames/email-notice-wp-document-revisions/blob/main/docs/filters.md).
 
 == Frequently Asked Questions ==
 
@@ -128,19 +70,8 @@ Even though the user has access to the document via the front-end, as well, the 
 
 = What kind of tags I can use and for what? =
 You can customize notification e-mail template (both subject and content) In the content you can use any standard html tags as well on top of the following ones:
-%title% means title of the post
-%permalink% means URL of the post
-%title_with_permalink% means URL with title of the post
-%author_name% means the name of the post author
-%excerpt% means excerpt of the post
-%words_n% means the first n (must be an integer number) number of word(s) extracted from the post
-%recipient_name% means display name of the user who receives the e-mail
-%repeat% means additional text that is included only if an email has previously been sent for the document. 
 
-The repeat tag can use additional tags:
-%num% means the number of times the document has been previously e-mailed
-%last_date% means the last date that the document was e-mailed
-%last_time% means the last date and time that the document was e-mailed.
+Hetails are given in [Plugin Repository - Tags](https://github.com/NeilWJames/email-notice-wp-document-revisions/blob/main/docs/tags.md)
 
 = Where are the logs? =
 Log of notifications is available at Documents -> Document Email Log, where you can view which users were notified about which post and if e-mail sending was successful or not (please note that bounce messages are not processed). 

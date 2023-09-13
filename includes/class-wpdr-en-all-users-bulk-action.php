@@ -19,6 +19,7 @@ class WPDR_EN_All_Users_Bulk_Action {
 	/**
 	 * Constructor
 	 *
+	 * @since 1.0
 	 * @return void
 	 */
 	public function __construct() {

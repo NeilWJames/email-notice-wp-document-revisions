@@ -182,54 +182,29 @@ class WPDR_Email_Notice {
 			$wp_roles = new WP_Roles();
 		}
 
-		// default role => capability mapping; based off of _post options
+		// default roles that should have the edit_doc_ext_lists capability.
 		// can be overridden by 3d party plugins.
 		// deliberately very limited.
 		$defaults = array(
-			'administrator' =>
-			array(
-				'edit_doc_ext_lists' => true,
-			),
-			'editor'        =>
-			array(
-				'edit_doc_ext_lists' => true,
-			),
-			'author'        =>
-			array(
-				'edit_doc_ext_lists' => false,
-			),
-			'contributor'   =>
-			array(
-				'edit_doc_ext_lists' => false,
-			),
-			'subscriber'    =>
-			array(
-				'edit_doc_ext_lists' => false,
-			),
+			'administrator',
+			'editor',
 		);
 
-		foreach ( $wp_roles->role_names as $role => $label ) {
+		/**
+		 * Filter the default roles that will be allowed to manage the lists.
+		 *
+		 * @since 2.0
+		 *
+		 * @param string $defaults the default roles that will be allowed to manage the lists.
+		 */
+		$defaults = apply_filters( 'wpdr_en_doc_ext_list_roles', $defaults );
 
-			// if the role is a standard role, map the default caps, otherwise, map as a subscriber.
-			$caps = ( array_key_exists( $role, $defaults ) ) ? $defaults[ $role ] : $defaults['subscriber'];
-
-			/**
-			 * Filter the default capabilities for each role.
-			 *
-			 * @since 2.0
-			 *
-			 * @param array  $caps the default set of capabilities for the role.
-			 * @param string $role the role being reviewed (all will be reviewed in turn).
-			 */
-			$caps = apply_filters( 'wpdr_en_doc_ext_list_caps', $caps, $role );
+		foreach ( $defaults as $role ) {
 
 			$role_caps = $wp_roles->roles[ $role ]['capabilities'];
-			// loop through capacities for role.
-			foreach ( $caps as $cap => $grant ) {
-				// add only missing capabilities.
-				if ( ! array_key_exists( $cap, $role_caps ) ) {
-					$wp_roles->add_cap( $role, $cap, $grant );
-				}
+			// add only missing capabilities.
+			if ( ! array_key_exists( 'edit_doc_ext_lists', $role_caps ) ) {
+					$wp_roles->add_cap( $role, 'edit_doc_ext_lists', true );
 			}
 		}
 	}
@@ -255,7 +230,7 @@ class WPDR_Email_Notice {
 				// check that a role has been allocated edit_doc_ext_list. if not set default.
 				$found = false;
 				foreach ( (array) $wp_roles->roles as $role => $data ) {
-					if ( array_key_exists( 'edit_doc_ext_list', $data['capabilities'] ) ) {
+					if ( array_key_exists( 'edit_doc_ext_lists', $data['capabilities'] ) ) {
 						// found. no more to do.
 						$found = true;
 						break;
@@ -447,7 +422,7 @@ class WPDR_Email_Notice {
 
 		// remove taxonomy terms (since are on Document menu).
 		/**
-		 * Filters whether to remove the taxonomy menu items from the list.
+		 * Filters whether to remove the taxonomy menu items from the list menu.
 		 *
 		 * @since 2.0
 		 *
@@ -1126,6 +1101,8 @@ class WPDR_Email_Notice {
 
 	/**
 	 * Delete address in post.
+	 *
+	 * @since 2.0
 	 */
 	public static function delete_address() {
 		// Avoid being easily hacked.
@@ -2042,7 +2019,7 @@ class WPDR_Email_Notice {
 					}
 				}
 				/**
-				 * Filters whether to actually send the email - useful for testing.
+				 * Filters whether to actually send the email - useful for setup testing.
 				 *
 				 * There will be a log entry so this can be used for testing.
 				 *
@@ -2320,7 +2297,7 @@ class WPDR_Email_Notice {
 	 *
 	 * WordPress sometimes does re-use post IDs and without deleting the log entires this could cause confusion.
 	 *
-	 * @since 2.0
+	 * @since 1.0
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 *
 	 * @param int $post_id Post ID.
@@ -2342,7 +2319,7 @@ class WPDR_Email_Notice {
 	 *
 	 * WordPress sometimes does re-use post IDs and without deleting the log entires this could cause confusion.
 	 *
-	 * @since 2.0
+	 * @since 1.0
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 *
 	 * @param int     $user_id  Deleted user ID.
@@ -2532,7 +2509,7 @@ class WPDR_Email_Notice {
 	/**
 	 * Sending manual notifications
 	 *
-	 * @since 2.0
+	 * @since 1.0
 	 * @return void
 	 */
 	public function send_notification_manual() {
@@ -3062,7 +3039,7 @@ class WPDR_Email_Notice {
 		$help = array(
 			'doc_ext_list'      => array(
 				__( 'Basic Usage', 'wpdr-email-notice' ) =>
-				'<p>' . __( 'This screen allows a user to define a list of users that will receive an email (generally with the document attached) if any taxonomy value of the list matches that on the document requested.', 'wpdr-email-notice' ) . '</p><p>' .
+				'<p>' . __( 'This screen allows a user to define a list of email users that will receive an email (generally with the document attached) if any taxonomy value of the list matches that on the document requested.', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'The list will be selected for this processing when the list is published.', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'When editing is completed, simply click <code>Update</code> to save your changes.', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'Note however that changes made to the User List take effect immediately.', 'wpdr-email-notice' ) . '</p>',
@@ -3085,7 +3062,12 @@ class WPDR_Email_Notice {
 				'<p>' . __( 'When the document is selected to have emails sent, the taxonomy terms on each of the published user lists are compared to those on the document.', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'There must be at least one taxonomy term set on the user list. If there are multiple terms on the list then the matching rule will used to determine whether just one term is needed for the user list to be selected or all terms present must match.', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'For hierarchical taxonomies, a term is considered matched if the term on the document is either the same as that on the user list or is a child of the user list term.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'Because of this, it is not permitted to publish a List when the terms entered contains a term and its parent since the term matching process means that the child term would be redundant.', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'A document can have additional terms present, i.e. it is not necessary that all document terms must match.', 'wpdr-email-notice' ) . '</p>',
+				__( 'Permissions', 'wpdr-email-notice' ) =>
+				'<p>' . __( 'It is expected that the emailing administration process will be centralised with only a handful of Lists being created. Therefore the full WordPress access model would be overkill.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'A single permission <strong>edit_doc_ext_lists</strong> is supplied. Users with this permission can create, update, publish and delete any List.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'Users with <strong>edit_documents</strong> permission can read any List.', 'wpdr-email-notice' ) . '</p>',
 			),
 			'edit-doc_ext_list' => array(
 				__( 'Document External Lists', 'wpdr-email-notice' ) =>
@@ -3095,11 +3077,13 @@ class WPDR_Email_Notice {
 			),
 			'document'          => array(
 				__( 'Document Email Settings', 'wpdr-email-notice' ) =>
-				'<p>' . __( 'Notification emails can be sent (or re-sent) for published documents to internal users or external users by clicking on "Send notification emails" or "Send external emails".', 'wpdr-email-notice' ) . '</p><p>' .
+				'<p>' . __( 'Notification emails can be sent (or re-sent) for published documents to internal users or external users by clicking on the button "Send notification emails" or "Send external emails".', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'Internal users are those with user-ids for the site. They can decide whether they wish to receive these notifications or not and whether the mail should include a copy of the document.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'External users normally do not have a sign-on. Notifications are based on the concept of lists. A list will identify one or more taxonomy terms that will be matched again the document terms', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'If a match is found (including list parent term matching child document term for hierarchical taxonomies) for a published list then the mail will be sent to all the email addresses on the list.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'Potentially several lists may match the document.', 'wpdr-email-notice' ) . '</p>',
+				__( 'External users normally do not have a sign-on. Notifications are based on the concept of lists. A list will contain one or more taxonomy terms that will be matched again the document terms.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'Every published list will be tested to see whether its terms match those on the document.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'A term on the list matches with one on the document if they are same or, for hierarchical taxonomies, the list term is a parent of the document term.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'The list can be defined so that the list is matched if either any term matches or all terms must match.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'Potentially several lists may match the document. Emails will be sent to evert user on every matched list.', 'wpdr-email-notice' ) . '</p>',
 			),
 		);
 
