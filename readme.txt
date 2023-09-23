@@ -59,6 +59,8 @@ Initial release based on plugin "WP JV Custom Email Settings" by Janos Ver.
 2. Extract to `/wp-content/plugins/email-notice-wp-document-revisions` directory
 3. Activate the plugin through the 'Plugins' menu in WordPress
 
+If the plugin WP Document Revisions is not activated, this plugin will output an error message and none of its functionality  will be available.
+
 == Upgrade Notice ==
 
 No specific instructions.
