@@ -17,6 +17,8 @@
 			<property name="custom_capabilities" type="array">
 				<element value="edit_doc_ext_list"/>
 				<element value="edit_doc_ext_lists"/>
+				<element value="delete_doc_ext_list"/>
+				<element value="delete_doc_ext_lists"/>
 				<element value="read_document"/>
 				<element value="edit_document"/>
 				<element value="edit_documents"/>

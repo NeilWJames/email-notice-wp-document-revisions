@@ -3,7 +3,7 @@ Contributors: nwjames, janosver
 Tags: administration, email, e-mail, document, automatic, user, multisite
 Requires at least: 4.9
 Requires PHP: 7.4
-Tested up to: 6.3
+Tested up to: 6.4.3
 Stable tag: 2.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -71,12 +71,20 @@ These are listed and described at https://github.com/NeilWJames/email-notice-wp-
 
 == Frequently Asked Questions ==
 
+= How does the plugin work? =
+
+When enabled a metabox will be added to the Document Admin screen. This can contain two buttons to send emails. One will be for internal users (although you can filter this capability out) and the other for Document Lists. The Document List define a set of email names and addresses that will be sent the notifications; together with a list of Taxonomy matching rules.
+
+There is information in the Document and Document List Help pulldowns found on the top right hand corner of their Admin screens.
+
+Go to Settings -> General -> "Document Email Settings" section.
+
 = Where can I define new "Email From" name and from "Email Address"? =
 
 Go to Settings -> General -> "Document Email Settings" section.
 
-= How this works? What is the difference between Auto/Manual notification mode? =
-In Settings -> Writing -> "Document Email Settings - Notifications" section you can select to send notifications automatically or manualy. If it is set to Auto whenever you publish a document notification e-mails will be sent out automatically for users with access to the document and opted to receive such notifications. In case of Manual you will be provided a "Send/Re-send notification email(s)" button to notify your readers. 
+= How does this work? What is the difference between Auto/Manual notification mode? =
+In Settings -> Writing -> "Document Email Settings - Notifications" section you can select to send notifications automatically or manually. If it is set to Auto whenever you publish a document notification e-mails will be sent out automatically for users with access to the document and opted to receive such notifications. In case of Manual you will be provided a "Send/Re-send notification email(s)" button to notify your readers. 
 
 = I'm not getting any notification e-mails, what is wrong? =
 In order to receive notification e-mails users have to go to their profile and check “Notify me by e-mail when a new post is published” checkbox in "Document Email Settings" section (or an admin has to do it for them).

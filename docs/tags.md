@@ -50,7 +50,7 @@ This will be the number of times the document has been previously e-mailed to th
 
 This is the last date that the document was e-mailed.
 
-%last_time%
+### %last_time%
 
 This is the last date and time that the document was e-mailed.
 
