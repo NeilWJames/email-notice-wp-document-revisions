@@ -3,12 +3,13 @@ Contributors: nwjames, janosver
 Tags: administration, email, e-mail, document, automatic, user, multisite
 Requires at least: 4.9
 Requires PHP: 7.4
-Tested up to: 6.4.3
+Requires Plugins: wp-document-revisions
+Tested up to: 6.5.2
 Stable tag: 2.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Add-on to WP Document Revisions. Notify users about new documents published and customise your e-mail notification settings
+Add-on to WP Document Revisions. Notify your WordPress users about new documents published or create user email lists to send them notifications. Customise your e-mail notification settings
 
 == Description ==
 
@@ -65,10 +66,6 @@ If the plugin WP Document Revisions is not activated, this plugin will output an
 
 No specific instructions.
 
-== Email Notice WP Document Revisions Filters ==
-
-These are listed and described at https://github.com/NeilWJames/email-notice-wp-document-revisions/blob/main/docs/filters.md
-
 == Frequently Asked Questions ==
 
 = How does the plugin work? =
@@ -95,13 +92,18 @@ Even though the user should have access to the document via the front-end, as we
 = What kind of tags I can use and for what? =
 You can customize notification e-mail template (both subject and content) In the content you can use any standard html tags as well on top of the following ones:
 
-Details are given in https://github.com/NeilWJames/email-notice-wp-document-revisions/blob/main/docs/tags.md
+Details are given in the [tags documentation](https://github.com/NeilWJames/email-notice-wp-document-revisions/blob/main/docs/tags.md).
 
 = Where are the logs? =
 Logs of notifications are available at Document Emails -> Internal User Email Log (for WordPress users) or Document Emails -> External User Email Log, where you can view which users were notified about which post and if e-mail sending was successful or not (please note that bounce messages are not processed). 
 
 = I've multisite. Does this plugin works for me as well? =
 Yes, it does, but in that case each site will have its own log in Document Emails.
+
+= Are there filters to configure plugin operations =
+Yes, there are a number of these.
+
+These are listed and described at [filters.md](https://github.com/NeilWJames/email-notice-wp-document-revisions/blob/main/docs/filters.md).
 
 == Changelog ==
 

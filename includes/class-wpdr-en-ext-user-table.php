@@ -86,6 +86,7 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 			'action' => 'edit',
 		);
 		if ( isset( $_SERVER['REQUEST_URI'] ) ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput, WordPress.WP.DeprecatedFunctions
 			$_SERVER['REQUEST_URI'] = add_query_arg( $args, sanitize_url( wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
 		}
 	}
