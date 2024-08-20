@@ -1,0 +1,8 @@
+/* Squeeze the entry details a little. */
+#user-entry td {
+    padding: 10px;
+}
+/* Put the list title in bold. */
+#user-list h2 {
+    font-weight: bold;
+}

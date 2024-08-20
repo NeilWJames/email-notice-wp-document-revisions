@@ -1,12 +1,12 @@
 /*
 // Scripts for WPDR Custom Email Settings
-// @version: 1.0
+// @version: 3.0
 */
 document.addEventListener('DOMContentLoaded', function() {
 	/************************************************************************************************************/
 	/* Invoke notification sending */
 	/************************************************************************************************************/	    
-	if ( ! !!document.getElementById("wpdr-en-notify") ) {
+	if ( ! !! document.getElementById("wpdr-en-notify") ) {
 		return;
 	}
 
@@ -94,8 +94,18 @@ document.addEventListener('DOMContentLoaded', function() {
 		;
 
 		//Get the post id from hidden input
-		var postid = document.getElementById('wpdr-en-notification-postid').value;			
-		
+		var postid = document.getElementById('wpdr-en-notification-postid').value;
+
+		// Get the lists.Return empty array when all wanted, otherwise the array of wanted.
+		// Note. A valid empty list is not allowed.
+		var olist = [];
+		var lists = document.querySelectorAll("input[name='wpdr-en-ext-list']:checked");
+		if ( lists.length > 0 ) {
+			for ( let list of lists ) {
+				olist.push(list.value);
+			}
+		}
+
 		//Send e-mails
 		jQuery.ajax({
 			type     : 'POST',
@@ -104,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			data     : {
 				 action	       : 'wpdr_en_send_ext_notice_manual',
 				 post_id       : postid,
+				 lists         : olist,
 				 wpdr_en_nonce : wpdr_en_obj.wpdr_en_nonce
 			},
 			success  : function(response) {
@@ -136,5 +147,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		//Re-enable button
 		document.getElementById('dProgress').style.display = 'none';		
 		document.getElementById("wpdr-en-ext-note").disabled = false;		
-	});			
+	});
+
+	for ( let item of document.getElementsByName("wpdr-en-ext-list") ) {
+		item.addEventListener('click', event => {
+			// set button disabled if no list selected.
+			document.getElementById("wpdr-en-ext-note").disabled = ( document.querySelectorAll("input[name^='wpdr-en-ext-list']:checked").length === 0 );
+		});
+	}
+	
 });

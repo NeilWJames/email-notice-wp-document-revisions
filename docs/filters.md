@@ -10,7 +10,7 @@ Filter the default roles that will be allowed to manage the lists.
 
 In /includes/class-wpdr-email-notice.php
 
-Filter to force attach a document for external users.
+Filter to force attach a document for External users.
 
 Special case for private sites since non-users will not be able to read public documents and sending just a link would be useless.
 

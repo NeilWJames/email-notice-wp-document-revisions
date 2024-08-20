@@ -6,12 +6,15 @@ It supports two different methods of holding the address lists:
 1. Using the WordPress users of a site (Internal Users).
 2. Making use of a custom post type called "Document External List" (External Users) .
 
-The custom post type (doc_ext_list) contains three sets of information:
+The custom post type (with slug doc_ext_list) contains three sets of information:
 1. A list of e-mail names and addresses
 2. Some taxonomy terms
 3. A taxonomy match rule - either to match on all the terms or on any of them.
+4. A pause attribute that, if set, excludes the list from being matched. 
 
 When the user selects the Send External button on the Document Edit screen, then an e-mail is sent to all users on published doc_ext_list records whose taxonomy terms match those on the Document.  
+
+The Lists that mach the Document are displayed below that button and are marked as checked. If the user is able to edit the Lists, then they are able to deselect them before sending the notifications as they could change the List to no send them. 
 
 By default when you send any notification from your blog (including many of the plugins as well) sender is "WordPress" and the sender e-mail address is <wordpress@yourdomain.com>. 
 
@@ -37,6 +40,6 @@ For Internal Users, it will also
 
 * Bulk subscribe/unsubscribe users to/from e-mail notifications (go to Users->All Users and see bulk actions)
 
-Initial release sending e-mails to Internal users only based on plugin "WP JV Custom Email Settings" by Janos Ver. 
+The initial release sending e-mails to Internal users only was based on plugin "WP JV Custom Email Settings" by Janos Ver. 
 
 

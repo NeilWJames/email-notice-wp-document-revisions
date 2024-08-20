@@ -1,15 +1,14 @@
 === Email Notice for WP Document Revisions ===
 Contributors: nwjames, janosver
-Tags: administration, email, e-mail, document, automatic, user, multisite
+Tags: administration, email, e-mail, document, automatic
 Requires at least: 4.9
 Requires PHP: 7.4
 Requires Plugins: wp-document-revisions
-Tested up to: 6.5.2
-Stable tag: 2.0
+Tested up to: 6.6.1
+Stable tag: 3.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-
-Add-on to WP Document Revisions. Notify your WordPress users about new documents published or create user email lists to send them notifications. Customise your e-mail notification settings
+Add-on to WP Document Revisions to notify your users about new documents published or create user email lists to send non-users notifications.
 
 == Description ==
 
@@ -86,8 +85,15 @@ In Settings -> Writing -> "Document Email Settings - Notifications" section you 
 = I'm not getting any notification e-mails, what is wrong? =
 In order to receive notification e-mails users have to go to their profile and check “Notify me by e-mail when a new post is published” checkbox in "Document Email Settings" section (or an admin has to do it for them).
 
+It will check that the WordPress User can read the Document before sending a mail, it may be just that you cannot access the document.
+
 = I would like the document attached to the e-mail (WordPress user)
 Even though the user should have access to the document via the front-end, as well, the user can choose to have the document attached to the e-mail (subject to size limitations) by checking "Also send me the document as an attachment by e-mail when a new document is published" checkbox in "Document Email Settings" section (or an admin has to do it for them).
+
+= I have a site that requires a log-on but would like to send the External Users a copy of the document attached to the notification e-mail.
+This is a convenience when the document has public read access, but is necessary if the site requires users to log on to access a document.
+
+A filter *wpdr_en_ext_force_attach* can be set to return true to force this. Individual lists can be defined to attsch the document or not.
 
 = What kind of tags I can use and for what? =
 You can customize notification e-mail template (both subject and content) In the content you can use any standard html tags as well on top of the following ones:
@@ -106,6 +112,13 @@ Yes, there are a number of these.
 These are listed and described at [filters.md](https://github.com/NeilWJames/email-notice-wp-document-revisions/blob/main/docs/filters.md).
 
 == Changelog ==
+
+= 3.0 =
+Release date: September 1, 2024
+
+* NEW: Can pause sending to selected External User Lists or individual External Users.
+* NEW: Capability delete_doc_ext_lists to delete External User Lists.
+* FIX: Activation scripts not being executed.
 
 = 2.0 =
 Release date: September 14, 2023

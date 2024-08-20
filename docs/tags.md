@@ -40,11 +40,11 @@ This will be replaced by the display name of the user who receives the e-mail fo
 
 This text will be included only if one of these emails has previously been sent for the document to the recipient. 
 
-The repeat tag can itself can use additional tags:
+The **repeat** tag can itself can use additional tags :
 
 ### %num%
 
-This will be the number of times the document has been previously e-mailed to the recipient.
+This will be the number of times the document has been previously emailed to the recipient.
 
 ### %last_date%
 
@@ -52,6 +52,6 @@ This is the last date that the document was e-mailed.
 
 ### %last_time%
 
-This is the last date and time that the document was e-mailed.
+This is the last date including time that the document was e-mailed.
 
 

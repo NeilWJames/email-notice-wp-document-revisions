@@ -67,8 +67,8 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 		);
 		parent::__construct( $args );
 
-		check_admin_referer();
 		// set the post.
+		// phpcs:disable WordPress.Security.NonceVerification
 		if ( isset( $_GET['post'] ) ) {
 			self::$post_id = sanitize_text_field( wp_unslash( $_GET['post'] ) );
 		} elseif ( isset( $_POST['post'] ) ) {
@@ -79,6 +79,7 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 				self::$post_id = $post->ID;
 			}
 		}
+		// phpcs:enable WordPress.Security.NonceVerification
 
 		// sometimes the URI used within table orderings) loses these fields.
 		$args = array(
@@ -102,6 +103,7 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 			'rec_num'   => '#',
 			'user_name' => __( 'User Name', 'wpdr-email-notice' ),
 			'email'     => __( 'E-mail Address', 'wpdr-email-notice' ),
+			'pause'     => __( 'Pause Mail', 'wpdr-email-notice' ),
 		);
 		return $columns;
 	}
@@ -134,6 +136,8 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 			case 'user_name':
 			case 'email':
 				return $item[ $column_name ];
+			case 'pause':
+				return '<input type="checkbox"' . ( 0 === $item[ $column_name ] ? '' : '  checked="checked"' ) . ' disabled></>&nbsp;';
 		}
 	}
 
@@ -146,7 +150,7 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 	 */
 	public function column_rec_num( $item ) {
 		$actions = array(
-			'edit'   => '<button onclick=\'wpdr_en_edit( "' . $item['user_name'] . '", "' . $item['email'] . '" )\'>' . __( 'Edit', 'wpdr-email-notice' ) . '</button>',
+			'edit'   => '<button onclick=\'wpdr_en_edit( "' . $item['user_name'] . '", "' . $item['email'] . '", "' . $item['pause'] . '" )\'>' . __( 'Edit', 'wpdr-email-notice' ) . '</button>',
 			'delete' => sprintf( '<button onclick="wpdr_en_delete(%s, %s)">' . __( 'Delete', 'wpdr-email-notice' ) . '</button>', self::$post_id, $item['rec_num'] ),
 		);
 
@@ -212,6 +216,12 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 			$users_rec = json_decode( $users_rec, true );
 			$rec_num   = $users_rec['rec_num'];
 			$users     = $users_rec['users'];
+			// make sure users have a pause column.
+			foreach ( $users as $key => $user ) {
+				if ( ! array_key_exists( 'pause', $user ) ) {
+					$users[ $key ]['pause'] = 0;
+				}
+			}
 			// sort the array.
 			$keys = array_column( $users, $orderby );
 			array_multisort( $keys, ( 'asc' === $order ? SORT_ASC : SORT_DESC ), $users );
