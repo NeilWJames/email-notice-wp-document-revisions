@@ -114,7 +114,7 @@ These are listed and described at [filters.md](https://github.com/NeilWJames/ema
 == Changelog ==
 
 = 3.0 =
-Release date: September 1, 2024
+Release date: August 23, 2024
 
 * NEW: Can pause sending to selected External User Lists or individual External Users.
 * NEW: Capability delete_doc_ext_lists to delete External User Lists.
