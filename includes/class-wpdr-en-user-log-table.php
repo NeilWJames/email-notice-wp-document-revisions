@@ -100,12 +100,30 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 				} else {
 					return ucwords( $item[ $column_name ] );
 				}
-			case 'id':
 			case 'time_mail_sent':
 			case 'user_email':
 			case 'status':
 				return $item[ $column_name ];
 		}
+	}
+
+	/**
+	 * Define actions for table to display extra text..
+	 *
+	 * @since 3.1
+	 * @param mixed[] $item row in List Table.
+	 * @return string[]
+	 */
+	public function column_id( $item ) {
+		if ( empty( $item['extra_text'] ) ) {
+			return $item['id'];
+		}
+		$actions = array(
+			'view' => '<button onclick="wpdr_en_extra( ' . $item['id'] . ' )">' . __( 'Extra Text', 'wpdr-email-notice' ) . '</button>&nbsp;&nbsp;' .
+					'<textarea id="extra_' . $item['id'] . '" onclick="wpdr_en_extra( ' . $item['id'] . ' )" rows="3" cols="40" style="display: none">' .
+					$item['extra_text'] . '</textarea>',
+		);
+		return sprintf( '%1$s %2$s', $item['id'], $this->row_actions( $actions, true ) );
 	}
 
 	/**
@@ -171,13 +189,16 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 				 u.display_name as user_display_name,						
 				 l.time_mail_sent as time_mail_sent,
 				 l.user_email as user_email,
-				 l.status									   
-				 FROM {$wpdb->prefix}wpdr_notification_log l,
-				 {$wpdb->prefix}posts p,
-				 {$wpdb->base_prefix}users u
-				 WHERE l.post_id=p.id
-				 AND   l.user_id=u.id
-				 AND   ( p.post_title LIKE %s OR u.display_name LIKE %s )",
+				 l.status,
+				 e.extra_text
+				 FROM {$wpdb->prefix}wpdr_notification_log l
+				 INNER JOIN {$wpdb->prefix}posts p
+				 ON l.post_id = p.ID
+				 INNER JOIN {$wpdb->base_prefix}users u
+				 ON l.user_id = u.id
+				 LEFT OUTER JOIN {$wpdb->prefix}wpdr_extra_text e
+				 ON l.extra_text_id = e.id
+				 WHERE ( p.post_title LIKE %s OR u.display_name LIKE %s )",
 				$parm,
 				$parm
 			) . " ORDER BY {$orderby} {$order}",

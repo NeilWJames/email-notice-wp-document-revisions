@@ -25,7 +25,7 @@ class WPDR_Email_Notice {
 	 *
 	 * @var string $version
 	 */
-	public static $version = '3.0.0';
+	public static $version = '3.1.0';
 
 	/**
 	 * JS has been loaded.
@@ -132,6 +132,7 @@ class WPDR_Email_Notice {
 		  time_mail_sent datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
 		  user_email varchar(100) NOT NULL,
 		  status varchar(100) NOT NULL,
+		  extra_text_id bigint(20),
 		  PRIMARY KEY  (id),
 		  UNIQUE KEY id (id),
 		  INDEX (user_id),
@@ -149,16 +150,29 @@ class WPDR_Email_Notice {
 		  user_name varchar(150) NOT NULL,
 		  user_email varchar(100) NOT NULL,
 		  status varchar(100) NOT NULL,
+		  extra_text_id bigint(20),
 		  PRIMARY KEY  (id),
 		  UNIQUE KEY id (id),
 		  INDEX (post_id, user_email),
 		  INDEX (doc_ext_list_id)
 		) $charset_collate;";
 
+		$table_name = $wpdb->prefix . 'wpdr_extra_text';
+
+		// Related post, added text.
+		$sql[] = "CREATE TABLE IF NOT EXISTS $table_name (
+		  id bigint(20) NOT NULL AUTO_INCREMENT,	  
+		  post_id bigint(20) NOT NULL,
+		  extra_text varchar(250),
+		  PRIMARY KEY  (id),
+		  UNIQUE KEY id (id),
+		  INDEX (post_id)
+		) $charset_collate;";
+
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 
-		update_option( 'wpdr_en_db_version', '2.0' );
+		update_option( 'wpdr_en_db_version', '3.0' );
 	}
 
 	/**
@@ -228,7 +242,7 @@ class WPDR_Email_Notice {
 	 */
 	public function db_version_check() {
 		$current_db_ver = get_option( 'wpdr_en_db_version' );
-		if ( '2.0' !== $current_db_ver ) {
+		if ( '3.0' !== $current_db_ver ) {
 			if ( current_user_can( 'activate_plugins' ) ) {
 				global $wp_roles;
 				if ( ! is_object( $wp_roles ) ) {
@@ -253,7 +267,7 @@ class WPDR_Email_Notice {
 				}
 			}
 		}
-		if ( '2.0' !== $current_db_ver || is_multisite() ) {
+		if ( '3.0' !== $current_db_ver || is_multisite() ) {
 			$this->install_notification_log();
 		}
 	}
@@ -499,15 +513,18 @@ class WPDR_Email_Notice {
 		// phpcs:disable WordPress.Security.EscapeOutput, WordPress.WP.I18n
 		// translators: For this group, text surroundedby % symbols (like %recipient_name%) should not be translated.
 		self::$default_content = __( 'Dear %recipient_name%,<br/><br/>', 'wpdr-email-notice' ) .
-			__( 'A new document is published. Check it out!<br/><br/><strong>%title_with_permalink%</strong><br/>%words_50%<br/>%repeat%<br/>', 'wpdr-email-notice' ) .
+			__( 'A new document is published. Check it out!<br/><br/><strong>%title_with_permalink%</strong><br/>%words_50%%extra%%repeat%<br/>', 'wpdr-email-notice' ) .
 			// translators: %s is the link address of the user's profile. Do not translate.
 			sprintf( __( '<small>In case you do not want to receive this kind of notification you can turn it off in your <a href="%s">profile</a>.</small>', 'wpdr-email-notice' ), admin_url( 'profile.php' ) ) .
 			__( '<small><br/>Also go there if you wish to change whether you will receive the document as an attachment.</small>', 'wpdr-email-notice' );
 		self::$default_exttext = __( 'Dear %recipient_name%,<br/><br/>', 'wpdr-email-notice' ) .
-			__( 'A new document is published. Check it out!<br/><br/><strong>%title_with_permalink%</strong><br/>%words_50%<br/>%repeat%<br/>', 'wpdr-email-notice' ) .
+			__( 'A new document is published. Check it out!<br/><br/><strong>%title_with_permalink%</strong><br/>%words_50%%extra%%repeat%<br/>', 'wpdr-email-notice' ) .
 			__( '<small>In case you do not want to receive this kind of notification you can reply with the message "Unsubscribe".</small>', 'wpdr-email-notice' );
 		self::$default_repeat  = __( '<p>This document has previously been sent to you %num% time(s), with the latest sent on %last_date%.</p>', 'wpdr-email-notice' );
 		// phpcs:enable WordPress.Security.EscapeOutput, WordPress.WP.I18n
+		self::$default_content = wp_kses_post( self::$default_content );
+		self::$default_exttext = wp_kses_post( self::$default_exttext );
+		self::$default_repeat  = wp_kses_post( self::$default_repeat );
 	}
 
 	/**
@@ -525,6 +542,7 @@ class WPDR_Email_Notice {
 		}
 		if ( 'document' === $post->post_type ) {
 			$script      = 'wpdr-email-notice';
+			$css         = 'wpdr-en-notice';
 			$nonce_array = array(
 				'wpdr_en_nonce'    => wp_create_nonce( 'wpdr_en_nonce' ),
 				'ajaxurl'          => admin_url( 'admin-ajax.php' ),
@@ -539,6 +557,7 @@ class WPDR_Email_Notice {
 				'for_details'      => __( 'for details.', 'wpdr-email-notice' ),
 			);
 		} elseif ( 'doc_ext_list' === $post->post_type ) {
+			$css         = 'wpdr-en-mail';
 			$script      = 'wpdr-en-address';
 			$nonce_array = array(
 				'wpdr_en_nonce' => wp_create_nonce( 'wpdr_en_nonce' ),
@@ -546,16 +565,6 @@ class WPDR_Email_Notice {
 				'user'          => get_current_user_id(),
 				'add_address'   => __( 'Add Address to List', 'wpdr-email-notice' ),
 				'edit_address'  => __( 'Edit existing Address', 'wpdr-email-notice' ),
-			);
-
-			// load css as well.
-			$suffix = ( WP_DEBUG ) ? '' : '.min';
-			$path   = 'css/wpdr-en-mail' . $suffix . '.css';
-			wp_enqueue_style(
-				'wpdr-en-mail-style',
-				plugin_dir_url( __DIR__ ) . $path,
-				array(),
-				WP_DEBUG ? filemtime( plugin_dir_path( __DIR__ ) . $path ) : self::$version,
 			);
 		} else {
 			return;
@@ -578,6 +587,16 @@ class WPDR_Email_Notice {
 		// Improve security.
 		wp_localize_script( 'wpdr_en_script', 'wpdr_en_obj', $nonce_array );
 		wp_enqueue_script( 'wpdr_en_script' );
+
+		// load css as well.
+		$suffix = ( WP_DEBUG ) ? '' : '.min';
+		$path   = 'css/' . $css . $suffix . '.css';
+		wp_enqueue_style(
+			'wpdr_en_css',
+			plugin_dir_url( __DIR__ ) . $path,
+			array(),
+			WP_DEBUG ? filemtime( plugin_dir_path( __DIR__ ) . $path ) : self::$version,
+		);
 		// note loaded.
 		self::$js_loaded = true;
 	}
@@ -652,6 +671,7 @@ class WPDR_Email_Notice {
 		echo '<strong>%last_date%</strong> ' . esc_html__( 'means the last date that the document was e-mailed.', 'wpdr-email-notice' ) . '<br/>';
 		echo '<strong>%last_time%</strong> ' . esc_html__( 'means the last date incuding time that the document was e-mailed.', 'wpdr-email-notice' ) . '<br/>';
 		echo '<br/>';
+		echo '<strong>%extra%</strong> ' . esc_html__( 'means output an optional extra phrase entered at the time of mailing.', 'wpdr-email-notice' ) . '<br/>';
 	}
 
 	/**
@@ -695,7 +715,7 @@ class WPDR_Email_Notice {
 		echo '<input type="checkbox" id="Chkbx_Password" name="wpdr_en_set_notification_about[Chkbx_Password]" value="Password"' . esc_attr( $password_checked ) . '>' . esc_html__( 'Password', 'wpdr-email-notice' ) . '</input> ' . esc_html__( 'protected posts (password will', 'wpdr-email-notice' ) . ' <strong>' . esc_html__( 'NOT', 'wpdr-email-notice' ) . '</strong> ' . esc_html__( 'be included in notification e-mail)', 'wpdr-email-notice' ) . '<br/>';
 		echo '<input type="checkbox" id="Chkbx_Private" name="wpdr_en_set_notification_about[Chkbx_Private]" value="Private"' . esc_attr( $private_checked ) . '>' . esc_html__( 'Private posts', 'wpdr-email-notice' ) . '</input> ';
 		echo '<br />' . esc_html__( 'Notifications are sent only to those Internal users who can read the document', 'wpdr-email-notice' );
-		echo '<br />' . esc_html__( 'Notifications can be sent to External users for Public documents.', 'wpdr-email-notice' );
+		echo '<br />' . esc_html__( 'Notifications can only be sent to External users for Public documents.', 'wpdr-email-notice' );
 	}
 
 	/**
@@ -716,9 +736,14 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function set_content() {
+		$text  = wp_kses_post( get_option( 'wpdr_en_set_content' ) );
+		$place = str_replace( '"', '&quot;', self::$default_content );
+		if ( $text === self::$default_content ) {
+			$text = $place;
+		}
 		// phpcs:disable WordPress.Security.EscapeOutput
 		echo '<textarea id="wpdr_en_set_content" name="wpdr_en_set_content" cols="80" rows="8" 
-		placeholder = "' . str_replace( '"', '&quot;', self::$default_content ) . '">' . wp_kses_post( get_option( 'wpdr_en_set_content' ) ) . '</textarea>';
+		placeholder = "' . $place . '">' . $text . '</textarea>';
 		// phpcs:enable WordPress.Security.EscapeOutput
 		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification e-mails more personalized.', 'wpdr-email-notice' );
 	}
@@ -730,9 +755,14 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function set_exttext() {
+		$text  = wp_kses_post( get_option( 'wpdr_en_set_exttext' ) );
+		$place = str_replace( '"', '&quot;', self::$default_exttext );
+		if ( $text === self::$default_exttext ) {
+			$text = $place;
+		}
 		// phpcs:disable WordPress.Security.EscapeOutput
 		echo '<textarea id="wpdr_en_set_content" name="wpdr_en_set_exttext" cols="80" rows="7" 
-		placeholder = "' . str_replace( '"', '&quot;', self::$default_exttext ) . '">' . wp_kses_post( get_option( 'wpdr_en_set_exttext' ) ) . '</textarea>';
+		placeholder = "' . $place . '">' . $text . '</textarea>';
 		// phpcs:enable WordPress.Security.EscapeOutput
 		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification e-mails more personalized.', 'wpdr-email-notice' );
 	}
@@ -776,6 +806,30 @@ class WPDR_Email_Notice {
 	 */
 	public function purge_notification_log() {
 		echo 'Purge log every <input type="number" id="wpdr_en_set_notification_log" name="wpdr_en_set_notification_log" value="' . esc_html( get_option( 'wpdr_en_set_notification_log' ) ) . '" min="0" max="999" size="3"></input> day(s). Zero or empty value means no purge needed.<br>';
+	}
+
+	/**
+	 * Retrieve the text for a mailing.
+	 *
+	 * @since 3.1
+	 * @param int $type Text to retrieve (-1 = internal, 0 = External, n = List Id).
+	 * @return string
+	 */
+	public function get_content( $type ) {
+		if ( -1 === $type ) {
+			$text = get_option( 'wpdr_en_set_content' );
+			if ( empty( $text ) ) {
+				$text = self::$default_content;
+			}
+		} elseif ( 0 === $type ) {
+			$text = get_option( 'wpdr_en_set_exttext' );
+			if ( empty( $text ) ) {
+				$text = self::$default_exttext;
+			}
+		} else {
+			$text = 'Not yet supported';
+		}
+		return $text;
 	}
 
 	/**
@@ -934,6 +988,7 @@ class WPDR_Email_Notice {
 			$notification_sent = (string) get_post_meta( $document_id, 'wpdr_en_notification_sent', true );
 			$recipients        = $this->prepare_mail_recipients( $document_id );
 			$hasrecipient      = ! empty( $recipients );
+			echo '<div class="wpdr-en-add-text"><div>';
 			if ( ( ! empty( $notification_sent ) || '1' === $notification_sent ) && in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) && $hasrecipient ) {
 				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Re-send notification email(s)', 'wpdr-email-notice' ) . '" />';
 			} elseif ( in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) && ( empty( $notification_sent ) || '0' === $notification_sent ) && $hasrecipient ) {
@@ -943,10 +998,19 @@ class WPDR_Email_Notice {
 			} elseif ( ! empty( $notification_sent ) || '1' === $notification_sent ) {
 				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Re-send notification email(s)', 'wpdr-email-notice' ) . '" disabled/>';
 			}
+			echo '</div><div style="margin-left: 5px;"><label>';
+			// Is extra text available for internal.
+			if ( str_contains( $this->get_content( -1 ), '%extra%' ) ) {
+				echo '<input type="checkbox" id="wpdr-en-int-extra" value="0" disabled />';
+				$extra = true;
+			} else {
+				echo '<input type="checkbox" id="wpdr-en-int-extra" value="0" class="wpdr_en_not_use" disabled />';
+				$extra = false;
+			}
+			echo esc_html__( 'Add Extra text', 'wpdr-email-notice' ) . '</label></div></div>';
 		}
 		// Pass document id to jQuery.
 		echo '<div id="wraphidden">';
-		echo '<input id="wpdr-en-notification-postid" type="hidden" value="' . esc_attr( $document_id ) . '">';
 		echo '<span id="dProgress" style="display:none; margin-top: 5px;" >';
 		echo '<img id="spnSendNotifications" src="' . esc_url( admin_url() ) . '/images/wpspin_light.gif">';
 		echo '</span>';
@@ -973,6 +1037,7 @@ class WPDR_Email_Notice {
 		*/
 		// phpcs:enable
 		echo '<span id="wpdr-en-message" style="display: none; margin-left: 5px;">' . esc_html__( 'Sending email notifications...', 'wpdr-email-notice' ) . '</span>';
+		echo '</span></div>';
 		// external users.
 		echo '<br />';
 		$ext_notice_sent = (string) get_post_meta( $document_id, 'wpdr_en_ext_notice_sent', true );
@@ -981,7 +1046,17 @@ class WPDR_Email_Notice {
 		$hasextrecipient = ! empty( $ext_lists );
 		$read            = ( current_user_can( 'edit_doc_ext_lists' ) ? '' : ' readonly' );
 		if ( ( ! empty( $ext_notice_sent ) || '1' === $ext_notice_sent ) && 'Public' === $pstatus && $hasextrecipient ) {
+			echo '<div class="wpdr-en-add-text"><div>';
 			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'wpdr-email-notice' ) . '" />';
+			// Is extra text available for external.
+			echo '</div><div style="margin-left: 5px;"><label>';
+			if ( str_contains( $this->get_content( 0 ), '%extra%' ) ) {
+				echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" disabled />';
+				$extra = true;
+			} else {
+				echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" class="wpdr_en_not_use" disabled />';
+			}
+			echo esc_html__( 'Add Extra text', 'wpdr-email-notice' ) . '</label></div></div>';
 			// output the list(s) available (text box readonly if cannot edit the lists).
 			foreach ( $ext_lists as $list ) {
 				echo '<br /><label>&nbsp;&nbsp;';
@@ -989,7 +1064,18 @@ class WPDR_Email_Notice {
 				echo '</label>';
 			}
 		} elseif ( 'Public' === $pstatus && ( empty( $ext_notice_sent ) || '0' === $ext_notice_sent ) && $hasextrecipient ) {
+			echo '<div class="wpdr-en-add-text"><div>';
 			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Send external list email(s)', 'wpdr-email-notice' ) . '"/>';
+			// Is extra text available for external.
+			echo '</div><div style="margin-left: 5px;"><label>';
+			if ( str_contains( $this->get_content( 0 ), '%extra%' ) ) {
+				echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" disabled />';
+				$extra = true;
+			} else {
+				echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" class="wpdr_en_not_use" disabled />';
+			}
+			echo esc_html__( 'Add Extra text', 'wpdr-email-notice' ) . '</label></div></div>';
+			// output the list(s) available (text box readonly if cannot edit the lists).
 			foreach ( $ext_lists as $list ) {
 				echo '<br /><label>&nbsp;&nbsp;';
 				echo '<input name="wpdr-en-ext-list" type="checkbox" value="' . esc_attr( $list['list_id'] ) . esc_attr( $read ) . '" checked="checked">  ' . esc_attr( $list['list_title'] );
@@ -1000,8 +1086,11 @@ class WPDR_Email_Notice {
 		} elseif ( ! empty( $ext_notice_sent ) || '1' === $ext_notice_sent ) {
 			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'wpdr-email-notice' ) . '" disabled/>';
 		}
-		echo '</span>';
-		echo '</div>';
+		echo '<br /><p>' . esc_html__( 'Optional Extra text', 'wpdr-email-notice' ) . '</p><fieldset>';
+		echo '<textarea rows="4" cols="30" name="wpdr-en-extra" id="wpdr-en-extra"' . ( $extra ? '' : ' disabled' ) . '></textarea><<br />';
+		echo '<label class="screen-reader-text" for="extra">' . esc_html__( 'Optional Extra text', 'wpdr-email-notice' ) . '/label>';
+		esc_html__( 'Enter any extra text for this specific mailing and click Add Extra text.', 'wpdr-email-notice' );
+		echo '</fieldset>';
 	}
 
 	/* Posts ->  WPDR EN User Notification log */
@@ -1323,6 +1412,31 @@ class WPDR_Email_Notice {
 	}
 
 	/**
+	 * Output the log js.
+	 *
+	 * @since 3.1
+	 * @return void
+	 */
+	private function enqueue_log_js() {
+		// process log script.
+		$suffix = ( WP_DEBUG ) ? '' : '.min';
+		$path   = 'js/wpdr-en-log' . $suffix . '.js';
+		$versn  = ( WP_DEBUG ) ? filemtime( plugin_dir_path( __DIR__ ) . $path ) : self::$version;
+		wp_register_script(
+			'wpdr_en_log',
+			plugin_dir_url( __DIR__ ) . $path,
+			array( 'jquery' ),
+			$versn,
+			array(
+				'in_footer' => true,
+				'strategy'  => 'defer',
+			)
+		);
+		// Improve security.
+		wp_enqueue_script( 'wpdr_en_log' );
+	}
+
+	/**
 	 * Output the log itself.
 	 *
 	 * @since 1.0
@@ -1333,6 +1447,7 @@ class WPDR_Email_Notice {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'wpdr-email-notice' ) );
 		}
 
+		$this->enqueue_log_js();
 		require_once __DIR__ . '/class-wpdr-en-user-log-table.php';
 
 		// #TODO: add filter/search.
@@ -1363,6 +1478,7 @@ class WPDR_Email_Notice {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'wpdr-email-notice' ) );
 		}
 
+		$this->enqueue_log_js();
 		require_once __DIR__ . '/class-wpdr-en-ext-log-table.php';
 
 		// #TODO: add filter/search.
@@ -1662,23 +1778,21 @@ class WPDR_Email_Notice {
 	 * @param int    $count   Count.
 	 * @return string
 	 */
-	public function substring_index( $subject, $delim, $count ) {
+	private function substring_index( $subject, $delim, $count ) {
 		if ( $count < 0 ) {
 			return implode( $delim, array_slice( explode( $delim, $subject ), $count ) );
 		} else {
 			return implode( $delim, array_slice( explode( $delim, $subject ), 0, $count ) );
 		}
 	}
-
 	/**
-	 * It gets the necessary number of words from the post content.
+	 * Gets the document content as straight words (tags stripped).
 	 *
-	 * @since 1.0
+	 * @since 3.1
 	 * @param int $document_id     Post ID.
-	 * @param int $number_of_words Word count.
 	 * @return string
 	 */
-	public function get_words_from_post( $document_id, $number_of_words ) {
+	private function get_doc_words( $document_id ) {
 		$content = get_post_field( 'post_content', $document_id );
 		if ( is_numeric( $content ) ) {
 			return '';
@@ -1686,25 +1800,17 @@ class WPDR_Email_Notice {
 		// remove document attachment comment.
 		$content = preg_replace( '/<!-- WPDR \s*(\d+) -->/', '', $content );
 		$content = preg_replace( '/\[(.*)/', '', preg_replace( '/\[(.*)\]/', '', preg_replace( '/\](.*)\[/', '][', wp_strip_all_tags( $content ) ) ) );
-		$content = $this->substring_index( $content, ' ', $number_of_words );
 		return $content;
 	}
 
 	/**
 	 * Number of words in a post.
 	 *
-	 * @since 1.0
-	 * @param int $document_id Document ID.
+	 * @since 3.1
+	 * @param string $content Document content (stripped tags).
 	 * @return int
 	 */
-	public function get_post_word_count( $document_id ) {
-		$content = get_post_field( 'post_content', $document_id );
-		if ( is_numeric( $content ) ) {
-			return 0;
-		}
-		// remove document attachment comment.
-		$content = preg_replace( '/<!-- WPDR \s*(\d+) -->/', '', $content );
-		$content = preg_replace( '/\[(.*)/', '', preg_replace( '/\[(.*)\]/', '', preg_replace( '/\](.*)\[/', '][', wp_strip_all_tags( $content ) ) ) );
+	private function get_doc_word_count( $content ) {
 		return count( explode( ' ', $content ) );
 	}
 
@@ -1718,6 +1824,7 @@ class WPDR_Email_Notice {
 	%words_n% means the first n (must be an integer number) number of word(s) extracted from the post
 	%recipient_name% means display name of the user who receives the email
 	%repeat% means output a sentence if the document has been previously e-mailed
+	%extra% means output a mailing specific set of extra text.
 	*/
 
 	/**
@@ -1728,10 +1835,12 @@ class WPDR_Email_Notice {
 	 * @param int        $post_id    Post ID.
 	 * @param int|string $user_id    User ID.or external user display name.
 	 * @param string     $user_email User_mail address (only on external mails).
+	 * @param string     $extra      Optional text to replace %extra%.
 	 * @return string
 	 */
-	private function resolve_tags( $text, $post_id, $user_id, $user_email = null ) {
+	private function resolve_tags( $text, $post_id, $user_id, $user_email = null, $extra ) {
 		$text = nl2br( $text );     // to keep line breaks.
+		$text = str_replace( '%extra%', $extra, $text );
 		$text = str_replace( '%title%', get_the_title( $post_id ), $text );
 		$text = str_replace( '%permalink%', '<a href="' . get_permalink( $post_id ) . '">' . get_permalink( $post_id ) . '</a>', $text );
 		$text = str_replace( '%title_with_permalink%', '<a href="' . get_permalink( $post_id ) . '">' . get_the_title( $post_id ) . '</a>', $text );
@@ -1745,11 +1854,15 @@ class WPDR_Email_Notice {
 				$tag = $value[0];
 				$now = intval( substr( $tag, 7, strlen( $tag ) - 8 ) ); // number of words needed.
 				if ( $now > 0 ) {
-					// Check if content is longer than number of words needed and if so, add three dots.
-					if ( $this->get_post_word_count( $post_id ) <= $now ) {
-						$text = str_replace( $tag, '<blockquote><em>' . $this->get_words_from_post( $post_id, $now ) . '</em></blockquote>', $text );
+					$content = $this->get_doc_words( $post_id );
+					if ( empty( $content ) ) {
+						// Nothing to insert, just remove tag.
+						$text = str_replace( $tag, '', $text );
+					} elseif ( $this->get_doc_word_count( $content ) <= $now ) {
+						// Check if content is longer than number of words needed and if so, add three dots.
+						$text = str_replace( $tag, '<blockquote><em>' . $content . '</em></blockquote>', $text );
 					} else {
-						$text = str_replace( $tag, '<blockquote><em>' . $this->get_words_from_post( $post_id, $now ) . '...</em></blockquote>', $text );
+						$text = str_replace( $tag, '<blockquote><em>' . $this->substring_index( $content, ' ', $now ) . '...</em></blockquote>', $text );
 					}
 				}
 			}
@@ -1827,7 +1940,7 @@ class WPDR_Email_Notice {
 	 * @param bool  $all     Full or simply to know of there are users.
 	 * @return object[]array
 	 */
-	public function prepare_mail_ext_users( $post_id, $lists, $all = true ) {
+	public function prepare_mail_ext_users( $post_id, $lists, $all ) {
 		$result  = array();
 		$pstatus = $this->post_status( $post_id );
 
@@ -1984,7 +2097,8 @@ class WPDR_Email_Notice {
 		if ( empty( $template ) ) {
 			$template = __( 'New document: ', 'wpdr-email-notice' ) . get_the_title( $post_id );
 		}
-		$subject = wp_strip_all_tags( $this->resolve_tags( $template, $post_id, $user_id, $user_email ) );
+		// %extra% is not supported herev as makes no sense.
+		$subject = wp_strip_all_tags( $this->resolve_tags( $template, $post_id, $user_id, $user_email, '' ) );
 		/**
 		 * Filter to ensure that the mail subject does not end in a number.
 		 *
@@ -2011,27 +2125,53 @@ class WPDR_Email_Notice {
 	 * @param int    $post_id    Post ID.
 	 * @param int    $user_id    User ID.
 	 * @param string $user_email User_mail address (only on external mails).
+	 * @param string $extra      Text string to be matched with %extra%.
 	 * @return string
 	 */
-	private function prepare_mail_content( $post_id, $user_id, $user_email = null ) {
-		$template = get_option( ( is_null( $user_email ) ? 'wpdr_en_set_content' : 'wpdr_en_set_exttext' ) );
-		// Apply default template if no content setting present.
-		if ( empty( $template ) ) {
-			$template = ( is_null( $user_email ) ? self::$default_content : self::$default_exttext );
-		}
-		$content = '<html><body>' . $this->resolve_tags( $template, $post_id, $user_id, $user_email ) . '</body></html>';
+	private function prepare_mail_content( $post_id, $user_id, $user_email = null, $extra ) {
+		$template = $this->get_content( ( is_null( $user_email ) ? -1 : 0 ) );
+		$content  = '<html><body>' . $this->resolve_tags( $template, $post_id, $user_id, $user_email, $extra ) . '</body></html>';
 
 		return $content;
+	}
+
+	/**
+	 * Insert extra .
+	 *
+	 * @since 1.0
+	 * @param int    $post_id Post ID.
+	 * @param string $extra   Text string to be matched with %extra%.
+	 * @return int||null
+	 */
+	private function insert_extra( $post_id, $extra = null ) {
+		if ( empty( $extra ) ) {
+			return null;
+		}
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->insert(
+			"{$wpdb->prefix}wpdr_extra_text",
+			array(
+				'post_id'    => $post_id,
+				'extra_text' => $extra,
+			),
+			array(
+				'%d',
+				'%s',
+			),
+		);
+		return $wpdb->insert_id;
 	}
 
 	/**
 	 * Send out emails.
 	 *
 	 * @since 1.0
-	 * @param int $post_id Post ID.
+	 * @param int    $post_id Post ID.
+	 * @param string $extra   Text string to be matched with %extra%.
 	 * @return int[]
 	 */
-	private function send_mail( $post_id ) {
+	private function send_mail( $post_id, $extra = null ) {
 		$logged_count        = 0;
 		$sent_count          = 0;
 		$sending_error_count = 0;
@@ -2043,17 +2183,21 @@ class WPDR_Email_Notice {
 
 		$recipients = $this->prepare_mail_recipients( $post_id );
 		if ( empty( $recipients ) ) {
-			return $result;}
+			return $result;
+		}
+
+		// insert extra into its table.
+		$extra_id = $this->insert_extra( $extra );
 
 		// post considered no protected if field is empty.
 		$no_password = empty( get_post_field( 'post_password', $post_id ) );
 		foreach ( $recipients as $value ) {
 			// Make sure accented characters sent out correctly as well.
 			$mail_subject = mb_encode_mimeheader( $this->prepare_mail_subject( $post_id, $value->user_id ), 'UTF-8' );
-			$mail_content = $this->prepare_mail_content( $post_id, $value->user_id );
+			$mail_content = $this->prepare_mail_content( $post_id, $value->user_id, null, $extra );
 			// if there is no subject or content then do not send mail.
 			if ( empty( $mail_subject ) || empty( $mail_content ) ) {
-				if ( $this->log_mail_sent( $value->user_id, $post_id, $value->user_email, __( 'Empty mail subject and/or content.', 'wpdr-email-notice' ) ) ) {
+				if ( $this->log_mail_sent( $value->user_id, $post_id, $value->user_email, __( 'Empty mail subject and/or content.', 'wpdr-email-notice' ), $extra_id ) ) {
 					++$sending_error_count;
 					++$logged_count;
 				} else {
@@ -2112,7 +2256,7 @@ class WPDR_Email_Notice {
 					$this->mail_delay();
 				}
 				// Add log entry.
-				if ( $this->log_mail_sent( $value->user_id, $post_id, $value->user_email, $status_text ) ) {
+				if ( $this->log_mail_sent( $value->user_id, $post_id, $value->user_email, $status_text, $extra_id ) ) {
 					++$logged_count;
 				}
 			}
@@ -2135,11 +2279,12 @@ class WPDR_Email_Notice {
 	 * Send out external emails.
 	 *
 	 * @since 2.0
-	 * @param int   $post_id Post ID.
-	 * @param int[] $lists   Array of Ext_lists to process. (Empty means all matches).
+	 * @param int    $post_id Post ID.
+	 * @param int[]  $lists   Array of Ext_lists to process. (Empty means all matches).
+	 * @param string $extra   Text string to be matched with %extra%.
 	 * @return int[]
 	 */
-	private function send_ext_mail( $post_id, $lists ) {
+	private function send_ext_mail( $post_id, $lists, $extra ) {
 		$logged_count        = 0;
 		$sent_count          = 0;
 		$sending_error_count = 0;
@@ -2149,21 +2294,25 @@ class WPDR_Email_Notice {
 			'sending_error_count' => $sending_error_count,
 		);
 
-		$recipients = $this->prepare_mail_ext_users( $post_id, $lists );
+		$recipients = $this->prepare_mail_ext_users( $post_id, $lists, true );
 
 		if ( empty( $recipients ) ) {
 			return $result;
 		}
+
+		// insert extra into its table.
+		$extra_id = $this->insert_extra( $post_id, $extra );
 
 		// post considered no protected if field is empty.
 		$no_password = empty( get_post_field( 'post_password', $post_id ) );
 		foreach ( $recipients as $value ) {
 			// Make sure accented characters sent out correctly as well.
 			$mail_subject = mb_encode_mimeheader( $this->prepare_mail_subject( $post_id, $value->user_name, $value->user_email ), 'UTF-8' );
-			$mail_content = $this->prepare_mail_content( $post_id, $value->user_name, $value->user_email );
+			$mail_content = $this->prepare_mail_content( $post_id, $value->user_name, $value->user_email, $extra );
 			// if there is no subject or content then do not send mail.
 			if ( empty( $mail_subject ) || empty( $mail_content ) ) {
-				if ( $this->log_mail_sent( $value->user_name, $post_id, $value->user_email, __( 'Empty mail subject and/or content.', 'wpdr-email-notice' ), $value->list_id ) ) {
+				$status = __( 'Empty mail subject and/or content.', 'wpdr-email-notice' );
+				if ( $this->log_mail_sent( $value->user_name, $post_id, $value->user_email, $status, $extra_id, $value->list_id ) ) {
 					++$sending_error_count;
 					++$logged_count;
 				} else {
@@ -2223,7 +2372,7 @@ class WPDR_Email_Notice {
 					$this->mail_delay();
 				}
 				// Add log entry.
-				if ( $this->log_mail_sent( $value->user_name, $post_id, $value->user_email, $status_text, $value->list_id ) ) {
+				if ( $this->log_mail_sent( $value->user_name, $post_id, $value->user_email, $status_text, $extra_id, $value->list_id ) ) {
 					++$logged_count;
 				}
 			}
@@ -2268,10 +2417,11 @@ class WPDR_Email_Notice {
 	 * @param int        $post_id    Post ID.
 	 * @param string     $user_email User email address.
 	 * @param string     $status     Status text.
+	 * @param int||null  $extra_id   Id of extra text string in DB (or nulll).
 	 * @param int        $list_id    post_id of list for external mail.
 	 * @return string
 	 */
-	public function log_mail_sent( $user_id, $post_id, $user_email, $status, $list_id = null ) {
+	public function log_mail_sent( $user_id, $post_id, $user_email, $status, $extra_id, $list_id = null ) {
 		$result = false;
 		global $wpdb;
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
@@ -2283,7 +2433,7 @@ class WPDR_Email_Notice {
 					'post_id'        => $post_id,
 					'time_mail_sent' => current_time( 'mysql' ),
 					'user_email'     => $user_email,
-					'status'         => $status,
+					'extra_text_id'  => $extra_id,
 				)
 			);
 		} else {
@@ -2296,6 +2446,7 @@ class WPDR_Email_Notice {
 					'user_name'       => $user_id,
 					'user_email'      => $user_email,
 					'status'          => $status,
+					'extra_text_id'   => $extra_id,
 				)
 			);
 		}
@@ -2316,6 +2467,7 @@ class WPDR_Email_Notice {
 	 */
 	private function resolve_repeat( $user_id, $post_id, $user_email = null ) {
 		global $wpdb;
+		// Ignore test mails in log.
 		$test = __( 'Test', 'wpdr-email-notice' ) . ' %';
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		if ( is_null( $user_email ) ) {
@@ -2406,12 +2558,13 @@ class WPDR_Email_Notice {
 	 * Create Notification result set.
 	 *
 	 * @since 1.0
-	 * @param int $post_id Post ID.
+	 * @param int    $post_id Post ID.
+	 * @param string $extra   Text string to be matched with %extra%.
 	 * @return string[]
 	 */
-	public function notify( $post_id ) {
+	public function notify( $post_id, $extra ) {
 		$result              = array();
-		$mails               = $this->send_mail( $post_id );
+		$mails               = $this->send_mail( $post_id, $extra );
 		$logged_count        = intval( $mails['logged_count'] );
 		$sent_count          = intval( $mails['sent_count'] );
 		$sending_error_count = intval( $mails['sending_error_count'] );
@@ -2491,13 +2644,14 @@ class WPDR_Email_Notice {
 	 * Create External Notice result set.
 	 *
 	 * @since 2.0
-	 * @param int   $post_id Post ID.
-	 * @param int[] $lists   Array of Ext_lists to process. (Empty means all matches).
+	 * @param int    $post_id Post ID.
+	 * @param int[]  $lists   Array of Ext_lists to process. (Empty means all matches).
+	 * @param string $extra   Text string to be matched with %extra%.
 	 * @return string[]
 	 */
-	public function ext_notice( $post_id, $lists ) {
+	public function ext_notice( $post_id, $lists, $extra ) {
 		$result              = array();
-		$mails               = $this->send_ext_mail( $post_id, $lists );
+		$mails               = $this->send_ext_mail( $post_id, $lists, $extra );
 		$logged_count        = intval( $mails['logged_count'] );
 		$sent_count          = intval( $mails['sent_count'] );
 		$sending_error_count = intval( $mails['sending_error_count'] );
@@ -2596,7 +2750,9 @@ class WPDR_Email_Notice {
 		$result = array();
 		if ( isset( $_POST['post_id'] ) ) {
 			$post_id = sanitize_text_field( wp_unslash( $_POST['post_id'] ) );
-			$result  = $this->notify( $post_id );
+			$extra   = sanitize_text_field( wp_unslash( $_POST['extra'] ) ); // phpcs:ignore
+			$extra   = wp_kses_post( $extra );
+			$result  = $this->notify( $post_id, $extra );
 		} else {
 			// Post id was not available.
 			$result = array(
@@ -2640,7 +2796,10 @@ class WPDR_Email_Notice {
 			} else {
 				$lists = array();
 			}
-			$result = $this->ext_notice( $post_id, $lists );
+			// Get the extra text (if exists).
+			$extra = ( isset( $_POST['extra'] ) ? wp_kses_post( wp_unslash( $_POST['extra'] ) ) : '' );
+
+			$result = $this->ext_notice( $post_id, $lists, $extra );
 		} else {
 			// Post id was not available.
 			$result = array(
@@ -2687,7 +2846,8 @@ class WPDR_Email_Notice {
 			$message = null;
 			$result  = array();
 			add_post_meta( $post_id, 'wpdr_en_notification_sent', '0', true );
-			$result = $this->notify( $post_id );
+			// No extra text possible here.
+			$result = $this->notify( $post_id, '' );
 
 			if ( $result['error'] ) {
 				// Error.

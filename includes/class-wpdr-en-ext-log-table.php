@@ -99,12 +99,30 @@ class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 				}
 			case 'user_name':
 				return ucwords( $item[ $column_name ] );
-			case 'id':
 			case 'time_mail_sent':
 			case 'user_email':
 			case 'status':
 				return $item[ $column_name ];
 		}
+	}
+
+	/**
+	 * Define actions for table to display extra text..
+	 *
+	 * @since 3.1
+	 * @param mixed[] $item row in List Table.
+	 * @return string[]
+	 */
+	public function column_id( $item ) {
+		if ( empty( $item['extra_text'] ) ) {
+			return $item['id'];
+		}
+		$actions = array(
+			'view' => '<button onclick="wpdr_en_extra( ' . $item['id'] . ' )">' . __( 'Extra Text', 'wpdr-email-notice' ) . '</button>&nbsp;&nbsp;' .
+					'<textarea id="extra_' . $item['id'] . '" onclick="wpdr_en_extra( ' . $item['id'] . ' )" rows="3" cols="40" style="display: none">' .
+					$item['extra_text'] . '</textarea>',
+		);
+		return sprintf( '%1$s %2$s', $item['id'], $this->row_actions( $actions, true ) );
 	}
 
 	/**
@@ -167,12 +185,15 @@ class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 				l.user_name as user_name,						
 				l.time_mail_sent as time_mail_sent,
 				l.user_email as user_email,
-				l.status									   
-				FROM {$wpdb->prefix}wpdr_ext_notice_log l,
-				{$wpdb->prefix}posts p,
-				{$wpdb->prefix}posts t
-				WHERE l.post_id = p.ID
-				AND   l.doc_ext_list_id = t.ID
+				l.status,
+				(SELECT e.extra_text FROM {$wpdb->prefix}wpdr_extra_text e
+				 WHERE e.id = l.extra_text_id) as extra_text
+				FROM {$wpdb->prefix}wpdr_ext_notice_log l
+				INNER JOIN {$wpdb->prefix}posts p
+				ON l.post_id = p.ID
+				INNER JOIN {$wpdb->prefix}posts t
+				ON l.doc_ext_list_id = t.ID
+				WHERE 1=1
 				{$search}
 				ORDER BY {$orderby} {$order}";
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching

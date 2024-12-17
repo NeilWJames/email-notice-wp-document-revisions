@@ -1,6 +1,6 @@
 /*
 // Scripts for WPDR Custom Email Settings
-// @version: 3.0
+// @version: 3.1
 */
 document.addEventListener('DOMContentLoaded', function() {
 	/************************************************************************************************************/
@@ -29,9 +29,18 @@ document.addEventListener('DOMContentLoaded', function() {
 			})
 		;
 
-		//Get the post id from hidden input
-		var postid = document.getElementById('wpdr-en-notification-postid').value;			
+		//Get the post id from post hidden input
+		var postid = document.getElementById('post_ID').value;
 		
+		// Get extra text
+		var extra = document.getElementById('wpdr-en-extra').value;
+		if ( ! document.getElementById('wpdr-en-int-extra').checked ) {
+			extra = '';
+		};
+		if ( extra.length > 0 ) {
+			extra = '<br/>' + extra;
+		}
+
 		//Send e-mails
 		jQuery.ajax({
 			type     : 'POST',
@@ -40,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			data     : {
 				 action	       : 'wpdr_en_send_notification_manual',
 				 post_id       : postid,
+				 extra         : extra,
 				 wpdr_en_nonce : wpdr_en_obj.wpdr_en_nonce
 			},
 			success  : function(response) {
@@ -93,8 +103,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			})
 		;
 
-		//Get the post id from hidden input
-		var postid = document.getElementById('wpdr-en-notification-postid').value;
+		//Get the post id from post hidden input
+		var postid = document.getElementById('post_ID').value;
 
 		// Get the lists.Return empty array when all wanted, otherwise the array of wanted.
 		// Note. A valid empty list is not allowed.
@@ -106,6 +116,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		}
 
+		// Get extra text
+		var extra = document.getElementById('wpdr-en-extra').value;
+		if ( ! document.getElementById('wpdr-en-ext-extra').checked ) {
+			extra = '';
+		};
+		if ( extra.length > 0 ) {
+			extra = '<br/>' + extra;
+		}
+
 		//Send e-mails
 		jQuery.ajax({
 			type     : 'POST',
@@ -115,6 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				 action	       : 'wpdr_en_send_ext_notice_manual',
 				 post_id       : postid,
 				 lists         : olist,
+				 extra         : extra,
 				 wpdr_en_nonce : wpdr_en_obj.wpdr_en_nonce
 			},
 			success  : function(response) {
@@ -155,5 +175,33 @@ document.addEventListener('DOMContentLoaded', function() {
 			document.getElementById("wpdr-en-ext-note").disabled = ( document.querySelectorAll("input[name^='wpdr-en-ext-list']:checked").length === 0 );
 		});
 	}
-	
+
+	// This is fireable only when one or other mail send button is not disabled.
+	document.getElementById("wpdr-en-extra").addEventListener('input', event => {
+		// The target is the textarea.
+		const mty_text = ( 0 === event.target.value.length );
+		const int_butt = document.getElementById("wpdr-en-notify").disabled;
+		const ext_butt = document.getElementById("wpdr-en-ext-note").disabled;
+		if ( ! int_butt ) {
+			const int_add = document.getElementById("wpdr-en-int-extra");
+			//check that it is active.
+			if ( ! int_add.classList.contains("wpdr_en_not_use") ) {
+				int_add.disabled = mty_text;
+				if ( mty_text ) {
+					int_add.checked = false;
+				}
+			}
+		}
+
+		if ( ! ext_butt ) {
+			//check that it is active.
+			const ext_add = document.getElementById("wpdr-en-ext-extra");
+			if ( ! ext_add.classList.contains("wpdr_en_not_use") ) {
+				ext_add.disabled = mty_text;
+				if ( mty_text ) {
+					ext_add.checked = false;
+				}
+			}
+		}
+	});
 });

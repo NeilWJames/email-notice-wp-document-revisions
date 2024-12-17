@@ -1,0 +1,6 @@
+.wpdr-en-add-text {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    vertical-align: center;
+}
