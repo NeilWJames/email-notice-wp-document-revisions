@@ -59,6 +59,15 @@ function wpdr_en_del_options() {
 			$table_name
 		)
 	);
+
+	$table_name = $wpdb->prefix . 'wpdr_en_extra_text';
+	// %1$s should be changed to %i when all WP supported >= 6.2.
+	$wpdb->query(
+		$wpdb->prepare(
+			'DROP TABLE IF EXISTS %1$s',
+			$table_name
+		)
+	);
 	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
 }
 

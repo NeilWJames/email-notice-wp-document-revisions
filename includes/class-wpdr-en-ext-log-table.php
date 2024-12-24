@@ -186,7 +186,7 @@ class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 				l.time_mail_sent as time_mail_sent,
 				l.user_email as user_email,
 				l.status,
-				(SELECT e.extra_text FROM {$wpdb->prefix}wpdr_extra_text e
+				(SELECT e.extra_text FROM {$wpdb->prefix}wpdr_en_extra_text e
 				 WHERE e.id = l.extra_text_id) as extra_text
 				FROM {$wpdb->prefix}wpdr_ext_notice_log l
 				INNER JOIN {$wpdb->prefix}posts p

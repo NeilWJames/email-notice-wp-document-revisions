@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1
+
+Release date: December 24, 2024
+
+* NEW: Can add a notification-specific text message in the emails being sent.
+
 ## 3.0
 
 Release date: August 23, 2024

@@ -4,8 +4,8 @@ Tags: administration, email, e-mail, document, automatic
 Requires at least: 4.9
 Requires PHP: 7.4
 Requires Plugins: wp-document-revisions
-Tested up to: 6.6.1
-Stable tag: 3.0
+Tested up to: 6.7.1
+Stable tag: 3.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Add-on to WP Document Revisions to notify your users about new documents published or create user email lists to send non-users notifications.
@@ -112,6 +112,11 @@ Yes, there are a number of these.
 These are listed and described at [filters.md](https://github.com/NeilWJames/email-notice-wp-document-revisions/blob/main/docs/filters.md).
 
 == Changelog ==
+
+= 3.1 =
+Release date: December 24, 2024
+
+* NEW: Can add a notification-specific text message in the email.
 
 = 3.0 =
 Release date: August 23, 2024

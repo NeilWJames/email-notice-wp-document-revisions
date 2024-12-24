@@ -1,3 +1,10 @@
+.wpdr-en-add-meta {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    column-gap: 15px;
+}
+
 .wpdr-en-add-text {
     display: flex;
     flex-direction: row;

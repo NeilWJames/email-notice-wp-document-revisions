@@ -44,9 +44,8 @@ if ( is_admin() ) {
 	require_once __DIR__ . '/includes/class-wpdr-email-notice.php';
 	$wpdr_en = new WPDR_Email_Notice();
 
-	// Install table when plugin activated.
-	register_activation_hook( __FILE__, array( $wpdr_en, 'install_notification_log' ) );
-	register_activation_hook( __FILE__, array( $wpdr_en, 'install_capabilities' ) );
+	// Install tables and capabilities when plugin activated.
+	register_activation_hook( __FILE__, array( $wpdr_en, 'db_version_check' ) );
 
 	// Bulk subscribe/unsubscribe users.
 	if ( ! class_exists( 'WPDR_EN_All_Users_Bulk_Action' ) ) {

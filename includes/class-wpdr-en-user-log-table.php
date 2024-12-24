@@ -190,14 +190,13 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 				 l.time_mail_sent as time_mail_sent,
 				 l.user_email as user_email,
 				 l.status,
-				 e.extra_text
+				 (SELECT e.extra_text FROM {$wpdb->prefix}wpdr_en_extra_text e
+				  WHERE e.id = l.extra_text_id) as extra_text
 				 FROM {$wpdb->prefix}wpdr_notification_log l
 				 INNER JOIN {$wpdb->prefix}posts p
 				 ON l.post_id = p.ID
 				 INNER JOIN {$wpdb->base_prefix}users u
 				 ON l.user_id = u.id
-				 LEFT OUTER JOIN {$wpdb->prefix}wpdr_extra_text e
-				 ON l.extra_text_id = e.id
 				 WHERE ( p.post_title LIKE %s OR u.display_name LIKE %s )",
 				$parm,
 				$parm
