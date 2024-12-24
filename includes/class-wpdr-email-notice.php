@@ -98,8 +98,8 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function __construct() {
-		// Ensure log table defined.
-		$this->db_version_check();
+		// Ensure log tables and capabilities defined.
+		add_action( 'plugins_loaded', array( $this, 'db_version_check' ) );
 
 		add_action( 'init', array( $this, 'init' ), 3000 );
 
