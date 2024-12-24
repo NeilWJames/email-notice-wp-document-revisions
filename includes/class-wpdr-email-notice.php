@@ -960,7 +960,7 @@ class WPDR_Email_Notice {
 	/* Adds a Document Email Notifications box to Edit Post screen */
 
 	/**
-	 * Adds a Document Email SetNotificationstings metabox to Edit Document screen.
+	 * Adds a Document Email Notifications metabox to Edit Document screen.
 	 *
 	 * @since 1.0
 	 * @return void
@@ -3441,10 +3441,11 @@ class WPDR_Email_Notice {
 				__( 'Potentially several Lists may match the Document. Emails will be sent to every user (except those individually paused) on each list that is matched.', 'wpdr-email-notice' ) . '</p>',
 				__( 'Document Email Extra Text', 'wpdr-email-notice' ) =>
 				'<p>' . __( 'You can include some message-specific additional text with the notification emails.', 'wpdr-email-notice' ) . '</p><p>' .
+				// phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment
 				__( 'The template used (Internal or External) has to contain the tag "%extra%" in it to use this capability.', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'A checkbox which is initially disabled with label "Add Extra Text" is placed next to each Send button.', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'On entering some text in the text field, these checkboxes will become active if the template allows it.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'The extra text can contains html tags to better format the output - but will only be included if the corresponding checkbox is checked when the send button is clicked.', 'wpdr-email-notice' ) . '</p>',
+				__( 'The extra text will only be included if the corresponding checkbox is checked when the send button is clicked. It can contains html tags to better format the output.', 'wpdr-email-notice' ) . '</p>',
 			),
 		);
 
