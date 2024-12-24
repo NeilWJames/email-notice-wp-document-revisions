@@ -134,8 +134,8 @@ class WPDR_Email_Notice {
 		  status varchar(100) NOT NULL,
 		  extra_text_id bigint(20) DEFAULT NULL,
 		  PRIMARY KEY  (id),
-		  INDEX user_id1 (user_id),
-		  INDEX post_id1 (post_id, user_id)  
+		  INDEX (user_id),
+		  INDEX (post_id, user_id)  
 		) $charset_collate;";
 
 		$table_name = $wpdb->prefix . 'wpdr_ext_notice_log';
@@ -151,8 +151,8 @@ class WPDR_Email_Notice {
 		  status varchar(100) NOT NULL,
 		  extra_text_id bigint(20) DEFAULT NULL,
 		  PRIMARY KEY  (id),
-		  INDEX post_id1 (post_id, user_email),
-		  INDEX del_id1 (doc_ext_list_id)
+		  INDEX (post_id, user_email),
+		  INDEX (doc_ext_list_id)
 		) $charset_collate;";
 
 		$table_name = $wpdb->prefix . 'wpdr_en_extra_text';
@@ -163,7 +163,7 @@ class WPDR_Email_Notice {
 		  post_id bigint(20) NOT NULL,
 		  extra_text varchar(250),
 		  PRIMARY KEY  (id),
-		  INDEX post_id1 (post_id)
+		  INDEX (post_id)
 		) $charset_collate;";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
