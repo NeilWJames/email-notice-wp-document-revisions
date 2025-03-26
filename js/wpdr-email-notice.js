@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			extra = '<br/>' + extra;
 		}
 
-		//Send e-mails
+		//Send emails
 		jQuery.ajax({
 			type     : 'POST',
 			dataType : 'json',
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			extra = '<br/>' + extra;
 		}
 
-		//Send e-mails
+		//Send emails
 		jQuery.ajax({
 			type     : 'POST',
 			dataType : 'json',

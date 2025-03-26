@@ -46,7 +46,7 @@ class WPDR_Email_Notice {
 	public static $attach_file = null;
 
 	/**
-	 * Default e-mail content
+	 * Default email content
 	 *
 	 * @since 2.0.0
 	 *
@@ -55,7 +55,7 @@ class WPDR_Email_Notice {
 	private static $default_content;
 
 	/**
-	 * Default e-mail content for external users
+	 * Default email content for external users
 	 *
 	 * @since 2.0.0
 	 *
@@ -64,7 +64,7 @@ class WPDR_Email_Notice {
 	private static $default_exttext;
 
 	/**
-	 * Default e-mail repeat
+	 * Default email repeat
 	 *
 	 * @since 2.0.0
 	 *
@@ -124,7 +124,7 @@ class WPDR_Email_Notice {
 		$charset_collate = $wpdb->get_charset_collate();
 		$table_name      = $wpdb->prefix . 'wpdr_notification_log';
 
-		// Related post, user, e-mail sent (Time stamp), e-mail address, Status (successful/failed).
+		// Related post, user, email sent (Time stamp), email address, Status (successful/failed).
 		$sql[] = "CREATE TABLE $table_name (
 		  id bigint(20) NOT NULL AUTO_INCREMENT,	  
 		  user_id bigint(20) NOT NULL,
@@ -140,7 +140,7 @@ class WPDR_Email_Notice {
 
 		$table_name = $wpdb->prefix . 'wpdr_ext_notice_log';
 
-		// Related post, user, e-mail sent (Time stamp), e-mail address, Status (successful/failed).
+		// Related post, user, email sent (Time stamp), email address, Status (successful/failed).
 		$sql[] = "CREATE TABLE $table_name (
 		  id bigint(20) NOT NULL AUTO_INCREMENT,	  
 		  post_id bigint(20) NOT NULL,
@@ -392,11 +392,11 @@ class WPDR_Email_Notice {
 		add_settings_section( 'wpdr_en_writing_settings', __( 'Document Email Settings - ', 'wpdr-email-notice' ) . __( 'Notifications', 'wpdr-email-notice' ), array( $this, 'writing_settings' ), 'writing' );
 		add_settings_field( 'wpdr_en_set_notification_mode', __( 'Internal Notice mode', 'wpdr-email-notice' ), array( $this, 'set_notification_mode' ), 'writing', 'wpdr_en_writing_settings' );
 		add_settings_field( 'wpdr_en_set_notification_about', __( 'Notify internal users about', 'wpdr-email-notice' ), array( $this, 'set_notification_about' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_subject', __( 'Notification e-mail subject', 'wpdr-email-notice' ), array( $this, 'set_subject' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_content', __( 'Internal Notice e-mail content', 'wpdr-email-notice' ), array( $this, 'set_content' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_exttext', __( 'External Notice e-mail content', 'wpdr-email-notice' ), array( $this, 'set_exttext' ), 'writing', 'wpdr_en_writing_settings' );
+		add_settings_field( 'wpdr_en_set_subject', __( 'Notification email subject', 'wpdr-email-notice' ), array( $this, 'set_subject' ), 'writing', 'wpdr_en_writing_settings' );
+		add_settings_field( 'wpdr_en_set_content', __( 'Internal Notice email content', 'wpdr-email-notice' ), array( $this, 'set_content' ), 'writing', 'wpdr_en_writing_settings' );
+		add_settings_field( 'wpdr_en_set_exttext', __( 'External Notice email content', 'wpdr-email-notice' ), array( $this, 'set_exttext' ), 'writing', 'wpdr_en_writing_settings' );
 		add_settings_field( 'wpdr_en_set_ext_attach', '', array( $this, 'set_ext_attach' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_repeat', __( 'Notification e-mail repeat', 'wpdr-email-notice' ), array( $this, 'set_repeat' ), 'writing', 'wpdr_en_writing_settings' );
+		add_settings_field( 'wpdr_en_set_repeat', __( 'Notification email repeat', 'wpdr-email-notice' ), array( $this, 'set_repeat' ), 'writing', 'wpdr_en_writing_settings' );
 		// phpcs:disable
 		// #TODO: purge.
 		// add_settings_field( 'wpdr_en_set_notification_log', __( 'Logging', 'wpdr-email-notice' ), array( $this, 'set_notification_log' ), 'writing', 'wpdr_en_writing_settings' );
@@ -469,11 +469,11 @@ class WPDR_Email_Notice {
 		add_action( 'admin_head', array( $this, 'add_help_tab' ) );
 		add_action( 'admin_notices', array( $this, 'check_error_state' ) );
 
-		// Overwrite default e-mail address only if user set new value.
+		// Overwrite default email address only if user set new value.
 		if ( get_option( 'wpdr_en_set_email_from_address' ) ) {
 			add_filter( 'wp_mail_from', array( $this, 'wp_mail_from' ) );
 		}
-		// Overwrite default e-mail from text only if user set new value.
+		// Overwrite default email from text only if user set new value.
 		if ( get_option( 'wpdr_en_set_email_from' ) ) {
 			add_filter( 'wp_mail_from_name', array( $this, 'wp_mail_from_name' ) );
 		}
@@ -512,8 +512,8 @@ class WPDR_Email_Notice {
 		self::$default_content = __( 'Dear %recipient_name%,<br/><br/>', 'wpdr-email-notice' ) .
 			__( 'A new document is published. Check it out!<br/><br/><strong>%title_with_permalink%</strong><br/>%words_50%%extra%%repeat%<br/>', 'wpdr-email-notice' ) .
 			// translators: %s is the link address of the user's profile. Do not translate.
-			sprintf( __( '<small>In case you do not want to receive this kind of notification you can turn it off in your <a href="%s">profile</a>.</small>', 'wpdr-email-notice' ), admin_url( 'profile.php' ) ) .
-			__( '<small><br/>Also go there if you wish to change whether you will receive the document as an attachment.</small>', 'wpdr-email-notice' );
+			sprintf( __( '<small>In case you do not want to receive this kind of notification you can turn it off in your <a href="%s">profile</a>.', 'wpdr-email-notice' ), admin_url( 'profile.php' ) ) .
+			__( '<br/>Also go there if you wish to change whether you will receive the document as an attachment.</small>', 'wpdr-email-notice' );
 		self::$default_exttext = __( 'Dear %recipient_name%,<br/><br/>', 'wpdr-email-notice' ) .
 			__( 'A new document is published. Check it out!<br/><br/><strong>%title_with_permalink%</strong><br/>%words_50%%extra%%repeat%<br/>', 'wpdr-email-notice' ) .
 			__( '<small>In case you do not want to receive this kind of notification you can reply with the message "Unsubscribe".</small>', 'wpdr-email-notice' );
@@ -613,7 +613,7 @@ class WPDR_Email_Notice {
 		if ( substr( $sitename, 0, 4 ) === 'www.' ) {
 			$sitename = substr( $sitename, 4 );
 		}
-		echo esc_html__( 'By default all notification e-mails received from "WordPress" < wordpress@', 'wpdr-email-notice' ) . esc_url( $sitename ) . ' >. ' . esc_html__( 'You can change these below.', 'wpdr-email-notice' );
+		echo esc_html__( 'By default all notification emails received from "WordPress" < wordpress@', 'wpdr-email-notice' ) . esc_url( $sitename ) . ' >. ' . esc_html__( 'You can change these below.', 'wpdr-email-notice' );
 	}
 
 	/**
@@ -651,7 +651,7 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function writing_settings() {
-		esc_html_e( 'Tags available to make e-mail subject and/or content dynamic:', 'wpdr-email-notice' );
+		esc_html_e( 'Tags available to make email subject and/or content dynamic:', 'wpdr-email-notice' );
 		echo '<br/>';
 		echo '<strong>%title%</strong> ' . esc_html__( 'means title of the post', 'wpdr-email-notice' ) . '<br/>';
 		echo '<strong>%permalink%</strong> ' . esc_html__( 'means URL of the post', 'wpdr-email-notice' ) . '<br/>';
@@ -659,14 +659,14 @@ class WPDR_Email_Notice {
 		echo '<strong>%author_name%</strong> ' . esc_html__( 'means the name of the post author', 'wpdr-email-notice' ) . '<br/>';
 		echo '<strong>%excerpt%</strong> ' . esc_html__( 'means excerpt of the post', 'wpdr-email-notice' ) . ' ' . esc_html__( 'Only available to those who can edit the document', 'wpdr-email-notice' ) . '<br/>';
 		echo '<strong>%words_n%</strong> ' . esc_html__( 'means the first n (must be an integer number) number of word(s) extracted from the post', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%recipient_name%</strong> ' . esc_html__( 'means display name of the user who receives the e-mail', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%repeat%</strong> ' . esc_html__( 'means output the phrase if the document has been previously e-mailed.', 'wpdr-email-notice' ) . '<br/>';
+		echo '<strong>%recipient_name%</strong> ' . esc_html__( 'means display name of the user who receives the email', 'wpdr-email-notice' ) . '<br/>';
+		echo '<strong>%repeat%</strong> ' . esc_html__( 'means output the phrase if the document has been previously emailed.', 'wpdr-email-notice' ) . '<br/>';
 		echo '<br/>';
 		echo esc_html__( 'Tags available within the tag', 'wpdr-email-notice' ) . ' <strong>%repeat%</strong>';
 		echo '<br/>';
-		echo '<strong>%num%</strong> ' . esc_html__( 'means the number of times the document has been previously e-mailed.', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%last_date%</strong> ' . esc_html__( 'means the last date that the document was e-mailed.', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%last_time%</strong> ' . esc_html__( 'means the last date incuding time that the document was e-mailed.', 'wpdr-email-notice' ) . '<br/>';
+		echo '<strong>%num%</strong> ' . esc_html__( 'means the number of times the document has been previously emailed.', 'wpdr-email-notice' ) . '<br/>';
+		echo '<strong>%last_date%</strong> ' . esc_html__( 'means the last date that the document was emailed.', 'wpdr-email-notice' ) . '<br/>';
+		echo '<strong>%last_time%</strong> ' . esc_html__( 'means the last date incuding time that the document was emailed.', 'wpdr-email-notice' ) . '<br/>';
 		echo '<br/>';
 		echo '<strong>%extra%</strong> ' . esc_html__( 'means output an optional extra phrase entered at the time of mailing.', 'wpdr-email-notice' ) . '<br/>';
 	}
@@ -682,7 +682,7 @@ class WPDR_Email_Notice {
 		if ( ! isset( $opt ) ) {
 			$opt = 'Manual';
 		}
-		echo '<input type="radio" name="wpdr_en_set_notification_mode" value="Auto" ' . checked( 'Auto', $opt, false ) . '>' . esc_html__( 'Auto', 'wpdr-email-notice' ) . '</input> ' . esc_html__( '(send e-mails automatically when you publish a post)', 'wpdr-email-notice' ) . '<br/>';
+		echo '<input type="radio" name="wpdr_en_set_notification_mode" value="Auto" ' . checked( 'Auto', $opt, false ) . '>' . esc_html__( 'Auto', 'wpdr-email-notice' ) . '</input> ' . esc_html__( '(send emails automatically when you publish a post)', 'wpdr-email-notice' ) . '<br/>';
 		echo '<input type="radio" name="wpdr_en_set_notification_mode" value="Manual" ' . checked( 'Manual', $opt, false ) . '>' . esc_html__( 'Manual', 'wpdr-email-notice' ) . '</input> ' . esc_html__( '(you need to press a button to send notification)', 'wpdr-email-notice' );
 	}
 
@@ -709,7 +709,7 @@ class WPDR_Email_Notice {
 			}
 		}
 		echo '<input type="checkbox" id="Chkbx_Public" name="wpdr_en_set_notification_about[Chkbx_Public]" value="Public" ' . esc_attr( $public_checked ) . '>' . esc_html__( 'Public posts', 'wpdr-email-notice' ) . '</input><br/>';
-		echo '<input type="checkbox" id="Chkbx_Password" name="wpdr_en_set_notification_about[Chkbx_Password]" value="Password"' . esc_attr( $password_checked ) . '>' . esc_html__( 'Password', 'wpdr-email-notice' ) . '</input> ' . esc_html__( 'protected posts (password will', 'wpdr-email-notice' ) . ' <strong>' . esc_html__( 'NOT', 'wpdr-email-notice' ) . '</strong> ' . esc_html__( 'be included in notification e-mail)', 'wpdr-email-notice' ) . '<br/>';
+		echo '<input type="checkbox" id="Chkbx_Password" name="wpdr_en_set_notification_about[Chkbx_Password]" value="Password"' . esc_attr( $password_checked ) . '>' . esc_html__( 'Password', 'wpdr-email-notice' ) . '</input> ' . esc_html__( 'protected posts (password will', 'wpdr-email-notice' ) . ' <strong>' . esc_html__( 'NOT', 'wpdr-email-notice' ) . '</strong> ' . esc_html__( 'be included in notification email)', 'wpdr-email-notice' ) . '<br/>';
 		echo '<input type="checkbox" id="Chkbx_Private" name="wpdr_en_set_notification_about[Chkbx_Private]" value="Private"' . esc_attr( $private_checked ) . '>' . esc_html__( 'Private posts', 'wpdr-email-notice' ) . '</input> ';
 		echo '<br />' . esc_html__( 'Notifications are sent only to those Internal users who can read the document', 'wpdr-email-notice' );
 		echo '<br />' . esc_html__( 'Notifications can only be sent to External users for Public documents.', 'wpdr-email-notice' );
@@ -742,7 +742,7 @@ class WPDR_Email_Notice {
 		echo '<textarea id="wpdr_en_set_content" name="wpdr_en_set_content" cols="80" rows="8" 
 		placeholder = "' . $place . '">' . $text . '</textarea>';
 		// phpcs:enable WordPress.Security.EscapeOutput
-		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification e-mails more personalized.', 'wpdr-email-notice' );
+		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'wpdr-email-notice' );
 	}
 
 	/**
@@ -761,7 +761,7 @@ class WPDR_Email_Notice {
 		echo '<textarea id="wpdr_en_set_content" name="wpdr_en_set_exttext" cols="80" rows="7" 
 		placeholder = "' . $place . '">' . $text . '</textarea>';
 		// phpcs:enable WordPress.Security.EscapeOutput
-		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification e-mails more personalized.', 'wpdr-email-notice' );
+		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'wpdr-email-notice' );
 	}
 
 	/**
@@ -774,9 +774,9 @@ class WPDR_Email_Notice {
 		?>
 		<label for="wpdr_en_set_ext_attach">
 		<input name="wpdr_en_set_ext_attach" type="checkbox" id="wpdr_en_set_ext_attach" value="1" <?php checked( '1', get_option( 'wpdr_en_set_ext_attach' ) ); ?> />
-		<?php esc_html_e( 'Attach the document in emails to external users.', 'wpdr-email-notice' ); ?></label><br />
+		<?php esc_html_e( 'Attach the Document in emails to external users.', 'wpdr-email-notice' ); ?></label><br />
 		<?php
-		echo '<br/>' . esc_html__( 'Remember that Public documents may not always be accessible, so these may need to be attached.', 'wpdr-email-notice' );
+		echo '<br/>' . esc_html__( 'Public documents may not always be accessible to External users, so these may need to be attached.', 'wpdr-email-notice' );
 	}
 
 	/**
@@ -790,7 +790,7 @@ class WPDR_Email_Notice {
 		echo '<textarea id="wpdr_en_set_repeat" name="wpdr_en_set_repeat" cols="80" rows="5" 
 		placeholder = "' . self::$default_repeat . '">' . wp_kses_post( get_option( 'wpdr_en_set_repeat' ) ) . '</textarea>';
 		// phpcs:enable WordPress.Security.EscapeOutput
-		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification e-mails more personalized.', 'wpdr-email-notice' );
+		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'wpdr-email-notice' );
 	}
 
 	// #TODO: purge.
@@ -857,9 +857,9 @@ class WPDR_Email_Notice {
 		}
 
 		echo '<div class="wpdr_en-content">';
-		echo '<input type="checkbox" name="wpdr_en_user_notification" value="1" ' . esc_attr( $wpdr_en_user_notification ) . '>' . esc_html__( 'Notify me by e-mail when a new document is published', 'wpdr-email-notice' ) . '</input><br/>';
+		echo '<input type="checkbox" name="wpdr_en_user_notification" value="1" ' . esc_attr( $wpdr_en_user_notification ) . '>' . esc_html__( 'Notify me by email when a new document is published', 'wpdr-email-notice' ) . '</input><br/>';
 
-		echo '<input type="checkbox" name="wpdr_en_user_attachment" value="1" ' . esc_attr( $wpdr_en_user_attachment ) . '>' . esc_html__( 'Also send me the document as an attachment by e-mail when a new document is published', 'wpdr-email-notice' ) . '</input><br/>';
+		echo '<input type="checkbox" name="wpdr_en_user_attachment" value="1" ' . esc_attr( $wpdr_en_user_attachment ) . '>' . esc_html__( 'Also send me the document as an attachment by email when a new document is published', 'wpdr-email-notice' ) . '</input><br/>';
 		echo '</div>'; // wpdr_en-content end.
 		echo '</div>'; // wpdr_en-wrapper end.
 	}
@@ -980,12 +980,27 @@ class WPDR_Email_Notice {
 		$document_id = get_the_ID();
 		wp_nonce_field( 'wpdr_en_meta_box', 'wpdr_en_meta_box_nonce' );
 		$pstatus = $this->post_status( $document_id );
+
+		// Is extra text possible?
+		$extra_int = str_contains( $this->get_content( -1 ), '%extra%' );
+		$extra_ext = str_contains( $this->get_content( 0 ), '%extra%' );
+		$extra     = $extra_int || $extra_ext;
+
+		echo '<div class="wpdr-en-add-meta"><div>';
+		if ( $extra ) {
+			echo '<div>' . esc_html__( 'Optional Extra text for this specific mailing', 'wpdr-email-notice' ) . '<fieldset>';
+			echo '<textarea rows="4" cols="30" name="wpdr-en-extra" id="wpdr-en-extra"' . ( $extra ? '' : ' disabled' ) . '></textarea><br />';
+			echo '<label class="screen-reader-text" for="wpdr-en-extra">' . esc_html__( 'Optional Extra text', 'wpdr-email-notice' ) . '</label>';
+			esc_html_e( 'Enter any extra text and click Add Extra text before (re)sending.', 'wpdr-email-notice' );
+			echo '</fieldset></div><br />';
+		} else {
+			echo '<div>' . esc_html__( 'Optional Extra text not configured in templates', 'wpdr-email-notice' ) . '</div><br />';
+		}
 		// Internal user lists box.
 		if ( self::$internal_list_needed ) {
 			$notification_sent = (string) get_post_meta( $document_id, 'wpdr_en_notification_sent', true );
 			$recipients        = $this->prepare_mail_recipients( $document_id );
 			$hasrecipient      = ! empty( $recipients );
-			echo '<div class="wpdr-en-add-meta"><div>';
 			echo '<div class="wpdr-en-add-text"><div>';
 			if ( ( ! empty( $notification_sent ) || '1' === $notification_sent ) && in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) && $hasrecipient ) {
 				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Re-send notification email(s)', 'wpdr-email-notice' ) . '" />';
@@ -996,16 +1011,17 @@ class WPDR_Email_Notice {
 			} elseif ( ! empty( $notification_sent ) || '1' === $notification_sent ) {
 				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Re-send notification email(s)', 'wpdr-email-notice' ) . '" disabled/>';
 			}
-			echo '</div><div style="margin-left: 5px;"><label>';
-			// Is extra text available for internal.
-			if ( str_contains( $this->get_content( -1 ), '%extra%' ) ) {
-				echo '<input type="checkbox" id="wpdr-en-int-extra" value="0" disabled />';
-				$extra = true;
-			} else {
-				echo '<input type="checkbox" id="wpdr-en-int-extra" value="0" class="wpdr_en_not_use" disabled />';
-				$extra = false;
+			echo '</div>';
+			if ( $extra ) {
+				echo '<div style="margin-left: 5px;"><label>';
+				// Is extra text available for internal.
+				if ( $extra_int ) {
+					echo '<input type="checkbox" id="wpdr-en-int-extra" value="0" disabled />';
+				} else {
+					echo '<input type="checkbox" id="wpdr-en-int-extra" value="0" class="wpdr_en_not_use" disabled />';
+				}
+				echo esc_html__( 'Add Extra text', 'wpdr-email-notice' ) . '</label></div></div>';
 			}
-			echo esc_html__( 'Add Extra text', 'wpdr-email-notice' ) . '</label></div></div>';
 		}
 		// Pass document id to jQuery.
 		echo '<div id="wraphidden">';
@@ -1046,15 +1062,18 @@ class WPDR_Email_Notice {
 		if ( ( ! empty( $ext_notice_sent ) || '1' === $ext_notice_sent ) && 'Public' === $pstatus && $hasextrecipient ) {
 			echo '<div class="wpdr-en-add-text"><div>';
 			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'wpdr-email-notice' ) . '" />';
+			echo '</div>';
 			// Is extra text available for external.
-			echo '</div><div style="margin-left: 5px; margin-right: 5px;"><label>';
-			if ( str_contains( $this->get_content( 0 ), '%extra%' ) ) {
-				echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" disabled />';
-				$extra = true;
-			} else {
-				echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" class="wpdr_en_not_use" disabled />';
+			if ( $extra ) {
+				echo '<div style="margin-left: 5px; margin-right: 5px;"><label>';
+				if ( $extra_ext ) {
+					echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" disabled />';
+				} else {
+					echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" class="wpdr_en_not_use" disabled />';
+				}
+				echo esc_html__( 'Add Extra text', 'wpdr-email-notice' ) . '</label></div>';
 			}
-			echo esc_html__( 'Add Extra text', 'wpdr-email-notice' ) . '</label></div></div>';
+			echo '</div>';
 			// output the list(s) available (text box readonly if cannot edit the lists).
 			foreach ( $ext_lists as $list ) {
 				echo '<br /><label>&nbsp;&nbsp;';
@@ -1084,11 +1103,8 @@ class WPDR_Email_Notice {
 		} elseif ( ! empty( $ext_notice_sent ) || '1' === $ext_notice_sent ) {
 			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'wpdr-email-notice' ) . '" disabled/>';
 		}
-		echo '</div><div><p>' . esc_html__( 'Optional Extra text', 'wpdr-email-notice' ) . '</p><fieldset>';
-		echo '<textarea rows="4" cols="30" name="wpdr-en-extra" id="wpdr-en-extra"' . ( $extra ? '' : ' disabled' ) . '></textarea><br />';
-		echo '<label class="screen-reader-text" for="wpdr-en-extra">' . esc_html__( 'Optional Extra text', 'wpdr-email-notice' ) . '</label>';
-		esc_html_e( 'Enter any extra text for this specific mailing and click Add Extra text.', 'wpdr-email-notice' );
-		echo '</fieldset></div></div>';
+		echo '</div>';
+		echo '</div>';
 	}
 
 	/* Posts ->  WPDR EN User Notification log */
@@ -1460,8 +1476,8 @@ class WPDR_Email_Notice {
 		$wpdr_en_notification_log_table->search_box( esc_html__( 'Search', 'wpdr-email-notice' ), 'search_id' );
 		echo '</form>';
 		$wpdr_en_notification_log_table->display();
-		echo '<p>' . esc_html__( 'Note: Success denotes that the mail was successfully received by your e-mail system.', 'wpdr-email-notice' ) . '</p>';
-		echo '<p>' . esc_html__( 'The mail delivery process to the recipient is managed within your e-mail system.', 'wpdr-email-notice' ) . '</p>';
+		echo '<p>' . esc_html__( 'Note: Success denotes that the email was successfully received by your email system.', 'wpdr-email-notice' ) . '</p>';
+		echo '<p>' . esc_html__( 'The mail delivery process to the recipient is managed within your email system.', 'wpdr-email-notice' ) . '</p>';
 		echo '</div>';
 	}
 
@@ -1491,8 +1507,8 @@ class WPDR_Email_Notice {
 		$wpdr_en_ext_notice_log_table->search_box( esc_html__( 'Search', 'wpdr-email-notice' ), 'search_id' );
 		echo '</form>';
 		$wpdr_en_ext_notice_log_table->display();
-		echo '<p>' . esc_html__( 'Note: Success denotes that the mail was successfully received by your e-mail system.', 'wpdr-email-notice' ) . '</p>';
-		echo '<p>' . esc_html__( 'The delivery process to the recipient is managed within your e-mail system.', 'wpdr-email-notice' ) . '</p>';
+		echo '<p>' . esc_html__( 'Note: Success denotes that the mail was successfully received by your email system.', 'wpdr-email-notice' ) . '</p>';
+		echo '<p>' . esc_html__( 'The delivery process to the recipient is managed within your email system.', 'wpdr-email-notice' ) . '</p>';
 		echo '</div>';
 	}
 
@@ -1617,11 +1633,11 @@ class WPDR_Email_Notice {
 			<tbody>
 			<tr>
 			<td>User Name</td>
-			<td><input type="text" id="wpdr-en-user-name" name="user-name" value="" onblur="check_address()" /></td>
+			<td><input type="text" id="wpdr-en-user-name" name="user-name" value="" onblur="check_address()" size=30 /></td>
 			</tr>
 			<tr>
 			<td>Email Address</td>
-			<td><input type="text" id="wpdr-en-email" name="email" value="" onblur="check_address()" /></td>
+			<td><input type="text" id="wpdr-en-email" name="email" value="" onblur="check_address()" size=30 /></td>
 			</tr>
 			<tr>
 			<td>Pause Mail</td>
@@ -1677,7 +1693,7 @@ class WPDR_Email_Notice {
 		<h3 id="attach_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Document Attach', 'wpdr-email-notice' ); ?></h3>
 		<fieldset>
 		<input type="checkbox" id="wpdr_en_attach" name="wpdr_en_attach" value="<?php echo esc_attr( $attach ) . '" ' . checked( 1, $attach, false ); ?>>
-		<label for="wpdr_en_attach"><?php esc_html_e( 'Attach Document to Notification E-mails', 'wpdr-email-notice' ); ?></label>
+		<label for="wpdr_en_attach"><?php esc_html_e( 'Attach Document to Notification Emails', 'wpdr-email-notice' ); ?></label>
 		</fieldset>
 		<h3 id="pause_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Pause Mail', 'wpdr-email-notice' ); ?></h3>
 		<fieldset>
@@ -1706,7 +1722,7 @@ class WPDR_Email_Notice {
 	/* Functionality: Email from configuration */
 
 	/**
-	 * Replace default <wordpress@yourdomain.com> e-mail address.
+	 * Replace default <wordpress@yourdomain.com> email address.
 	 *
 	 * @since 1.0
 	 * @param string $email Default From email address.
@@ -1728,7 +1744,7 @@ class WPDR_Email_Notice {
 	}
 
 	/**
-	 * Replace default e-mail from "WordPress".
+	 * Replace default email from "WordPress".
 	 *
 	 * @since 1.0
 	 * @param string $from_name From email address.
@@ -1821,7 +1837,7 @@ class WPDR_Email_Notice {
 	%excerpt% means excerpt of the post
 	%words_n% means the first n (must be an integer number) number of word(s) extracted from the post
 	%recipient_name% means display name of the user who receives the email
-	%repeat% means output a sentence if the document has been previously e-mailed
+	%repeat% means output a sentence if the document has been previously emailed
 	%extra% means output a mailing specific set of extra text.
 	*/
 
@@ -1876,7 +1892,7 @@ class WPDR_Email_Notice {
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 *
 	 * @param int $post_id Document ID.
-	 * @return object[]array
+	 * @return object[]
 	 */
 	private function prepare_mail_recipients( $post_id ) {
 		$result = array();
@@ -1936,7 +1952,7 @@ class WPDR_Email_Notice {
 	 * @param int   $post_id Document ID.
 	 * @param int[] $lists   Array of Ext_lists to process. (Empty means all matches).
 	 * @param bool  $all     Full or simply to know of there are users.
-	 * @return object[]array
+	 * @return mixed[]
 	 */
 	private function prepare_mail_ext_users( $post_id, $lists, $all ) {
 		$result  = array();
@@ -1944,21 +1960,6 @@ class WPDR_Email_Notice {
 
 		// Public post only.
 		if ( 'Public' !== $pstatus ) {
-			return $result;
-		}
-
-		// Can non-signed on user read it?
-		/**
-		 * Filter to force notification for external users for a not publically readable document.
-		 *
-		 * Special case for normally private site but where certain non-users may be sent documents..
-		 *
-		 * @since 2.0
-		 * @param bool false    Expect normal permissions to determine accessibility.
-		 * @param int  $post_id Post ID.
-		 * @return boolean
-		 */
-		if ( apply_filters( 'wpdr_en_ext_force_notice', false, $post_id ) && ! user_can( 0, 'read_document', $post_id ) ) {
 			return $result;
 		}
 
@@ -2233,8 +2234,8 @@ class WPDR_Email_Notice {
 				 * @param bool false default is to send the file.
 				 */
 				if ( apply_filters( 'wpdr_en_no_send_email', false ) ) {
-					// test sending process.
-					$status_text = __( 'Test', 'wpdr-email-notice' ) . ' ' . ( empty( $attachments ) ? __( 'Successful', 'wpdr-email-notice' ) : __( 'Success Attachment', 'wpdr-email-notice' ) );
+					// test sending process. Note Test is not translated.
+					$status_text = 'Test ' . ( empty( $attachments ) ? __( 'Successful', 'wpdr-email-notice' ) : __( 'Success Attachment', 'wpdr-email-notice' ) );
 					++$sent_count;
 				} else {
 					// Set mail type.
@@ -2346,8 +2347,8 @@ class WPDR_Email_Notice {
 				 * @param bool false default is to send the file.
 				 */
 				if ( apply_filters( 'wpdr_en_no_send_email', false ) ) {
-					// test sending process.
-					$status_text = __( 'Test', 'wpdr-email-notice' ) . ' ' . ( empty( $attachments ) ? __( 'Successful', 'wpdr-email-notice' ) : __( 'Success Attachment', 'wpdr-email-notice' ) );
+					// test sending process. Note Test is not translated.
+					$status_text = 'Test ' . ( empty( $attachments ) ? __( 'Successful', 'wpdr-email-notice' ) : __( 'Success Attachment', 'wpdr-email-notice' ) );
 					++$sent_count;
 				} else {
 					// Set mail type and how sent.
@@ -2465,8 +2466,8 @@ class WPDR_Email_Notice {
 	 */
 	private function resolve_repeat( $user_id, $post_id, $user_email = null ) {
 		global $wpdb;
-		// Ignore test mails in log.
-		$test = __( 'Test', 'wpdr-email-notice' ) . ' %';
+		// Ignore test mails in log. Note Test is not translated.
+		$test = 'Test %';
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		if ( is_null( $user_email ) ) {
 			$prev = $wpdb->get_row(
@@ -3025,7 +3026,7 @@ class WPDR_Email_Notice {
 			<label class="alignleft"><input type="radio" id="tm_any" name="tm_rule" value="0"><?php esc_html_e( 'Any taxonomy element', 'wpdr-email-notice' ); ?>&nbsp;&nbsp;</label>
 			<label class="alignleft"><input type="radio" id="tm_all" name="tm_rule" value="1"><?php esc_html_e( 'All taxonomy elements', 'wpdr-email-notice' ); ?></label>
 			</div>
-			<p id="tm_descr" class="howto"><?php esc_html_e( 'Choose whether Any or All of these taxonomy elements must match for the list to be used to send e-mails.', 'wpdr-email-notice' ); ?></p>
+			<p id="tm_descr" class="howto"><?php esc_html_e( 'Choose whether Any or All of these taxonomy elements must match for the list to be used to send emails.', 'wpdr-email-notice' ); ?></p>
 			</fieldset>
 			<?php
 		}
@@ -3079,7 +3080,7 @@ class WPDR_Email_Notice {
 			</select>
 			</label>
 			</div>	
-			<p id="tm_descr" class="howto"><?php esc_html_e( 'Choose whether Any or All of these taxonomy elements must match for the lists to be used to send e-mails.', 'wpdr-email-notice' ); ?></p>
+			<p id="tm_descr" class="howto"><?php esc_html_e( 'Choose whether Any or All of these taxonomy elements must match for the lists to be used to send emails.', 'wpdr-email-notice' ); ?></p>
 			</div>
 			</fieldset>
 			<?php
@@ -3436,16 +3437,18 @@ class WPDR_Email_Notice {
 				__( 'External users normally do not have a sign-on. Notifications are based on the concept of External Lists. A list will contain one or more taxonomy terms that will be matched again the document terms.', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'Every published External List (except those marked as Paused) will be tested to see whether its terms match those on the Document.', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'Those that match are listed below the button. If the user can maintain the External List, then they can choose to not send the mail to a List by unchecking the List before sending the Notification.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'A term on the list matches with one on the Document if they are same or, for hierarchical taxonomies, the List term is a parent of the Document term.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'If there are several terms on the List, it can be set so that the List is matched if either any term matches or all terms must match.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'A term on the List matches with one on the Document if they are same or, for hierarchical taxonomies, the List term is a parent of the Document term.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'When there are several terms on the List, a rule can be set so that the List is matched if either any term matches or all terms on the List must match.', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'Potentially several Lists may match the Document. Emails will be sent to every user (except those individually paused) on each list that is matched.', 'wpdr-email-notice' ) . '</p>',
 				__( 'Document Email Extra Text', 'wpdr-email-notice' ) =>
 				'<p>' . __( 'You can include some message-specific additional text with the notification emails.', 'wpdr-email-notice' ) . '</p><p>' .
 				// phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment
 				__( 'The template used (Internal or External) has to contain the tag "%extra%" in it to use this capability.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'If neither template contains the tag then the various options are not shown.', 'wpdr-email-notice' ) . '</p><p>' .
 				__( 'A checkbox which is initially disabled with label "Add Extra Text" is placed next to each Send button.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'On entering some text in the text field, these checkboxes will become active if the template allows it.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'The extra text will only be included if the corresponding checkbox is checked when the send button is clicked. It can contains html tags to better format the output.', 'wpdr-email-notice' ) . '</p>',
+				__( 'On entering some text in the text field, the checkboxes will become active if the template allows it.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'The extra text will only be included if the corresponding checkbox is checked when the send button is clicked.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'The Extra text can contains html tags to better format the output.', 'wpdr-email-notice' ) . '</p>',
 			),
 		);
 

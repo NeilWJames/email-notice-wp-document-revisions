@@ -1,6 +1,6 @@
 {
   "name": "neilwjames/email-notice-wp-document-revisions",
-  "description": "An add-on plugin to WP Document Revisions that allows notification e-mails to be sent on document publication",
+  "description": "An add-on plugin to WP Document Revisions that allows notification emails to be sent after document publication",
   "license": "GPLv3",
   "authors": [
       {

@@ -19,7 +19,7 @@ function wpdr_en_insert() {
 		},
 		success  : function(response) {
 			if (response.error) {
-				document.getElementById('wpdr-en-message').innerHTML=response.error_msg + ' ( ' + response.error_code + ' )';					
+				document.getElementById('wpdr-en-message').innerHTML = response.error_msg + ' ( ' + response.error_code + ' )';					
 			} else {					
 				//Emails sent successfully					
 				document.getElementById('wpdr-en-message').innerHTML   = '';					
@@ -56,7 +56,7 @@ function wpdr_en_delete( id, rec_num ) {
 		},
 		success  : function(response) {
 			if (response.error) {
-				document.getElementById('wpdr-en-message').innerHTML=response.error_msg + ' ( ' + response.error_code + ' )';					
+				document.getElementById('wpdr-en-message').innerHTML = response.error_msg + ' ( ' + response.error_code + ' )';					
 			} else {					
 				//Emails sent successfully					
 				document.getElementById('wpdr-en-message').innerHTML   = "";

@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.2
+
+Release date: April 18, 2025
+
+* NEW: GitHub documentation included in plugin and explicitly linked.
+* FIX: Notification-specific text message metabox reviewed.
+* FIX: Filter wpdr_en_ext_attach_notice withdrawn as effectively replaced by global setting.
+* FIX: Consistent use of word email (rather than e-mail)
+
 ## 3.1
 
 Release date: December 24, 2024

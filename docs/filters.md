@@ -6,14 +6,6 @@ In /includes/class-wpdr-email-notice.php
 
 Filter the default roles that will be allowed to manage the lists.
 
-## Filter: wpdr_en_ext_force_attach
-
-In /includes/class-wpdr-email-notice.php
-
-Filter to force attach a document for External users.
-
-Special case for private sites since non-users will not be able to read public documents and sending just a link would be useless.
-
 ## Filter: wpdr_en_filesize
 
 In /includes/class-wpdr-email-notice.php
@@ -66,7 +58,7 @@ In /includes/class-wpdr-email-notice.php
 
 Filter to ensure that the mail subject does not end in a number.
 
-Some spam filters increase the spam value if the mail subject ends in a number. Adding a period at the end removes this effect.
+Some spam filters increase the spam value if the mail subject ends in a number. Adding a period removes this effect.
 
 ## Filter: wpdr_en_taxonomies
 

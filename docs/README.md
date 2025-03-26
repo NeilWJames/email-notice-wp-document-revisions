@@ -48,9 +48,10 @@ For Internal Users, it will also
 
 Further information is held in the various files of this directory::
 
+1. [Usage](./usage.md) - Describes some usage options.
 1. [Tags](./tags.md) - Describes the tags supported within the templates.
-1. [Actions](./actions.md) - Describes the additional Actions provided by the plugin.
-1. [Filters](./filters.md) - Describes the additional Filters provided by the plugin.
+1. [Actions](./actions.md) - Describes the Actions provided by the plugin - currently none.
+1. [Filters](./filters.md) - Describes the Filters provided by the plugin.
 1. [ChangeLog](./changelog.md) - Gives the ChangeLog of the plugin.
 1. [Capabilities](./capabilities.md) - Describes the capabilities provided by the plugin and their use.
 

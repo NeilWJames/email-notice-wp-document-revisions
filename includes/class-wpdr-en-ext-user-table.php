@@ -102,7 +102,7 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 		$columns = array(
 			'rec_num'   => '#',
 			'user_name' => __( 'User Name', 'wpdr-email-notice' ),
-			'email'     => __( 'E-mail Address', 'wpdr-email-notice' ),
+			'email'     => __( 'Email Address', 'wpdr-email-notice' ),
 			'pause'     => __( 'Pause Mail', 'wpdr-email-notice' ),
 		);
 		return $columns;

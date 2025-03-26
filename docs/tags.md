@@ -26,7 +26,7 @@ Note that this is the person that loaded the Document into the WordPress site an
 
 This will be replaced by the excerpt of the Document post.
 
-This field is used to hold the Revision Log for Documents - and may not be appropriate for wide distribution.
+This field is used to hold the Revision Log for Documents - and so may not be appropriate for wide distribution.
 
 ## %words_n%
 
@@ -38,11 +38,15 @@ This will be replaced by the display name of the user who receives the email for
 
 ## %extra%
 
-This optional text can be entered to provide a mailing-specific message when sending out the mail. 
+This optional text can be entered to provide a mailing-specific message when sending out the mail.
+
+This can contain html tags, but these need to be entered as part of the text. If used, it will be preceded by a <br /> to separate it.
 
 ## %repeat%
 
 This text will be included only if one of these emails has previously been sent for the document to the recipient. 
+
+If used, it will be preceded by a <br /> to separate it.
 
 The **repeat** tag can itself can use additional tags :
 
@@ -56,6 +60,6 @@ This is the last date that the document was emailed.
 
 ### %last_time%
 
-This is the last date including time that the document was emailed.
+This is the last date (including time element) that the document was emailed.
 
 

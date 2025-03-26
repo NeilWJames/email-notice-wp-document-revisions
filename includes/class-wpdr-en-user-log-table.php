@@ -53,9 +53,9 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 		$columns = array(
 			'id'                => '#',
 			'post_title'        => __( 'Post Title', 'wpdr-email-notice' ),
-			'time_mail_sent'    => __( 'E-mail sent', 'wpdr-email-notice' ),
+			'time_mail_sent'    => __( 'Email sent', 'wpdr-email-notice' ),
 			'user_display_name' => __( 'User Name', 'wpdr-email-notice' ),
-			'user_email'        => __( 'User E-mail', 'wpdr-email-notice' ),
+			'user_email'        => __( 'User Email', 'wpdr-email-notice' ),
 			'status'            => __( 'Status', 'wpdr-email-notice' ),
 		);
 		return $columns;
@@ -224,7 +224,7 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	 * @return void
 	 */
 	public function no_items() {
-		esc_html_e( 'No e-mails sent out, yet.', 'wpdr-email-notice' );
+		esc_html_e( 'No emails sent out, yet.', 'wpdr-email-notice' );
 	}
 
 	/**
