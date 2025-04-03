@@ -42,12 +42,12 @@ function wpdr_en_del_options() {
 	$dels = get_posts(
 		array(
 			'post_type'   => 'doc_ext_list',
-			'numberposts' => -1
+			'numberposts' => -1,
 		)
 	);
 	foreach ( $dels as &$del ) {
 		wp_delete_post( $del->ID, true );
-	} 
+	}
 
 	// delete wpdr_en_notification_sent flags.
 	delete_post_meta_by_key( 'wpdr_en_notification_sent' );
@@ -136,4 +136,3 @@ foreach ( $wp_roles->role_names as $wrole => $label ) {
 		$wp_roles->remove_cap( $wrole, 'delete_doc_ext_lists' );
 	}
 }
-
