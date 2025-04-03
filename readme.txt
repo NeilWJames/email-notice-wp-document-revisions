@@ -75,7 +75,9 @@ When enabled a metabox will be added to the Document Admin screen. This can cont
 
 Significant information is held in the Document and Document External List Help pulldowns found on the top right hand corner of their Admin screens.
 
-Please make use of them to see how to use them and where you can see the data in context. 
+Please make use of them to see how to use them and where you can see the data in context.
+
+Also additional information is held in the [usage documentation](../docs/usage.md)
 
 = Where can I define new "Email From" name and from "Email Address"? =
 

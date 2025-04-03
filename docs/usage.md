@@ -74,7 +74,7 @@ A new document is published. Check it out!&lt;br/&gt;&lt;br/&gt;&lt;strong&gt;%t
 &lt;small&gt;In case you do not want to receive this kind of notification you can turn it off in your &lt;a href="%s"&gt;&lt;profile</a&gt;.
 &lt;br/&gt;Also go there if you wish to change whether you will receive the document as an attachment.&lt;/small&gt;
 
-*The profile destination would need to be entered for your own site.*
+*The profile destination (site_url/wp-admin/profile.php) would need to be entered for your own site.*
 
 - External
 

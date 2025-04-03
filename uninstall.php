@@ -34,8 +34,20 @@ function wpdr_en_del_options() {
 	delete_option( 'wpdr_en_set_notification_about' );
 	delete_option( 'wpdr_en_set_subject' );
 	delete_option( 'wpdr_en_set_content' );
-	// phpcs:ignore Squiz.PHP.CommentedOutCode
-	// #TODO: purge
+	delete_option( 'wpdr_en_set_exttext' );
+	delete_option( 'wpdr_en_set_ext_attach' );
+	delete_option( 'wpdr_en_set_repeat' );
+
+	// Remove DEL posts.
+	$dels = get_posts(
+		array(
+			'post_type'   => 'doc_ext_list',
+			'numberposts' => -1
+		)
+	);
+	foreach ( $dels as &$del ) {
+		wp_delete_post( $del->ID, true );
+	} 
 
 	// delete wpdr_en_notification_sent flags.
 	delete_post_meta_by_key( 'wpdr_en_notification_sent' );
@@ -117,7 +129,11 @@ if ( ! is_object( $wp_roles ) ) {
 // $wrole is each role.
 foreach ( $wp_roles->role_names as $wrole => $label ) {
 	$role_caps = $wp_roles->roles[ $wrole ]['capabilities'];
-	if ( array_key_exists( 'edit_doc_ext_list', $role_caps ) ) {
-		$wp_roles->remove_cap( $wrole, 'edit_doc_ext_list' );
+	if ( array_key_exists( 'edit_doc_ext_lists', $role_caps ) ) {
+		$wp_roles->remove_cap( $wrole, 'edit_doc_ext_lists' );
+	}
+	if ( array_key_exists( 'delete_doc_ext_lists', $role_caps ) ) {
+		$wp_roles->remove_cap( $wrole, 'delete_doc_ext_lists' );
 	}
 }
+
