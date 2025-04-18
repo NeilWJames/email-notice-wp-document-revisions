@@ -602,7 +602,7 @@ class WPDR_Email_Notice {
 			return;
 		}
 		if ( 'document' === $post->post_type ) {
-			$script      = 'email-notice-wp-document-revisions';
+			$script      = 'wpdr-email-notice';
 			$css         = 'wpdr-en-notice';
 			$nonce_array = array(
 				'wpdr_en_nonce'    => wp_create_nonce( 'wpdr_en_nonce' ),
