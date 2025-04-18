@@ -8,7 +8,7 @@
 
 // No direct access allowed to plugin php file.
 if ( ! defined( 'ABSPATH' ) ) {
-	die( esc_html__( 'You are not allowed to call this file directly.', 'wpdr-email-notice' ) );
+	die( esc_html__( 'You are not allowed to call this file directly.', 'email-notice-wp-document-revisions' ) );
 }
 
 // Load WP_List_Table if not loaded.
@@ -34,8 +34,8 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 		$args = wp_parse_args(
 			$args,
 			array(
-				'singular' => __( 'Notification email sent', 'wpdr-email-notice' ),    // singular name of the listed records.
-				'plural'   => __( 'Notification emails sent', 'wpdr-email-notice' ),   // plural name of the listed records.
+				'singular' => __( 'Notification email sent', 'email-notice-wp-document-revisions' ),    // singular name of the listed records.
+				'plural'   => __( 'Notification emails sent', 'email-notice-wp-document-revisions' ),   // plural name of the listed records.
 				'ajax'     => false,
 				'screen'   => null,
 			)
@@ -52,11 +52,11 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	public function get_columns() {
 		$columns = array(
 			'id'                => '#',
-			'post_title'        => __( 'Post Title', 'wpdr-email-notice' ),
-			'time_mail_sent'    => __( 'Email sent', 'wpdr-email-notice' ),
-			'user_display_name' => __( 'User Name', 'wpdr-email-notice' ),
-			'user_email'        => __( 'User Email', 'wpdr-email-notice' ),
-			'status'            => __( 'Status', 'wpdr-email-notice' ),
+			'post_title'        => __( 'Post Title', 'email-notice-wp-document-revisions' ),
+			'time_mail_sent'    => __( 'Email sent', 'email-notice-wp-document-revisions' ),
+			'user_display_name' => __( 'User Name', 'email-notice-wp-document-revisions' ),
+			'user_email'        => __( 'User Email', 'email-notice-wp-document-revisions' ),
+			'status'            => __( 'Status', 'email-notice-wp-document-revisions' ),
 		);
 		return $columns;
 	}
@@ -119,7 +119,7 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 			return $item['id'];
 		}
 		$actions = array(
-			'view' => '<button onclick="wpdr_en_extra( ' . $item['id'] . ' )">' . __( 'Extra Text', 'wpdr-email-notice' ) . '</button>&nbsp;&nbsp;' .
+			'view' => '<button onclick="wpdr_en_extra( ' . $item['id'] . ' )">' . __( 'Extra Text', 'email-notice-wp-document-revisions' ) . '</button>&nbsp;&nbsp;' .
 					'<textarea id="extra_' . $item['id'] . '" onclick="wpdr_en_extra( ' . $item['id'] . ' )" rows="3" cols="40" style="display: none">' .
 					$item['extra_text'] . '</textarea>',
 		);
@@ -224,7 +224,7 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	 * @return void
 	 */
 	public function no_items() {
-		esc_html_e( 'No emails sent out, yet.', 'wpdr-email-notice' );
+		esc_html_e( 'No emails sent out, yet.', 'email-notice-wp-document-revisions' );
 	}
 
 	/**

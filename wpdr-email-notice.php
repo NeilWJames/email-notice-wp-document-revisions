@@ -9,7 +9,7 @@
  * License:           GPLv3 or later
  * Requires at least: 4.9
  * Requires PHP:      7.4
- * Text Domain:       wpdr-email-notice
+ * Text Domain:       email-notice-wp-document-revisions
  * Domain Path:       /languages
  *
  * @package Email Notice WP Document Revisions
@@ -25,10 +25,10 @@ if ( ! in_array( 'wp-document-revisions/wp-document-revisions.php', apply_filter
 	if ( is_admin() ) {
 		echo wp_kses_post( '<div class="notice notice-warning is-dismissible"><p>' );
 		// translators: Do not translate Email Notice WP Document Revisions or WP Document Revisions.
-		esc_html_e( 'Plugin Email Notice WP Document Revisions is activated but its required plugin WP Document Revisions is not.', 'wpdr-email-notice' );
+		esc_html_e( 'Plugin Email Notice WP Document Revisions is activated but its required plugin WP Document Revisions is not.', 'email-notice-wp-document-revisions' );
 		echo wp_kses_post( '</p><p>' );
 		// translators: Do not translate Email Notice WP Document Revisions.
-		esc_html_e( 'Plugin Email Notice WP Document Revisions will not activate its functionality.', 'wpdr-email-notice' );
+		esc_html_e( 'Plugin Email Notice WP Document Revisions will not activate its functionality.', 'email-notice-wp-document-revisions' );
 		echo wp_kses_post( '</p></div>' );
 	}
 	return;

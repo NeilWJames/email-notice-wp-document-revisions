@@ -59,8 +59,8 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 		$args = wp_parse_args(
 			$args,
 			array(
-				'singular' => __( 'External User Address', 'wpdr-email-notice' ),    // singular name of the listed records.
-				'plural'   => __( 'External User Addresses', 'wpdr-email-notice' ),   // plural name of the listed records.
+				'singular' => __( 'External User Address', 'email-notice-wp-document-revisions' ),    // singular name of the listed records.
+				'plural'   => __( 'External User Addresses', 'email-notice-wp-document-revisions' ),   // plural name of the listed records.
 				'ajax'     => false,
 				'screen'   => 'doc_ext_list',
 			)
@@ -101,9 +101,9 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 	public function get_columns() {
 		$columns = array(
 			'rec_num'   => '#',
-			'user_name' => __( 'User Name', 'wpdr-email-notice' ),
-			'email'     => __( 'Email Address', 'wpdr-email-notice' ),
-			'pause'     => __( 'Pause Mail', 'wpdr-email-notice' ),
+			'user_name' => __( 'User Name', 'email-notice-wp-document-revisions' ),
+			'email'     => __( 'Email Address', 'email-notice-wp-document-revisions' ),
+			'pause'     => __( 'Pause Mail', 'email-notice-wp-document-revisions' ),
 		);
 		return $columns;
 	}
@@ -150,8 +150,8 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 	 */
 	public function column_rec_num( $item ) {
 		$actions = array(
-			'edit'   => '<button onclick=\'wpdr_en_edit( "' . $item['user_name'] . '", "' . $item['email'] . '", "' . $item['pause'] . '" )\'>' . __( 'Edit', 'wpdr-email-notice' ) . '</button>',
-			'delete' => sprintf( '<button onclick="wpdr_en_delete(%s, %s)">' . __( 'Delete', 'wpdr-email-notice' ) . '</button>', self::$post_id, $item['rec_num'] ),
+			'edit'   => '<button onclick=\'wpdr_en_edit( "' . $item['user_name'] . '", "' . $item['email'] . '", "' . $item['pause'] . '" )\'>' . __( 'Edit', 'email-notice-wp-document-revisions' ) . '</button>',
+			'delete' => sprintf( '<button onclick="wpdr_en_delete(%s, %s)">' . __( 'Delete', 'email-notice-wp-document-revisions' ) . '</button>', self::$post_id, $item['rec_num'] ),
 		);
 
 		return sprintf( '%1$s %2$s', $item['rec_num'], $this->row_actions( $actions ) );
@@ -260,9 +260,9 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 	 */
 	public function no_items() {
 		if ( self::$no_addr ) {
-			esc_html_e( 'No addressees created yet.', 'wpdr-email-notice' );
+			esc_html_e( 'No addressees created yet.', 'email-notice-wp-document-revisions' );
 		} else {
-			esc_html_e( 'No matching addressees found.', 'wpdr-email-notice' );
+			esc_html_e( 'No matching addressees found.', 'email-notice-wp-document-revisions' );
 		}
 	}
 

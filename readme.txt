@@ -4,7 +4,7 @@ Tags: administration, email, e-mail, document, automatic
 Requires at least: 4.9
 Requires PHP: 7.4
 Requires Plugins: wp-document-revisions
-Tested up to: 6.7.1
+Tested up to: 6.8.0
 Stable tag: 3.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -123,9 +123,12 @@ These are listed and described at [filters.md](../docs/filters.md).
 Release date: April 18, 2025
 
 * NEW: GitHub documentation included in plugin and explicitly linked.
+* NEW: Text domain changed as plugin_check plugin complains.
+* FIX: Settings sanitized on update.
 * FIX: Notification-specific text message metabox reviewed.
 * FIX: Filter wpdr_en_ext_attach_notice withdrawn as effectively replaced by global setting.
 * FIX: Consistent use of word email (rather than e-mail)
+* FIX: Review uninstall process
 
 = 3.1 =
 Release date: December 24, 2024

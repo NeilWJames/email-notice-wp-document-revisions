@@ -6,7 +6,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="wpdr-email-notice"/>
+				<element value="email-notice-wp-document-revisions"/>
 				<element value="wp-document-revisions"/>
 			</property>
 		</properties>

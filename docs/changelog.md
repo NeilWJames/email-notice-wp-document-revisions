@@ -5,9 +5,12 @@
 Release date: April 18, 2025
 
 * NEW: GitHub documentation included in plugin and explicitly linked.
+* NEW: Text domain changed as plugin_check plugin complains.
+* FIX: Settings sanitized on update.
 * FIX: Notification-specific text message metabox reviewed.
 * FIX: Filter wpdr_en_ext_attach_notice withdrawn as effectively replaced by global setting.
 * FIX: Consistent use of word email (rather than e-mail)
+* FIX: Review uninstall process
 
 ## 3.1
 

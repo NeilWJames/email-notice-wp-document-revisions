@@ -8,7 +8,7 @@
 
 // No direct access allowed to plugin php file.
 if ( ! defined( 'ABSPATH' ) ) {
-	die( esc_html__( 'You are not allowed to call this file directly.', 'wpdr-email-notice' ) );
+	die( esc_html__( 'You are not allowed to call this file directly.', 'email-notice-wp-document-revisions' ) );
 }
 
 /**
@@ -38,8 +38,8 @@ class WPDR_EN_All_Users_Bulk_Action {
 	 * @return string[]
 	 */
 	public function custom_bulk_action_option( $bulk_actions ) {
-		$bulk_actions['wpdr_subscribe']   = __( 'Subscribe to Document Email notifications', 'wpdr-email-notice' );
-		$bulk_actions['wpdr_unsubscribe'] = __( 'Unsubscribe from Document Email notifications', 'wpdr-email-notice' );
+		$bulk_actions['wpdr_subscribe']   = __( 'Subscribe to Document Email notifications', 'email-notice-wp-document-revisions' );
+		$bulk_actions['wpdr_unsubscribe'] = __( 'Unsubscribe from Document Email notifications', 'email-notice-wp-document-revisions' );
 		return $bulk_actions;
 	}
 
@@ -66,7 +66,7 @@ class WPDR_EN_All_Users_Bulk_Action {
 				$subscribed = 0;
 				foreach ( $user_ids as $user_id ) {
 					if ( ! $this->perform_subscribe( $user_id ) ) {
-						wp_die( esc_html__( 'Error subscribing users.', 'wpdr-email-notice' ) );
+						wp_die( esc_html__( 'Error subscribing users.', 'email-notice-wp-document-revisions' ) );
 					}
 					++$subscribed;
 				}
@@ -75,7 +75,7 @@ class WPDR_EN_All_Users_Bulk_Action {
 				$subscribed = 0;
 				foreach ( $user_ids as $user_id ) {
 					if ( ! $this->perform_unsubscribe( $user_id ) ) {
-						wp_die( esc_html__( 'Error unsubscribing users.', 'wpdr-email-notice' ) );
+						wp_die( esc_html__( 'Error unsubscribing users.', 'email-notice-wp-document-revisions' ) );
 					}
 					++$subscribed;
 				}

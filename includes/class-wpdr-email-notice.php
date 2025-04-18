@@ -8,7 +8,7 @@
 
 // No direct access allowed to plugin php file.
 if ( ! defined( 'ABSPATH' ) ) {
-	die( esc_html__( 'You are not allowed to call this file directly.', 'wpdr-email-notice' ) );
+	die( esc_html__( 'You are not allowed to call this file directly.', 'email-notice-wp-document-revisions' ) );
 }
 
 /**
@@ -289,20 +289,20 @@ class WPDR_Email_Notice {
 
 		// create custom post type.
 		$labels = array(
-			'name'               => _x( 'Document External Lists', 'post type general name', 'wpdr-email-notice' ),
-			'singular_name'      => _x( 'Document External List', 'post type singular name', 'wpdr-email-notice' ),
-			'add_new'            => __( 'Add Document External List', 'wpdr-email-notice' ),
-			'add_new_item'       => __( 'Add New Document External List', 'wpdr-email-notice' ),
-			'edit_item'          => __( 'Edit Document External List', 'wpdr-email-notice' ),
-			'new_item'           => __( 'New Document External List', 'wpdr-email-notice' ),
-			'view_item'          => __( 'View Document External List', 'wpdr-email-notice' ),
-			'view_items'         => __( 'View Document External Lists', 'wpdr-email-notice' ),
-			'search_items'       => __( 'Search Document External Lists', 'wpdr-email-notice' ),
-			'not_found'          => __( 'No Document External List found', 'wpdr-email-notice' ),
-			'not_found_in_trash' => __( 'No Document External Lists found in Trash', 'wpdr-email-notice' ),
+			'name'               => _x( 'Document External Lists', 'post type general name', 'email-notice-wp-document-revisions' ),
+			'singular_name'      => _x( 'Document External List', 'post type singular name', 'email-notice-wp-document-revisions' ),
+			'add_new'            => __( 'Add Document External List', 'email-notice-wp-document-revisions' ),
+			'add_new_item'       => __( 'Add New Document External List', 'email-notice-wp-document-revisions' ),
+			'edit_item'          => __( 'Edit Document External List', 'email-notice-wp-document-revisions' ),
+			'new_item'           => __( 'New Document External List', 'email-notice-wp-document-revisions' ),
+			'view_item'          => __( 'View Document External List', 'email-notice-wp-document-revisions' ),
+			'view_items'         => __( 'View Document External Lists', 'email-notice-wp-document-revisions' ),
+			'search_items'       => __( 'Search Document External Lists', 'email-notice-wp-document-revisions' ),
+			'not_found'          => __( 'No Document External List found', 'email-notice-wp-document-revisions' ),
+			'not_found_in_trash' => __( 'No Document External Lists found in Trash', 'email-notice-wp-document-revisions' ),
 			'parent_item_colon'  => '',
-			'menu_name'          => __( 'Document Emails', 'wpdr-email-notice' ),
-			'all_items'          => __( 'All Document External Lists', 'wpdr-email-notice' ),
+			'menu_name'          => __( 'Document Emails', 'email-notice-wp-document-revisions' ),
+			'all_items'          => __( 'All Document External Lists', 'email-notice-wp-document-revisions' ),
 		);
 
 		$args = array(
@@ -380,34 +380,98 @@ class WPDR_Email_Notice {
 		self::$internal_list_needed = ! empty( self::$internal_roles );
 
 		// support languages.
-		load_plugin_textdomain( 'wpdr-email-notice', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+		load_plugin_textdomain( 'email-notice-wp-document-revisions', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 
 		// Adding settings to Settings->General.
-		add_settings_section( 'wpdr_en_general_settings', __( 'Document Email Settings', 'wpdr-email-notice' ), array( $this, 'general_settings' ), 'general' );
-		add_settings_field( 'wpdr_en_set_email_from', __( 'Email From', 'wpdr-email-notice' ), array( $this, 'set_email_from' ), 'general', 'wpdr_en_general_settings' );
-		add_settings_field( 'wpdr_en_set_email_from_address', __( 'Email Address', 'wpdr-email-notice' ), array( $this, 'set_email_from_address' ), 'general', 'wpdr_en_general_settings' );
-		register_setting( 'general', 'wpdr_en_set_email_from' );
-		register_setting( 'general', 'wpdr_en_set_email_from_address' );
+		register_setting(
+			'general',
+			'wpdr_en_set_email_from',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+		);
+		register_setting(
+			'general',
+			'wpdr_en_set_email_from_address',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_email',
+			),
+		);
+		add_settings_section( 'wpdr_en_general_settings', __( 'Document Email Settings', 'email-notice-wp-document-revisions' ), array( $this, 'general_settings' ), 'general' );
+		add_settings_field( 'wpdr_en_set_email_from', __( 'Email From', 'email-notice-wp-document-revisions' ), array( $this, 'set_email_from' ), 'general', 'wpdr_en_general_settings' );
+		add_settings_field( 'wpdr_en_set_email_from_address', __( 'Email Address', 'email-notice-wp-document-revisions' ), array( $this, 'set_email_from_address' ), 'general', 'wpdr_en_general_settings' );
+
 		// Adding settings to Settings->Writing.
-		add_settings_section( 'wpdr_en_writing_settings', __( 'Document Email Settings - ', 'wpdr-email-notice' ) . __( 'Notifications', 'wpdr-email-notice' ), array( $this, 'writing_settings' ), 'writing' );
-		add_settings_field( 'wpdr_en_set_notification_mode', __( 'Internal Notice mode', 'wpdr-email-notice' ), array( $this, 'set_notification_mode' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_notification_about', __( 'Notify internal users about', 'wpdr-email-notice' ), array( $this, 'set_notification_about' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_subject', __( 'Notification email subject', 'wpdr-email-notice' ), array( $this, 'set_subject' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_content', __( 'Internal Notice email content', 'wpdr-email-notice' ), array( $this, 'set_content' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_exttext', __( 'External Notice email content', 'wpdr-email-notice' ), array( $this, 'set_exttext' ), 'writing', 'wpdr_en_writing_settings' );
+		register_setting(
+			'writing',
+			'wpdr_en_set_notification_mode',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => 'intval',
+			),
+		);
+		register_setting(
+			'writing',
+			'wpdr_en_set_notification_about',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+		);
+		register_setting(
+			'writing',
+			'wpdr_en_set_subject',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+		);
+		register_setting(
+			'writing',
+			'wpdr_en_set_content',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'wp_kses_post',
+			),
+		);
+		register_setting(
+			'writing',
+			'wpdr_en_set_exttext',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'wp_kses_post',
+			),
+		);
+		register_setting(
+			'writing',
+			'wpdr_en_set_ext_attach',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => 'intval',
+			),
+		);
+		register_setting(
+			'writing',
+			'wpdr_en_set_repeat',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'wp_kses_post',
+			),
+		);
+		add_settings_section( 'wpdr_en_writing_settings', __( 'Document Email Settings - ', 'email-notice-wp-document-revisions' ) . __( 'Notifications', 'email-notice-wp-document-revisions' ), array( $this, 'writing_settings' ), 'writing' );
+		add_settings_field( 'wpdr_en_set_notification_mode', __( 'Internal Notice mode', 'email-notice-wp-document-revisions' ), array( $this, 'set_notification_mode' ), 'writing', 'wpdr_en_writing_settings' );
+		add_settings_field( 'wpdr_en_set_notification_about', __( 'Notify internal users about', 'email-notice-wp-document-revisions' ), array( $this, 'set_notification_about' ), 'writing', 'wpdr_en_writing_settings' );
+		add_settings_field( 'wpdr_en_set_subject', __( 'Notification email subject', 'email-notice-wp-document-revisions' ), array( $this, 'set_subject' ), 'writing', 'wpdr_en_writing_settings' );
+		add_settings_field( 'wpdr_en_set_content', __( 'Internal Notice email content', 'email-notice-wp-document-revisions' ), array( $this, 'set_content' ), 'writing', 'wpdr_en_writing_settings' );
+		add_settings_field( 'wpdr_en_set_exttext', __( 'External Notice email content', 'email-notice-wp-document-revisions' ), array( $this, 'set_exttext' ), 'writing', 'wpdr_en_writing_settings' );
 		add_settings_field( 'wpdr_en_set_ext_attach', '', array( $this, 'set_ext_attach' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_repeat', __( 'Notification email repeat', 'wpdr-email-notice' ), array( $this, 'set_repeat' ), 'writing', 'wpdr_en_writing_settings' );
+		add_settings_field( 'wpdr_en_set_repeat', __( 'Notification email repeat', 'email-notice-wp-document-revisions' ), array( $this, 'set_repeat' ), 'writing', 'wpdr_en_writing_settings' );
 		// phpcs:disable
 		// #TODO: purge.
-		// add_settings_field( 'wpdr_en_set_notification_log', __( 'Logging', 'wpdr-email-notice' ), array( $this, 'set_notification_log' ), 'writing', 'wpdr_en_writing_settings' );
+		// add_settings_field( 'wpdr_en_set_notification_log', __( 'Logging', 'email-notice-wp-document-revisions' ), array( $this, 'set_notification_log' ), 'writing', 'wpdr_en_writing_settings' );
 		// phpcs:enable
-		register_setting( 'writing', 'wpdr_en_set_notification_mode' );
-		register_setting( 'writing', 'wpdr_en_set_notification_about' );
-		register_setting( 'writing', 'wpdr_en_set_subject' );
-		register_setting( 'writing', 'wpdr_en_set_content' );
-		register_setting( 'writing', 'wpdr_en_set_exttext' );
-		register_setting( 'writing', 'wpdr_en_set_ext_attach' );
-		register_setting( 'writing', 'wpdr_en_set_repeat' );
 		// phpcs:disable
 		// #TODO: purge.
 		// register_setting( 'writing', 'wpdr_en_set_notification_log' );.
@@ -509,15 +573,15 @@ class WPDR_Email_Notice {
 		// set default texts.
 		// phpcs:disable WordPress.Security.EscapeOutput, WordPress.WP.I18n
 		// translators: For this group, text surroundedby % symbols (like %recipient_name%) should not be translated.
-		self::$default_content = __( 'Dear %recipient_name%,<br/><br/>', 'wpdr-email-notice' ) .
-			__( 'A new document is published. Check it out!<br/><br/><strong>%title_with_permalink%</strong><br/>%words_50%%extra%%repeat%<br/>', 'wpdr-email-notice' ) .
+		self::$default_content = __( 'Dear %recipient_name%,<br/><br/>', 'email-notice-wp-document-revisions' ) .
+			__( 'A new document is published. Check it out!<br/><br/><strong>%title_with_permalink%</strong><br/>%words_50%%extra%%repeat%<br/>', 'email-notice-wp-document-revisions' ) .
 			// translators: %s is the link address of the user's profile. Do not translate.
-			sprintf( __( '<small>In case you do not want to receive this kind of notification you can turn it off in your <a href="%s">profile</a>.', 'wpdr-email-notice' ), admin_url( 'profile.php' ) ) .
-			__( '<br/>Also go there if you wish to change whether you will receive the document as an attachment.</small>', 'wpdr-email-notice' );
-		self::$default_exttext = __( 'Dear %recipient_name%,<br/><br/>', 'wpdr-email-notice' ) .
-			__( 'A new document is published. Check it out!<br/><br/><strong>%title_with_permalink%</strong><br/>%words_50%%extra%%repeat%<br/>', 'wpdr-email-notice' ) .
-			__( '<small>In case you do not want to receive this kind of notification you can reply with the message "Unsubscribe".</small>', 'wpdr-email-notice' );
-		self::$default_repeat  = __( '<p>This document has previously been sent to you %num% time(s), with the latest sent on %last_date%.</p>', 'wpdr-email-notice' );
+			sprintf( __( '<small>In case you do not want to receive this kind of notification you can turn it off in your <a href="%s">profile</a>.', 'email-notice-wp-document-revisions' ), admin_url( 'profile.php' ) ) .
+			__( '<br/>Also go there if you wish to change whether you will receive the document as an attachment.</small>', 'email-notice-wp-document-revisions' );
+		self::$default_exttext = __( 'Dear %recipient_name%,<br/><br/>', 'email-notice-wp-document-revisions' ) .
+			__( 'A new document is published. Check it out!<br/><br/><strong>%title_with_permalink%</strong><br/>%words_50%%extra%%repeat%<br/>', 'email-notice-wp-document-revisions' ) .
+			__( '<small>In case you do not want to receive this kind of notification you can reply with the message "Unsubscribe".</small>', 'email-notice-wp-document-revisions' );
+		self::$default_repeat  = __( '<p>This document has previously been sent to you %num% time(s), with the latest sent on %last_date%.</p>', 'email-notice-wp-document-revisions' );
 		// phpcs:enable WordPress.Security.EscapeOutput, WordPress.WP.I18n
 		self::$default_content = wp_kses_post( self::$default_content );
 		self::$default_exttext = wp_kses_post( self::$default_exttext );
@@ -538,20 +602,20 @@ class WPDR_Email_Notice {
 			return;
 		}
 		if ( 'document' === $post->post_type ) {
-			$script      = 'wpdr-email-notice';
+			$script      = 'email-notice-wp-document-revisions';
 			$css         = 'wpdr-en-notice';
 			$nonce_array = array(
 				'wpdr_en_nonce'    => wp_create_nonce( 'wpdr_en_nonce' ),
 				'ajaxurl'          => admin_url( 'admin-ajax.php' ),
-				'sending_mails'    => __( 'Sending email notifications...', 'wpdr-email-notice' ),
-				'error_sending'    => __( 'Error sending emails.', 'wpdr-email-notice' ),
-				'resend'           => __( 'Re-send notification email(s)', 'wpdr-email-notice' ),
-				'email_out_of'     => __( 'email(s) out of', 'wpdr-email-notice' ),
-				'notif_sent_check' => __( 'notification(s) sent. Check', 'wpdr-email-notice' ),
-				'sent_with'        => __( 'sent with', 'wpdr-email-notice' ),
-				'log_issues'       => __( 'log issues. Check', 'wpdr-email-notice' ),
-				'log'              => __( 'log', 'wpdr-email-notice' ),
-				'for_details'      => __( 'for details.', 'wpdr-email-notice' ),
+				'sending_mails'    => __( 'Sending email notifications...', 'email-notice-wp-document-revisions' ),
+				'error_sending'    => __( 'Error sending emails.', 'email-notice-wp-document-revisions' ),
+				'resend'           => __( 'Re-send notification email(s)', 'email-notice-wp-document-revisions' ),
+				'email_out_of'     => __( 'email(s) out of', 'email-notice-wp-document-revisions' ),
+				'notif_sent_check' => __( 'notification(s) sent. Check', 'email-notice-wp-document-revisions' ),
+				'sent_with'        => __( 'sent with', 'email-notice-wp-document-revisions' ),
+				'log_issues'       => __( 'log issues. Check', 'email-notice-wp-document-revisions' ),
+				'log'              => __( 'log', 'email-notice-wp-document-revisions' ),
+				'for_details'      => __( 'for details.', 'email-notice-wp-document-revisions' ),
 			);
 		} elseif ( 'doc_ext_list' === $post->post_type ) {
 			$css         = 'wpdr-en-mail';
@@ -560,8 +624,8 @@ class WPDR_Email_Notice {
 				'wpdr_en_nonce' => wp_create_nonce( 'wpdr_en_nonce' ),
 				'ajaxurl'       => admin_url( 'admin-ajax.php' ),
 				'user'          => get_current_user_id(),
-				'add_address'   => __( 'Add Address to List', 'wpdr-email-notice' ),
-				'edit_address'  => __( 'Edit existing Address', 'wpdr-email-notice' ),
+				'add_address'   => __( 'Add Address to List', 'email-notice-wp-document-revisions' ),
+				'edit_address'  => __( 'Edit existing Address', 'email-notice-wp-document-revisions' ),
 			);
 		} else {
 			return;
@@ -613,7 +677,7 @@ class WPDR_Email_Notice {
 		if ( substr( $sitename, 0, 4 ) === 'www.' ) {
 			$sitename = substr( $sitename, 4 );
 		}
-		echo esc_html__( 'By default all notification emails received from "WordPress" < wordpress@', 'wpdr-email-notice' ) . esc_url( $sitename ) . ' >. ' . esc_html__( 'You can change these below.', 'wpdr-email-notice' );
+		echo esc_html__( 'By default all notification emails received from "WordPress" < wordpress@', 'email-notice-wp-document-revisions' ) . esc_url( $sitename ) . ' >. ' . esc_html__( 'You can change these below.', 'email-notice-wp-document-revisions' );
 	}
 
 	/**
@@ -651,24 +715,24 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function writing_settings() {
-		esc_html_e( 'Tags available to make email subject and/or content dynamic:', 'wpdr-email-notice' );
+		esc_html_e( 'Tags available to make email subject and/or content dynamic:', 'email-notice-wp-document-revisions' );
 		echo '<br/>';
-		echo '<strong>%title%</strong> ' . esc_html__( 'means title of the post', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%permalink%</strong> ' . esc_html__( 'means URL of the post', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%title_with_permalink%</strong> ' . esc_html__( 'means URL with title of the post', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%author_name%</strong> ' . esc_html__( 'means the name of the post author', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%excerpt%</strong> ' . esc_html__( 'means excerpt of the post', 'wpdr-email-notice' ) . ' ' . esc_html__( 'Only available to those who can edit the document', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%words_n%</strong> ' . esc_html__( 'means the first n (must be an integer number) number of word(s) extracted from the post', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%recipient_name%</strong> ' . esc_html__( 'means display name of the user who receives the email', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%repeat%</strong> ' . esc_html__( 'means output the phrase if the document has been previously emailed.', 'wpdr-email-notice' ) . '<br/>';
+		echo '<strong>%title%</strong> ' . esc_html__( 'means title of the post', 'email-notice-wp-document-revisions' ) . '<br/>';
+		echo '<strong>%permalink%</strong> ' . esc_html__( 'means URL of the post', 'email-notice-wp-document-revisions' ) . '<br/>';
+		echo '<strong>%title_with_permalink%</strong> ' . esc_html__( 'means URL with title of the post', 'email-notice-wp-document-revisions' ) . '<br/>';
+		echo '<strong>%author_name%</strong> ' . esc_html__( 'means the name of the post author', 'email-notice-wp-document-revisions' ) . '<br/>';
+		echo '<strong>%excerpt%</strong> ' . esc_html__( 'means excerpt of the post', 'email-notice-wp-document-revisions' ) . ' ' . esc_html__( 'Only available to those who can edit the document', 'email-notice-wp-document-revisions' ) . '<br/>';
+		echo '<strong>%words_n%</strong> ' . esc_html__( 'means the first n (must be an integer number) number of word(s) extracted from the post', 'email-notice-wp-document-revisions' ) . '<br/>';
+		echo '<strong>%recipient_name%</strong> ' . esc_html__( 'means display name of the user who receives the email', 'email-notice-wp-document-revisions' ) . '<br/>';
+		echo '<strong>%repeat%</strong> ' . esc_html__( 'means output the phrase if the document has been previously emailed.', 'email-notice-wp-document-revisions' ) . '<br/>';
 		echo '<br/>';
-		echo esc_html__( 'Tags available within the tag', 'wpdr-email-notice' ) . ' <strong>%repeat%</strong>';
+		echo esc_html__( 'Tags available within the tag', 'email-notice-wp-document-revisions' ) . ' <strong>%repeat%</strong>';
 		echo '<br/>';
-		echo '<strong>%num%</strong> ' . esc_html__( 'means the number of times the document has been previously emailed.', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%last_date%</strong> ' . esc_html__( 'means the last date that the document was emailed.', 'wpdr-email-notice' ) . '<br/>';
-		echo '<strong>%last_time%</strong> ' . esc_html__( 'means the last date incuding time that the document was emailed.', 'wpdr-email-notice' ) . '<br/>';
+		echo '<strong>%num%</strong> ' . esc_html__( 'means the number of times the document has been previously emailed.', 'email-notice-wp-document-revisions' ) . '<br/>';
+		echo '<strong>%last_date%</strong> ' . esc_html__( 'means the last date that the document was emailed.', 'email-notice-wp-document-revisions' ) . '<br/>';
+		echo '<strong>%last_time%</strong> ' . esc_html__( 'means the last date incuding time that the document was emailed.', 'email-notice-wp-document-revisions' ) . '<br/>';
 		echo '<br/>';
-		echo '<strong>%extra%</strong> ' . esc_html__( 'means output an optional extra phrase entered at the time of mailing.', 'wpdr-email-notice' ) . '<br/>';
+		echo '<strong>%extra%</strong> ' . esc_html__( 'means output an optional extra phrase entered at the time of mailing.', 'email-notice-wp-document-revisions' ) . '<br/>';
 	}
 
 	/**
@@ -682,8 +746,8 @@ class WPDR_Email_Notice {
 		if ( ! isset( $opt ) ) {
 			$opt = 'Manual';
 		}
-		echo '<input type="radio" name="wpdr_en_set_notification_mode" value="Auto" ' . checked( 'Auto', $opt, false ) . '>' . esc_html__( 'Auto', 'wpdr-email-notice' ) . '</input> ' . esc_html__( '(send emails automatically when you publish a post)', 'wpdr-email-notice' ) . '<br/>';
-		echo '<input type="radio" name="wpdr_en_set_notification_mode" value="Manual" ' . checked( 'Manual', $opt, false ) . '>' . esc_html__( 'Manual', 'wpdr-email-notice' ) . '</input> ' . esc_html__( '(you need to press a button to send notification)', 'wpdr-email-notice' );
+		echo '<input type="radio" name="wpdr_en_set_notification_mode" value="Auto" ' . checked( 'Auto', $opt, false ) . '>' . esc_html__( 'Auto', 'email-notice-wp-document-revisions' ) . '</input> ' . esc_html__( '(send emails automatically when you publish a post)', 'email-notice-wp-document-revisions' ) . '<br/>';
+		echo '<input type="radio" name="wpdr_en_set_notification_mode" value="Manual" ' . checked( 'Manual', $opt, false ) . '>' . esc_html__( 'Manual', 'email-notice-wp-document-revisions' ) . '</input> ' . esc_html__( '(you need to press a button to send notification)', 'email-notice-wp-document-revisions' );
 	}
 
 	/**
@@ -708,11 +772,11 @@ class WPDR_Email_Notice {
 				$private_checked = ' checked="checked" ';
 			}
 		}
-		echo '<input type="checkbox" id="Chkbx_Public" name="wpdr_en_set_notification_about[Chkbx_Public]" value="Public" ' . esc_attr( $public_checked ) . '>' . esc_html__( 'Public posts', 'wpdr-email-notice' ) . '</input><br/>';
-		echo '<input type="checkbox" id="Chkbx_Password" name="wpdr_en_set_notification_about[Chkbx_Password]" value="Password"' . esc_attr( $password_checked ) . '>' . esc_html__( 'Password', 'wpdr-email-notice' ) . '</input> ' . esc_html__( 'protected posts (password will', 'wpdr-email-notice' ) . ' <strong>' . esc_html__( 'NOT', 'wpdr-email-notice' ) . '</strong> ' . esc_html__( 'be included in notification email)', 'wpdr-email-notice' ) . '<br/>';
-		echo '<input type="checkbox" id="Chkbx_Private" name="wpdr_en_set_notification_about[Chkbx_Private]" value="Private"' . esc_attr( $private_checked ) . '>' . esc_html__( 'Private posts', 'wpdr-email-notice' ) . '</input> ';
-		echo '<br />' . esc_html__( 'Notifications are sent only to those Internal users who can read the document', 'wpdr-email-notice' );
-		echo '<br />' . esc_html__( 'Notifications can only be sent to External users for Public documents.', 'wpdr-email-notice' );
+		echo '<input type="checkbox" id="Chkbx_Public" name="wpdr_en_set_notification_about[Chkbx_Public]" value="Public" ' . esc_attr( $public_checked ) . '>' . esc_html__( 'Public posts', 'email-notice-wp-document-revisions' ) . '</input><br/>';
+		echo '<input type="checkbox" id="Chkbx_Password" name="wpdr_en_set_notification_about[Chkbx_Password]" value="Password"' . esc_attr( $password_checked ) . '>' . esc_html__( 'Password', 'email-notice-wp-document-revisions' ) . '</input> ' . esc_html__( 'protected posts (password will', 'email-notice-wp-document-revisions' ) . ' <strong>' . esc_html__( 'NOT', 'email-notice-wp-document-revisions' ) . '</strong> ' . esc_html__( 'be included in notification email)', 'email-notice-wp-document-revisions' ) . '<br/>';
+		echo '<input type="checkbox" id="Chkbx_Private" name="wpdr_en_set_notification_about[Chkbx_Private]" value="Private"' . esc_attr( $private_checked ) . '>' . esc_html__( 'Private posts', 'email-notice-wp-document-revisions' ) . '</input> ';
+		echo '<br />' . esc_html__( 'Notifications are sent only to those Internal users who can read the document', 'email-notice-wp-document-revisions' );
+		echo '<br />' . esc_html__( 'Notifications can only be sent to External users for Public documents.', 'email-notice-wp-document-revisions' );
 	}
 
 	/**
@@ -723,7 +787,7 @@ class WPDR_Email_Notice {
 	 */
 	public function set_subject() {
 		echo '<input class="regular-text ltr" type="text" id="wpdr_en_set_subject" name="wpdr_en_set_subject" placeholder="New document: %title%" value="' . esc_html( get_option( 'wpdr_en_set_subject' ) ) . '"></input>';
-		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are not allowed here, e.g.: %title_with_permalink% will revert to %title%.', 'wpdr-email-notice' );
+		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are not allowed here, e.g.: %title_with_permalink% will revert to %title%.', 'email-notice-wp-document-revisions' );
 	}
 
 	/**
@@ -742,7 +806,7 @@ class WPDR_Email_Notice {
 		echo '<textarea id="wpdr_en_set_content" name="wpdr_en_set_content" cols="80" rows="8" 
 		placeholder = "' . $place . '">' . $text . '</textarea>';
 		// phpcs:enable WordPress.Security.EscapeOutput
-		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'wpdr-email-notice' );
+		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'email-notice-wp-document-revisions' );
 	}
 
 	/**
@@ -761,7 +825,7 @@ class WPDR_Email_Notice {
 		echo '<textarea id="wpdr_en_set_content" name="wpdr_en_set_exttext" cols="80" rows="7" 
 		placeholder = "' . $place . '">' . $text . '</textarea>';
 		// phpcs:enable WordPress.Security.EscapeOutput
-		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'wpdr-email-notice' );
+		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'email-notice-wp-document-revisions' );
 	}
 
 	/**
@@ -774,9 +838,9 @@ class WPDR_Email_Notice {
 		?>
 		<label for="wpdr_en_set_ext_attach">
 		<input name="wpdr_en_set_ext_attach" type="checkbox" id="wpdr_en_set_ext_attach" value="1" <?php checked( '1', get_option( 'wpdr_en_set_ext_attach' ) ); ?> />
-		<?php esc_html_e( 'Attach the Document in emails to external users.', 'wpdr-email-notice' ); ?></label><br />
+		<?php esc_html_e( 'Attach the Document in emails to external users.', 'email-notice-wp-document-revisions' ); ?></label><br />
 		<?php
-		echo '<br/>' . esc_html__( 'Public documents may not always be accessible to External users, so these may need to be attached.', 'wpdr-email-notice' );
+		echo '<br/>' . esc_html__( 'Public documents may not always be accessible to External users, so these may need to be attached.', 'email-notice-wp-document-revisions' );
 	}
 
 	/**
@@ -790,7 +854,7 @@ class WPDR_Email_Notice {
 		echo '<textarea id="wpdr_en_set_repeat" name="wpdr_en_set_repeat" cols="80" rows="5" 
 		placeholder = "' . self::$default_repeat . '">' . wp_kses_post( get_option( 'wpdr_en_set_repeat' ) ) . '</textarea>';
 		// phpcs:enable WordPress.Security.EscapeOutput
-		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'wpdr-email-notice' );
+		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'email-notice-wp-document-revisions' );
 	}
 
 	// #TODO: purge.
@@ -846,7 +910,7 @@ class WPDR_Email_Notice {
 
 		// Header.
 		echo '<div class="wpdr_en-header">';
-		echo '<h3>' . esc_html__( 'Document Email Settings', 'wpdr-email-notice' ) . '</h3>';
+		echo '<h3>' . esc_html__( 'Document Email Settings', 'email-notice-wp-document-revisions' ) . '</h3>';
 		echo '</div>'; // wpdr_en-header end.
 
 		$wpdr_en_user_notification = '';
@@ -857,9 +921,9 @@ class WPDR_Email_Notice {
 		}
 
 		echo '<div class="wpdr_en-content">';
-		echo '<input type="checkbox" name="wpdr_en_user_notification" value="1" ' . esc_attr( $wpdr_en_user_notification ) . '>' . esc_html__( 'Notify me by email when a new document is published', 'wpdr-email-notice' ) . '</input><br/>';
+		echo '<input type="checkbox" name="wpdr_en_user_notification" value="1" ' . esc_attr( $wpdr_en_user_notification ) . '>' . esc_html__( 'Notify me by email when a new document is published', 'email-notice-wp-document-revisions' ) . '</input><br/>';
 
-		echo '<input type="checkbox" name="wpdr_en_user_attachment" value="1" ' . esc_attr( $wpdr_en_user_attachment ) . '>' . esc_html__( 'Also send me the document as an attachment by email when a new document is published', 'wpdr-email-notice' ) . '</input><br/>';
+		echo '<input type="checkbox" name="wpdr_en_user_attachment" value="1" ' . esc_attr( $wpdr_en_user_attachment ) . '>' . esc_html__( 'Also send me the document as an attachment by email when a new document is published', 'email-notice-wp-document-revisions' ) . '</input><br/>';
 		echo '</div>'; // wpdr_en-content end.
 		echo '</div>'; // wpdr_en-wrapper end.
 	}
@@ -966,7 +1030,7 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function add_metabox_head() {
-		add_meta_box( 'wpdr_en_sectionid', __( 'Document Email Notifications', 'wpdr-email-notice' ), array( $this, 'add_metabox' ), 'document', 'side', 'high' );
+		add_meta_box( 'wpdr_en_sectionid', __( 'Document Email Notifications', 'email-notice-wp-document-revisions' ), array( $this, 'add_metabox' ), 'document', 'side', 'high' );
 	}
 
 	/**
@@ -988,13 +1052,13 @@ class WPDR_Email_Notice {
 
 		echo '<div class="wpdr-en-add-meta"><div>';
 		if ( $extra ) {
-			echo '<div>' . esc_html__( 'Optional Extra text for this specific mailing', 'wpdr-email-notice' ) . '<fieldset>';
+			echo '<div>' . esc_html__( 'Optional Extra text for this specific mailing', 'email-notice-wp-document-revisions' ) . '<fieldset>';
 			echo '<textarea rows="4" cols="30" name="wpdr-en-extra" id="wpdr-en-extra"' . ( $extra ? '' : ' disabled' ) . '></textarea><br />';
-			echo '<label class="screen-reader-text" for="wpdr-en-extra">' . esc_html__( 'Optional Extra text', 'wpdr-email-notice' ) . '</label>';
-			esc_html_e( 'Enter any extra text and click Add Extra text before (re)sending.', 'wpdr-email-notice' );
+			echo '<label class="screen-reader-text" for="wpdr-en-extra">' . esc_html__( 'Optional Extra text', 'email-notice-wp-document-revisions' ) . '</label>';
+			esc_html_e( 'Enter any extra text and click Add Extra text before (re)sending.', 'email-notice-wp-document-revisions' );
 			echo '</fieldset></div><br />';
 		} else {
-			echo '<div>' . esc_html__( 'Optional Extra text not configured in templates', 'wpdr-email-notice' ) . '</div><br />';
+			echo '<div>' . esc_html__( 'Optional Extra text not configured in templates', 'email-notice-wp-document-revisions' ) . '</div><br />';
 		}
 		// Internal user lists box.
 		if ( self::$internal_list_needed ) {
@@ -1003,13 +1067,13 @@ class WPDR_Email_Notice {
 			$hasrecipient      = ! empty( $recipients );
 			echo '<div class="wpdr-en-add-text"><div>';
 			if ( ( ! empty( $notification_sent ) || '1' === $notification_sent ) && in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) && $hasrecipient ) {
-				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Re-send notification email(s)', 'wpdr-email-notice' ) . '" />';
+				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Re-send notification email(s)', 'email-notice-wp-document-revisions' ) . '" />';
 			} elseif ( in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) && ( empty( $notification_sent ) || '0' === $notification_sent ) && $hasrecipient ) {
-				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Send notification email(s)', 'wpdr-email-notice' ) . '"/>';
+				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Send notification email(s)', 'email-notice-wp-document-revisions' ) . '"/>';
 			} elseif ( empty( $notification_sent ) || '0' === $notification_sent ) {
-				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Send notification email(s)', 'wpdr-email-notice' ) . '" disabled/>';
+				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Send notification email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
 			} elseif ( ! empty( $notification_sent ) || '1' === $notification_sent ) {
-				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Re-send notification email(s)', 'wpdr-email-notice' ) . '" disabled/>';
+				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Re-send notification email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
 			}
 			echo '</div>';
 			if ( $extra ) {
@@ -1020,7 +1084,7 @@ class WPDR_Email_Notice {
 				} else {
 					echo '<input type="checkbox" id="wpdr-en-int-extra" value="0" class="wpdr_en_not_use" disabled />';
 				}
-				echo esc_html__( 'Add Extra text', 'wpdr-email-notice' ) . '</label></div></div>';
+				echo esc_html__( 'Add Extra text', 'email-notice-wp-document-revisions' ) . '</label></div></div>';
 			}
 		}
 		// Pass document id to jQuery.
@@ -1032,25 +1096,25 @@ class WPDR_Email_Notice {
 		// phpcs:disable
 		/* To debug uncomment the following.
 		if ( in_array( $pstatus, array( 'Public','Password protected','Private' ), true ) ) {
-			_e( 'Can send mail', 'wpdr-email-notice' );
+			_e( 'Can send mail', 'email-notice-wp-document-revisions' );
 		} else {
-			_e( 'Should not send mail', 'wpdr-email-notice' );
+			_e( 'Should not send mail', 'email-notice-wp-document-revisions' );
 		}
 		echo '<br/>';
 		if ( empty($notification_sent ) || '0' === $notification_sent ) {
-			_e( 'Not yet sent', 'wpdr-email-notice' );
+			_e( 'Not yet sent', 'email-notice-wp-document-revisions' );
 		} else {
-			_e( 'Already sent', 'wpdr-email-notice' );
+			_e( 'Already sent', 'email-notice-wp-document-revisions' );
 		}
 		echo '<br/>';
 		if ( $hasrecipient ) {
-			_e( 'Recipient exists', 'wpdr-email-notice' );
+			_e( 'Recipient exists', 'email-notice-wp-document-revisions' );
 		} else {
-			_e( 'No recipient', 'wpdr-email-notice' );
+			_e( 'No recipient', 'email-notice-wp-document-revisions' );
 		}
 		*/
 		// phpcs:enable
-		echo '<span id="wpdr-en-message" style="display: none; margin-left: 5px;">' . esc_html__( 'Sending email notifications...', 'wpdr-email-notice' ) . '</span>';
+		echo '<span id="wpdr-en-message" style="display: none; margin-left: 5px;">' . esc_html__( 'Sending email notifications...', 'email-notice-wp-document-revisions' ) . '</span>';
 		echo '</span></div>';
 		// external users.
 		echo '<br />';
@@ -1061,7 +1125,7 @@ class WPDR_Email_Notice {
 		$read            = ( current_user_can( 'edit_doc_ext_lists' ) ? '' : ' readonly' );
 		if ( ( ! empty( $ext_notice_sent ) || '1' === $ext_notice_sent ) && 'Public' === $pstatus && $hasextrecipient ) {
 			echo '<div class="wpdr-en-add-text"><div>';
-			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'wpdr-email-notice' ) . '" />';
+			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'email-notice-wp-document-revisions' ) . '" />';
 			echo '</div>';
 			// Is extra text available for external.
 			if ( $extra ) {
@@ -1071,7 +1135,7 @@ class WPDR_Email_Notice {
 				} else {
 					echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" class="wpdr_en_not_use" disabled />';
 				}
-				echo esc_html__( 'Add Extra text', 'wpdr-email-notice' ) . '</label></div>';
+				echo esc_html__( 'Add Extra text', 'email-notice-wp-document-revisions' ) . '</label></div>';
 			}
 			echo '</div>';
 			// output the list(s) available (text box readonly if cannot edit the lists).
@@ -1082,7 +1146,7 @@ class WPDR_Email_Notice {
 			}
 		} elseif ( 'Public' === $pstatus && ( empty( $ext_notice_sent ) || '0' === $ext_notice_sent ) && $hasextrecipient ) {
 			echo '<div class="wpdr-en-add-text"><div>';
-			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Send external list email(s)', 'wpdr-email-notice' ) . '"/>';
+			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Send external list email(s)', 'email-notice-wp-document-revisions' ) . '"/>';
 			// Is extra text available for external.
 			echo '</div><div style=" 5px; margin-right: 5px;"><label>';
 			if ( str_contains( $this->get_content( 0 ), '%extra%' ) ) {
@@ -1091,7 +1155,7 @@ class WPDR_Email_Notice {
 			} else {
 				echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" class="wpdr_en_not_use" disabled />';
 			}
-			echo esc_html__( 'Add Extra text', 'wpdr-email-notice' ) . '</label></div>';
+			echo esc_html__( 'Add Extra text', 'email-notice-wp-document-revisions' ) . '</label></div>';
 			// output the list(s) available (text box readonly if cannot edit the lists).
 			foreach ( $ext_lists as $list ) {
 				echo '<br /><label>&nbsp;&nbsp;';
@@ -1099,9 +1163,9 @@ class WPDR_Email_Notice {
 				echo '</label>';
 			}
 		} elseif ( empty( $ext_notice_sent ) || '0' === $ext_notice_sent ) {
-			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Send external list email(s)', 'wpdr-email-notice' ) . '" disabled/>';
+			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Send external list email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
 		} elseif ( ! empty( $ext_notice_sent ) || '1' === $ext_notice_sent ) {
-			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'wpdr-email-notice' ) . '" disabled/>';
+			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
 		}
 		echo '</div>';
 		echo '</div>';
@@ -1118,9 +1182,9 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function notification_log_menu() {
-		add_submenu_page( 'edit.php?post_type=doc_ext_list', __( 'External User Email Log', 'wpdr-email-notice' ), __( 'External User Email Log', 'wpdr-email-notice' ), 'edit_documents', 'wpdr_en_ext_notice_log', array( $this, 'ext_notice_log_list' ) );
+		add_submenu_page( 'edit.php?post_type=doc_ext_list', __( 'External User Email Log', 'email-notice-wp-document-revisions' ), __( 'External User Email Log', 'email-notice-wp-document-revisions' ), 'edit_documents', 'wpdr_en_ext_notice_log', array( $this, 'ext_notice_log_list' ) );
 		// internal list menu item may be removed later.
-		add_submenu_page( 'edit.php?post_type=doc_ext_list', __( 'Internal User Email Log', 'wpdr-email-notice' ), __( 'Internal User Email Log', 'wpdr-email-notice' ), 'edit_documents', 'wpdr_en_notification_log', array( $this, 'notification_log_list' ) );
+		add_submenu_page( 'edit.php?post_type=doc_ext_list', __( 'Internal User Email Log', 'email-notice-wp-document-revisions' ), __( 'Internal User Email Log', 'email-notice-wp-document-revisions' ), 'edit_documents', 'wpdr_en_notification_log', array( $this, 'notification_log_list' ) );
 	}
 
 	/**
@@ -1135,7 +1199,7 @@ class WPDR_Email_Notice {
 		if ( ! isset( $_POST['wpdr_en_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wpdr_en_nonce'] ) ), 'wpdr_en_nonce' ) ) {
 			$result = array(
 				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-11',
 			);
 			header( 'Content-Type: application/json' );
@@ -1146,7 +1210,7 @@ class WPDR_Email_Notice {
 		if ( ! isset( $_POST['userid'] ) || ! wp_set_current_user( sanitize_text_field( wp_unslash( $_POST['userid'] ) ) ) instanceof WP_User ) {
 			$result = array(
 				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-12',
 			);
 			header( 'Content-Type: application/json' );
@@ -1157,7 +1221,7 @@ class WPDR_Email_Notice {
 		if ( ! isset( $_POST['post_id'] ) || ! get_post( sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) ) instanceof WP_Post ) {
 			$result = array(
 				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-13',
 			);
 			header( 'Content-Type: application/json' );
@@ -1181,7 +1245,7 @@ class WPDR_Email_Notice {
 		if ( empty( $user_name ) || empty( $email ) ) {
 			$result = array(
 				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-14',
 			);
 			header( 'Content-Type: application/json' );
@@ -1253,7 +1317,7 @@ class WPDR_Email_Notice {
 		if ( ! isset( $_POST['wpdr_en_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wpdr_en_nonce'] ) ), 'wpdr_en_nonce' ) ) {
 			$result = array(
 				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-11',
 			);
 			header( 'Content-Type: application/json' );
@@ -1264,7 +1328,7 @@ class WPDR_Email_Notice {
 		if ( ! isset( $_POST['userid'] ) || ! wp_set_current_user( sanitize_text_field( wp_unslash( $_POST['userid'] ) ) ) instanceof WP_User ) {
 			$result = array(
 				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-12',
 			);
 			header( 'Content-Type: application/json' );
@@ -1275,7 +1339,7 @@ class WPDR_Email_Notice {
 		if ( ! isset( $_POST['post_id'] ) || ! get_post( sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) ) instanceof WP_Post ) {
 			$result = array(
 				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-13',
 			);
 			header( 'Content-Type: application/json' );
@@ -1291,7 +1355,7 @@ class WPDR_Email_Notice {
 		if ( is_null( $del_rec ) ) {
 			$result = array(
 				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-14',
 			);
 			header( 'Content-Type: application/json' );
@@ -1303,7 +1367,7 @@ class WPDR_Email_Notice {
 			// list should exist.
 			$result = array(
 				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-15',
 			);
 			header( 'Content-Type: application/json' );
@@ -1326,7 +1390,7 @@ class WPDR_Email_Notice {
 		if ( ! $removed ) {
 			$result = array(
 				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-16',
 			);
 			header( 'Content-Type: application/json' );
@@ -1370,7 +1434,7 @@ class WPDR_Email_Notice {
 		if ( ! isset( $_GET['wpdr_en_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['wpdr_en_nonce'] ) ), 'wpdr_en_nonce' ) ) {
 			$result = array(
 				'error'               => true,
-				'error_msg'           => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'           => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'logged_count'        => 0,
 				'sent_count'          => 0,
 				'sending_error_count' => 0,
@@ -1458,7 +1522,7 @@ class WPDR_Email_Notice {
 	 */
 	public function notification_log_list() {
 		if ( ! current_user_can( 'edit_documents' ) ) {
-			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'wpdr-email-notice' ) );
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'email-notice-wp-document-revisions' ) );
 		}
 
 		$this->enqueue_log_js();
@@ -1466,18 +1530,18 @@ class WPDR_Email_Notice {
 
 		// #TODO: add filter/search.
 		echo '<div class="wrap">';
-		echo '<h1 class="wp-heading-inline">' . esc_html__( 'Document Email Notification Log', 'wpdr-email-notice' ) . '</h1>';
+		echo '<h1 class="wp-heading-inline">' . esc_html__( 'Document Email Notification Log', 'email-notice-wp-document-revisions' ) . '</h1>';
 		$wpdr_en_notification_log_table         = new WPDR_EN_User_Log_Table();
 		$wpdr_en_notification_log_table->screen = convert_to_screen( null );
 		$wpdr_en_notification_log_table->prepare_items();
 		echo '<form method="get">';
 		echo '<input type="hidden" name="post_type" value="doc_ext_list" />';
 		echo '<input type="hidden" name="page" value="wpdr_en_notification_log" />';
-		$wpdr_en_notification_log_table->search_box( esc_html__( 'Search', 'wpdr-email-notice' ), 'search_id' );
+		$wpdr_en_notification_log_table->search_box( esc_html__( 'Search', 'email-notice-wp-document-revisions' ), 'search_id' );
 		echo '</form>';
 		$wpdr_en_notification_log_table->display();
-		echo '<p>' . esc_html__( 'Note: Success denotes that the email was successfully received by your email system.', 'wpdr-email-notice' ) . '</p>';
-		echo '<p>' . esc_html__( 'The mail delivery process to the recipient is managed within your email system.', 'wpdr-email-notice' ) . '</p>';
+		echo '<p>' . esc_html__( 'Note: Success denotes that the email was successfully received by your email system.', 'email-notice-wp-document-revisions' ) . '</p>';
+		echo '<p>' . esc_html__( 'The mail delivery process to the recipient is managed within your email system.', 'email-notice-wp-document-revisions' ) . '</p>';
 		echo '</div>';
 	}
 
@@ -1489,7 +1553,7 @@ class WPDR_Email_Notice {
 	 */
 	public function ext_notice_log_list() {
 		if ( ! current_user_can( 'edit_documents' ) ) {
-			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'wpdr-email-notice' ) );
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'email-notice-wp-document-revisions' ) );
 		}
 
 		$this->enqueue_log_js();
@@ -1497,18 +1561,18 @@ class WPDR_Email_Notice {
 
 		// #TODO: add filter/search.
 		echo '<div class="wrap">';
-		echo '<h1 class="wp-heading-inline">' . esc_html__( 'Document Email External Notice Log', 'wpdr-email-notice' ) . '</h1>';
+		echo '<h1 class="wp-heading-inline">' . esc_html__( 'Document Email External Notice Log', 'email-notice-wp-document-revisions' ) . '</h1>';
 		$wpdr_en_ext_notice_log_table         = new WPDR_EN_Ext_Log_Table();
 		$wpdr_en_ext_notice_log_table->screen = convert_to_screen( null );
 		$wpdr_en_ext_notice_log_table->prepare_items();
 		echo '<form method="get">';
 		echo '<input type="hidden" name="post_type" value="doc_ext_list" />';
 		echo '<input type="hidden" name="page" value="wpdr_en_ext_notice_log" />';
-		$wpdr_en_ext_notice_log_table->search_box( esc_html__( 'Search', 'wpdr-email-notice' ), 'search_id' );
+		$wpdr_en_ext_notice_log_table->search_box( esc_html__( 'Search', 'email-notice-wp-document-revisions' ), 'search_id' );
 		echo '</form>';
 		$wpdr_en_ext_notice_log_table->display();
-		echo '<p>' . esc_html__( 'Note: Success denotes that the mail was successfully received by your email system.', 'wpdr-email-notice' ) . '</p>';
-		echo '<p>' . esc_html__( 'The delivery process to the recipient is managed within your email system.', 'wpdr-email-notice' ) . '</p>';
+		echo '<p>' . esc_html__( 'Note: Success denotes that the mail was successfully received by your email system.', 'email-notice-wp-document-revisions' ) . '</p>';
+		echo '<p>' . esc_html__( 'The delivery process to the recipient is managed within your email system.', 'email-notice-wp-document-revisions' ) . '</p>';
 		echo '</div>';
 	}
 
@@ -1523,7 +1587,7 @@ class WPDR_Email_Notice {
 	 */
 	private static function ext_user_list( $post_id = null ) {
 		if ( ! current_user_can( 'edit_doc_ext_lists' ) ) {
-			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'wpdr-email-notice' ) );
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'email-notice-wp-document-revisions' ) );
 		}
 
 		if ( ! is_null( $post_id ) ) {
@@ -1540,10 +1604,10 @@ class WPDR_Email_Notice {
 		// can be errors if built after ajax call.
 		add_filter( 'set_url_scheme', array( __CLASS__, 'set_url_scheme' ), 10, 3 );
 		echo '<div class="wrap" id="user-list">';
-		echo '<h2 class="wp-heading-inline">' . esc_html__( 'User Addressee List', 'wpdr-email-notice' ) . '</h2>';
+		echo '<h2 class="wp-heading-inline">' . esc_html__( 'User Addressee List', 'email-notice-wp-document-revisions' ) . '</h2>';
 		$wpdr_en_ext_user_table = new WPDR_EN_Ext_User_Table();
 		$wpdr_en_ext_user_table->prepare_items();
-		$wpdr_en_ext_user_table->search_box( esc_html__( 'Search', 'wpdr-email-notice' ), 'search_id' );
+		$wpdr_en_ext_user_table->search_box( esc_html__( 'Search', 'email-notice-wp-document-revisions' ), 'search_id' );
 		$wpdr_en_ext_user_table->display();
 		echo '<input id="empty_addr" type="hidden" value="' . esc_attr( $wpdr_en_ext_user_table::$no_addr ) . '">';
 		echo '</div>';
@@ -1610,9 +1674,9 @@ class WPDR_Email_Notice {
 	public function meta_box_cb() {
 		// replace standard excerpt metabox with adapted one.
 		remove_meta_box( 'postexcerpt', 'doc_ext_list', 'normal' );
-		add_meta_box( 'del_parms', __( 'List Attributes', 'wpdr-email-notice' ), array( &$this, 'del_attrs_meta_box' ), 'doc_ext_list', 'normal', 'high' );
+		add_meta_box( 'del_parms', __( 'List Attributes', 'email-notice-wp-document-revisions' ), array( &$this, 'del_attrs_meta_box' ), 'doc_ext_list', 'normal', 'high' );
 
-		add_meta_box( 'doc_ext_list', __( 'Document External User List', 'wpdr-email-notice' ), array( &$this, 'doc_ext_list_metabox' ), 'doc_ext_list', 'normal', 'high' );
+		add_meta_box( 'doc_ext_list', __( 'Document External User List', 'email-notice-wp-document-revisions' ), array( &$this, 'doc_ext_list_metabox' ), 'doc_ext_list', 'normal', 'high' );
 	}
 
 	/**
@@ -1623,7 +1687,7 @@ class WPDR_Email_Notice {
 	 */
 	public function doc_ext_list_metabox() {
 		if ( ! current_user_can( 'edit_doc_ext_lists' ) ) {
-			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'wpdr-email-notice' ) );
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'email-notice-wp-document-revisions' ) );
 		}
 
 		global $post;
@@ -1645,9 +1709,9 @@ class WPDR_Email_Notice {
 			</tr>
 			<tr>
 			<td><div id="clear_address" name="clear_address" style="display:none;" >
-			<input type="submit" class="button button-large" value="<?php echo esc_html_e( 'Clear values', 'wpdr-email-notice' ); ?>" onclick="wpdr_en_clear()"/>
+			<input type="submit" class="button button-large" value="<?php echo esc_html_e( 'Clear values', 'email-notice-wp-document-revisions' ); ?>" onclick="wpdr_en_clear()"/>
 			</div></td>
-			<td><input type="submit" id="add_address" name="add_address" class="button button-large" value="<?php echo esc_html_e( 'Add Address to List', 'wpdr-email-notice' ); ?>" onclick="wpdr_en_insert()" disabled /></td>
+			<td><input type="submit" id="add_address" name="add_address" class="button button-large" value="<?php echo esc_html_e( 'Add Address to List', 'email-notice-wp-document-revisions' ); ?>" onclick="wpdr_en_insert()" disabled /></td>
 			</tr>
 			<tr>
 			<td></td>
@@ -1672,7 +1736,7 @@ class WPDR_Email_Notice {
 	 */
 	public function del_attrs_meta_box() {
 		if ( ! current_user_can( 'edit_doc_ext_lists' ) ) {
-			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'wpdr-email-notice' ) );
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'email-notice-wp-document-revisions' ) );
 		}
 
 		global $post;
@@ -1682,29 +1746,29 @@ class WPDR_Email_Notice {
 		$attach = ( is_array( $meta ) && ! empty( $meta ) ? (int) $meta[0] : (int) get_option( 'wpdr_en_set_ext_attach' ) );
 		$pause  = (int) get_post_meta( $post->ID, 'wpdr_en_pause', true );
 		?>
-		<h3 id="tm_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Match Rule', 'wpdr-email-notice' ); ?></h3>
-		<div id="tm_descr"><?php esc_html_e( 'Choose whether any or all of this lists taxonomy elements must match those on the document to be considered a match.', 'wpdr-email-notice' ); ?></div>
+		<h3 id="tm_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Match Rule', 'email-notice-wp-document-revisions' ); ?></h3>
+		<div id="tm_descr"><?php esc_html_e( 'Choose whether any or all of this lists taxonomy elements must match those on the document to be considered a match.', 'email-notice-wp-document-revisions' ); ?></div>
 		<div id="tm_ruled" role="radiogroup" aria-labelledby="tm_label" aria-describedby="tm_descr">
 		<fieldset>
-		<label><input type="radio" id="tm_any" name="tm_rule" <?php checked( 0, $tm_rule, true ); ?> value="0"><?php esc_html_e( 'Any taxonomy element', 'wpdr-email-notice' ); ?></label><br />
-		<label><input type="radio" id="tm_all" name="tm_rule" <?php checked( 1, $tm_rule, true ); ?> value="1"><?php esc_html_e( 'All taxonomy elements', 'wpdr-email-notice' ); ?></label>
+		<label><input type="radio" id="tm_any" name="tm_rule" <?php checked( 0, $tm_rule, true ); ?> value="0"><?php esc_html_e( 'Any taxonomy element', 'email-notice-wp-document-revisions' ); ?></label><br />
+		<label><input type="radio" id="tm_all" name="tm_rule" <?php checked( 1, $tm_rule, true ); ?> value="1"><?php esc_html_e( 'All taxonomy elements', 'email-notice-wp-document-revisions' ); ?></label>
 		</fieldset>
 		</div>
-		<h3 id="attach_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Document Attach', 'wpdr-email-notice' ); ?></h3>
+		<h3 id="attach_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Document Attach', 'email-notice-wp-document-revisions' ); ?></h3>
 		<fieldset>
 		<input type="checkbox" id="wpdr_en_attach" name="wpdr_en_attach" value="<?php echo esc_attr( $attach ) . '" ' . checked( 1, $attach, false ); ?>>
-		<label for="wpdr_en_attach"><?php esc_html_e( 'Attach Document to Notification Emails', 'wpdr-email-notice' ); ?></label>
+		<label for="wpdr_en_attach"><?php esc_html_e( 'Attach Document to Notification Emails', 'email-notice-wp-document-revisions' ); ?></label>
 		</fieldset>
-		<h3 id="pause_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Pause Mail', 'wpdr-email-notice' ); ?></h3>
+		<h3 id="pause_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Pause Mail', 'email-notice-wp-document-revisions' ); ?></h3>
 		<fieldset>
 		<input type="checkbox" id="wpdr_en_pause" name="wpdr_en_pause" value="<?php echo esc_attr( $pause ) . '" ' . checked( 1, $pause, false ); ?>>
-		<label for="wpdr_en_pause"><?php esc_html_e( 'Pause this List', 'wpdr-email-notice' ); ?></label>
+		<label for="wpdr_en_pause"><?php esc_html_e( 'Pause this List', 'email-notice-wp-document-revisions' ); ?></label>
 		</fieldset>
-		<h3 id="note_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Document List Notes', 'wpdr-email-notice' ); ?></h3>
+		<h3 id="note_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Document List Notes', 'email-notice-wp-document-revisions' ); ?></h3>
 		<fieldset>
 		<textarea rows="4" cols="40" name="excerpt" id="excerpt"><?php echo $post->post_excerpt; // phpcs:ignore. ?></textarea>
-		<label class="screen-reader-text" for="excerpt"><?php esc_html_e( 'Document List Notes', 'wpdr-email-notice' ); ?></label>
-		<?php esc_html_e( 'You can use this to hold any notes for this list entry.', 'wpdr-email-notice' ); ?>
+		<label class="screen-reader-text" for="excerpt"><?php esc_html_e( 'Document List Notes', 'email-notice-wp-document-revisions' ); ?></label>
+		<?php esc_html_e( 'You can use this to hold any notes for this list entry.', 'email-notice-wp-document-revisions' ); ?>
 		</fieldset>
 		<?php
 		// add existing taxonomy values (to identify differences).
@@ -2094,7 +2158,7 @@ class WPDR_Email_Notice {
 		// Avoid characters like dashes replaced with html numeric character references.
 		remove_filter( 'the_title', 'wptexturize' );
 		if ( empty( $template ) ) {
-			$template = __( 'New document: ', 'wpdr-email-notice' ) . get_the_title( $post_id );
+			$template = __( 'New document: ', 'email-notice-wp-document-revisions' ) . get_the_title( $post_id );
 		}
 		// %extra% is not supported herev as makes no sense.
 		$subject = wp_strip_all_tags( $this->resolve_tags( $template, $post_id, $user_id, '', $user_email ) );
@@ -2196,7 +2260,7 @@ class WPDR_Email_Notice {
 			$mail_content = $this->prepare_mail_content( $post_id, $value->user_id, $extra, null );
 			// if there is no subject or content then do not send mail.
 			if ( empty( $mail_subject ) || empty( $mail_content ) ) {
-				if ( $this->log_mail_sent( $value->user_id, $post_id, $value->user_email, __( 'Empty mail subject and/or content.', 'wpdr-email-notice' ), $extra_id ) ) {
+				if ( $this->log_mail_sent( $value->user_id, $post_id, $value->user_email, __( 'Empty mail subject and/or content.', 'email-notice-wp-document-revisions' ), $extra_id ) ) {
 					++$sending_error_count;
 					++$logged_count;
 				} else {
@@ -2211,7 +2275,7 @@ class WPDR_Email_Notice {
 						$attachments = $this->get_attachment( $post_id );
 					}
 					if ( empty( $attachments ) ) {
-						$mail_content .= '<p>' . __( 'Document not attached.', 'wpdr-email-notice' ) . '</p>';
+						$mail_content .= '<p>' . __( 'Document not attached.', 'email-notice-wp-document-revisions' ) . '</p>';
 						/**
 						 * Filters whether to attach the file depending on its size and type of user.
 						 *
@@ -2220,9 +2284,9 @@ class WPDR_Email_Notice {
 						 * @param bool $internal indicates whether the notification is being sent to internal users..
 						 */
 					} elseif ( apply_filters( 'wpdr_en_filesize', true, filesize( $attachments[0] ), true ) ) {
-						$mail_content .= '<p>' . __( 'Document attached.', 'wpdr-email-notice' ) . '</p>';
+						$mail_content .= '<p>' . __( 'Document attached.', 'email-notice-wp-document-revisions' ) . '</p>';
 					} else {
-						$mail_content .= '<p>' . __( 'Document too large to be attached.', 'wpdr-email-notice' ) . '</p>';
+						$mail_content .= '<p>' . __( 'Document too large to be attached.', 'email-notice-wp-document-revisions' ) . '</p>';
 						$attachments   = array();
 					}
 				}
@@ -2235,7 +2299,7 @@ class WPDR_Email_Notice {
 				 */
 				if ( apply_filters( 'wpdr_en_no_send_email', false ) ) {
 					// test sending process. Note Test is not translated.
-					$status_text = 'Test ' . ( empty( $attachments ) ? __( 'Successful', 'wpdr-email-notice' ) : __( 'Success Attachment', 'wpdr-email-notice' ) );
+					$status_text = 'Test ' . ( empty( $attachments ) ? __( 'Successful', 'email-notice-wp-document-revisions' ) : __( 'Success Attachment', 'email-notice-wp-document-revisions' ) );
 					++$sent_count;
 				} else {
 					// Set mail type.
@@ -2246,10 +2310,10 @@ class WPDR_Email_Notice {
 
 					// set status message.
 					if ( $mail_status ) {
-						$status_text = ( empty( $attachments ) ? __( 'Successful', 'wpdr-email-notice' ) : __( 'Success Attachment', 'wpdr-email-notice' ) );
+						$status_text = ( empty( $attachments ) ? __( 'Successful', 'email-notice-wp-document-revisions' ) : __( 'Success Attachment', 'email-notice-wp-document-revisions' ) );
 						++$sent_count;
 					} else {
-						$status_text = __( 'Failed', 'wpdr-email-notice' );
+						$status_text = __( 'Failed', 'email-notice-wp-document-revisions' );
 						++$sending_error_count;
 					}
 					$this->mail_delay();
@@ -2310,7 +2374,7 @@ class WPDR_Email_Notice {
 			$mail_content = $this->prepare_mail_content( $post_id, $value->user_name, $extra, $value->user_email );
 			// if there is no subject or content then do not send mail.
 			if ( empty( $mail_subject ) || empty( $mail_content ) ) {
-				$status = __( 'Empty mail subject and/or content.', 'wpdr-email-notice' );
+				$status = __( 'Empty mail subject and/or content.', 'email-notice-wp-document-revisions' );
 				if ( $this->log_mail_sent( $value->user_name, $post_id, $value->user_email, $status, $extra_id, $value->list_id ) ) {
 					++$sending_error_count;
 					++$logged_count;
@@ -2323,7 +2387,7 @@ class WPDR_Email_Notice {
 				if ( (bool) $value->attach ) {
 					$attachments = $this->get_attachment( $post_id );
 					if ( empty( $attachments ) ) {
-						$mail_content .= '<p>' . __( 'Document not attached.', 'wpdr-email-notice' ) . '</p>';
+						$mail_content .= '<p>' . __( 'Document not attached.', 'email-notice-wp-document-revisions' ) . '</p>';
 						/**
 						 * Filters whether to attach the file depending on its size and type of user.
 						 *
@@ -2332,9 +2396,9 @@ class WPDR_Email_Notice {
 						 * @param bool $internal indicates whether the notification is being sent to internal users..
 						 */
 					} elseif ( apply_filters( 'wpdr_en_filesize', true, filesize( $attachments[0] ), false ) ) {
-						$mail_content .= '<p>' . __( 'Document attached.', 'wpdr-email-notice' ) . '</p>';
+						$mail_content .= '<p>' . __( 'Document attached.', 'email-notice-wp-document-revisions' ) . '</p>';
 					} else {
-						$mail_content .= '<p>' . __( 'Document too large to be attached.', 'wpdr-email-notice' ) . '</p>';
+						$mail_content .= '<p>' . __( 'Document too large to be attached.', 'email-notice-wp-document-revisions' ) . '</p>';
 						$attachments   = array();
 					}
 				}
@@ -2348,7 +2412,7 @@ class WPDR_Email_Notice {
 				 */
 				if ( apply_filters( 'wpdr_en_no_send_email', false ) ) {
 					// test sending process. Note Test is not translated.
-					$status_text = 'Test ' . ( empty( $attachments ) ? __( 'Successful', 'wpdr-email-notice' ) : __( 'Success Attachment', 'wpdr-email-notice' ) );
+					$status_text = 'Test ' . ( empty( $attachments ) ? __( 'Successful', 'email-notice-wp-document-revisions' ) : __( 'Success Attachment', 'email-notice-wp-document-revisions' ) );
 					++$sent_count;
 				} else {
 					// Set mail type and how sent.
@@ -2362,10 +2426,10 @@ class WPDR_Email_Notice {
 
 					// set status message.
 					if ( $mail_status ) {
-						$status_text = ( empty( $attachments ) ? __( 'Successful', 'wpdr-email-notice' ) : __( 'Success Attachment', 'wpdr-email-notice' ) );
+						$status_text = ( empty( $attachments ) ? __( 'Successful', 'email-notice-wp-document-revisions' ) : __( 'Success Attachment', 'email-notice-wp-document-revisions' ) );
 						++$sent_count;
 					} else {
-						$status_text = __( 'Failed', 'wpdr-email-notice' );
+						$status_text = __( 'Failed', 'email-notice-wp-document-revisions' );
 						++$sending_error_count;
 					}
 					$this->mail_delay();
@@ -2583,7 +2647,7 @@ class WPDR_Email_Notice {
 		if ( 0 === $logged_count || 0 === $sent_count ) {
 			$result = array(
 				'error'               => true,
-				'error_msg'           => __( 'Not logged and/or sent out successfully no mails.', 'wpdr-email-notice' ),
+				'error_msg'           => __( 'Not logged and/or sent out successfully no mails.', 'email-notice-wp-document-revisions' ),
 				'logged_count'        => $logged_count,
 				'sent_count'          => $sent_count,
 				'sending_error_count' => $sending_error_count,
@@ -2602,7 +2666,7 @@ class WPDR_Email_Notice {
 			} else {
 				$result = array(
 					'error'               => true,
-					'error_msg'           => __( 'Something went wrong', 'wpdr-email-notice' ),
+					'error_msg'           => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 					'logged_count'        => $logged_count,
 					'sent_count'          => $sent_count,
 					'sending_error_count' => $sending_error_count,
@@ -2618,7 +2682,7 @@ class WPDR_Email_Notice {
 				if ( ! $updated ) {
 					$result = array(
 						'error'               => true,
-						'error_msg'           => __( 'Something went wrong', 'wpdr-email-notice' ),
+						'error_msg'           => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 						'logged_count'        => $logged_count,
 						'sent_count'          => $sent_count,
 						'sending_error_count' => $sending_error_count,
@@ -2670,7 +2734,7 @@ class WPDR_Email_Notice {
 		if ( 0 === $logged_count || 0 === $sent_count ) {
 			$result = array(
 				'error'               => true,
-				'error_msg'           => __( 'Not logged and/or sent out successfully any mails.', 'wpdr-email-notice' ),
+				'error_msg'           => __( 'Not logged and/or sent out successfully any mails.', 'email-notice-wp-document-revisions' ),
 				'logged_count'        => $logged_count,
 				'sent_count'          => $sent_count,
 				'sending_error_count' => $sending_error_count,
@@ -2689,7 +2753,7 @@ class WPDR_Email_Notice {
 			} else {
 				$result = array(
 					'error'               => true,
-					'error_msg'           => __( 'Something went wrong', 'wpdr-email-notice' ),
+					'error_msg'           => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 					'logged_count'        => $logged_count,
 					'sent_count'          => $sent_count,
 					'sending_error_count' => $sending_error_count,
@@ -2705,7 +2769,7 @@ class WPDR_Email_Notice {
 				if ( ! $updated ) {
 					$result = array(
 						'error'               => true,
-						'error_msg'           => __( 'Something went wrong', 'wpdr-email-notice' ),
+						'error_msg'           => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 						'logged_count'        => $logged_count,
 						'sent_count'          => $sent_count,
 						'sending_error_count' => $sending_error_count,
@@ -2737,7 +2801,7 @@ class WPDR_Email_Notice {
 		if ( ! isset( $_POST['wpdr_en_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wpdr_en_nonce'] ) ), 'wpdr_en_nonce' ) ) {
 			$result = array(
 				'error'               => true,
-				'error_msg'           => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'           => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'logged_count'        => 0,
 				'sent_count'          => 0,
 				'sending_error_count' => 0,
@@ -2775,7 +2839,7 @@ class WPDR_Email_Notice {
 		if ( ! isset( $_POST['wpdr_en_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wpdr_en_nonce'] ) ), 'wpdr_en_nonce' ) ) {
 			$result = array(
 				'error'               => true,
-				'error_msg'           => __( 'Something went wrong', 'wpdr-email-notice' ),
+				'error_msg'           => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'logged_count'        => 0,
 				'sent_count'          => 0,
 				'sending_error_count' => 0,
@@ -2851,16 +2915,16 @@ class WPDR_Email_Notice {
 			if ( $result['error'] ) {
 				// Error.
 				if ( 0 === $result['logged_count'] || 0 === $result['sent_count'] ) {
-					$message = '<br>' . __( 'Error sending notifications.', 'wpdr-email-notice' ) . '<a href="' . $result['log_page_url'] . '">' . __( 'Check log', 'wpdr-email-notice' ) . '</a> ' . __( 'for details.', 'wpdr-email-notice' );
+					$message = '<br>' . __( 'Error sending notifications.', 'email-notice-wp-document-revisions' ) . '<a href="' . $result['log_page_url'] . '">' . __( 'Check log', 'email-notice-wp-document-revisions' ) . '</a> ' . __( 'for details.', 'email-notice-wp-document-revisions' );
 				} else {
 					// Warning.
 					set_transient( 'auto_notification_result', 'update-nag' );
-					$message = '<br>' . $result['sent_count'] . ' ' . __( 'email(s) out of', 'wpdr-email-notice' ) . ' ' . ( $result['sent_count'] + $result['sending_error_count'] ) . ' ' . __( 'sent with', 'wpdr-email-notice' ) . ' ' . ( $result['sent_count'] + $result['sending_error_count'] - $result['logged_count'] ) . ' ' . __( 'log issues.', 'wpdr-email-notice' ) . '<a href="' . $result['log_page_url'] . '">' . __( 'Check log', 'wpdr-email-notice' ) . '</a> ' . __( 'for details.', 'wpdr-email-notice' );
+					$message = '<br>' . $result['sent_count'] . ' ' . __( 'email(s) out of', 'email-notice-wp-document-revisions' ) . ' ' . ( $result['sent_count'] + $result['sending_error_count'] ) . ' ' . __( 'sent with', 'email-notice-wp-document-revisions' ) . ' ' . ( $result['sent_count'] + $result['sending_error_count'] - $result['logged_count'] ) . ' ' . __( 'log issues.', 'email-notice-wp-document-revisions' ) . '<a href="' . $result['log_page_url'] . '">' . __( 'Check log', 'email-notice-wp-document-revisions' ) . '</a> ' . __( 'for details.', 'email-notice-wp-document-revisions' );
 				}
 			} else {
 				// Emails sent successfully.
 				set_transient( 'auto_notification_result', 'updated' );
-				$message = '<br>' . $result['sent_count'] . ' ' . __( 'notification(s) sent.', 'wpdr-email-notice' ) . ' <a href="' . $result['log_page_url'] . '">' . __( 'Check log', 'wpdr-email-notice' ) . '</a> ' . __( 'for details.', 'wpdr-email-notice' );
+				$message = '<br>' . $result['sent_count'] . ' ' . __( 'notification(s) sent.', 'email-notice-wp-document-revisions' ) . ' <a href="' . $result['log_page_url'] . '">' . __( 'Check log', 'email-notice-wp-document-revisions' ) . '</a> ' . __( 'for details.', 'email-notice-wp-document-revisions' );
 			}
 			set_transient( 'auto_notification_message', $message );
 			remove_action( 'transition_post_status', array( $this, 'send_notification_auto' ) );
@@ -2968,9 +3032,9 @@ class WPDR_Email_Notice {
 	public function add_meta_columns( $defaults ) {
 		$output = array_slice( $defaults, 0, 2 );
 		// splice in columns..
-		$output['tm_rule']        = __( 'Match Rule', 'wpdr-email-notice' );
-		$output['wpdr_en_attach'] = __( 'Document Attach', 'wpdr-email-notice' );
-		$output['wpdr_en_pause']  = __( 'List Paused', 'wpdr-email-notice' );
+		$output['tm_rule']        = __( 'Match Rule', 'email-notice-wp-document-revisions' );
+		$output['wpdr_en_attach'] = __( 'Document Attach', 'email-notice-wp-document-revisions' );
+		$output['wpdr_en_pause']  = __( 'List Paused', 'email-notice-wp-document-revisions' );
 
 		// get the rest of the columns.
 		$output = array_merge( $output, array_slice( $defaults, 2 ) );
@@ -2989,7 +3053,7 @@ class WPDR_Email_Notice {
 		if ( 'tm_rule' === $column_name ) {
 			$tm_rule = (int) get_post_meta( $post_id, 'wpdr_en_tm', true );
 			echo '<input type="hidden" id="tm-rule-' . esc_attr( $post_id ) . '" value ="' . esc_attr( $tm_rule ) . '" >';
-			( 0 === $tm_rule ? esc_html_e( 'Any taxonomy element', 'wpdr-email-notice' ) : esc_html_e( 'All taxonomy elements', 'wpdr-email-notice' ) );
+			( 0 === $tm_rule ? esc_html_e( 'Any taxonomy element', 'email-notice-wp-document-revisions' ) : esc_html_e( 'All taxonomy elements', 'email-notice-wp-document-revisions' ) );
 		}
 		if ( 'wpdr_en_attach' === $column_name ) {
 			$meta   = get_post_meta( $post_id, 'wpdr_en_attach', false );
@@ -3022,11 +3086,11 @@ class WPDR_Email_Notice {
 			?>
 			<fieldset class="inline-edit-col-left">
 			<div id="tm_ruled" class="inline-edit-group wp-clearfix column-tm_rule" role="radiogroup" aria-labelledby="tm_label" aria-describedby="tm_descr">
-			<label id="tm_label" class="alignleft"><?php esc_html_e( 'Match Rule :', 'wpdr-email-notice' ); ?></label>
-			<label class="alignleft"><input type="radio" id="tm_any" name="tm_rule" value="0"><?php esc_html_e( 'Any taxonomy element', 'wpdr-email-notice' ); ?>&nbsp;&nbsp;</label>
-			<label class="alignleft"><input type="radio" id="tm_all" name="tm_rule" value="1"><?php esc_html_e( 'All taxonomy elements', 'wpdr-email-notice' ); ?></label>
+			<label id="tm_label" class="alignleft"><?php esc_html_e( 'Match Rule :', 'email-notice-wp-document-revisions' ); ?></label>
+			<label class="alignleft"><input type="radio" id="tm_any" name="tm_rule" value="0"><?php esc_html_e( 'Any taxonomy element', 'email-notice-wp-document-revisions' ); ?>&nbsp;&nbsp;</label>
+			<label class="alignleft"><input type="radio" id="tm_all" name="tm_rule" value="1"><?php esc_html_e( 'All taxonomy elements', 'email-notice-wp-document-revisions' ); ?></label>
 			</div>
-			<p id="tm_descr" class="howto"><?php esc_html_e( 'Choose whether Any or All of these taxonomy elements must match for the list to be used to send emails.', 'wpdr-email-notice' ); ?></p>
+			<p id="tm_descr" class="howto"><?php esc_html_e( 'Choose whether Any or All of these taxonomy elements must match for the list to be used to send emails.', 'email-notice-wp-document-revisions' ); ?></p>
 			</fieldset>
 			<?php
 		}
@@ -3035,7 +3099,7 @@ class WPDR_Email_Notice {
 			<fieldset class="inline-edit-col-left">
 			<div class="inline-edit-group wp-clearfix column-attach">
 			<input type="checkbox" id="wpdr_en_attach" name="wpdr_en_attach" value= "">
-			<label class="alignleft" for="wpdr_en_attach"><?php esc_html_e( 'Document Attach :', 'wpdr-email-notice' ); ?>&nbsp;</label>
+			<label class="alignleft" for="wpdr_en_attach"><?php esc_html_e( 'Document Attach :', 'email-notice-wp-document-revisions' ); ?>&nbsp;</label>
 			</div>
 			</fieldset>
 			<?php
@@ -3045,7 +3109,7 @@ class WPDR_Email_Notice {
 			<fieldset class="inline-edit-col-left">
 			<div class="inline-edit-group wp-clearfix column-pause">
 			<input type="checkbox" id="wpdr_en_pause" name="wpdr_en_pause" value= "">
-			<label class="alignleft" for="wpdr_en_pause"><?php esc_html_e( 'Pause Mail :', 'wpdr-email-notice' ); ?>&nbsp;</label>
+			<label class="alignleft" for="wpdr_en_pause"><?php esc_html_e( 'Pause Mail :', 'email-notice-wp-document-revisions' ); ?>&nbsp;</label>
 			</div>
 			</fieldset>
 			<?php
@@ -3072,15 +3136,15 @@ class WPDR_Email_Notice {
 			<div class="inline-edit-col">
 			<div class="inline-edit-group wp-clearfix">
 			<label class="inline-edit-tm-rule alignleft">
-			<span class="title"><?php esc_html_e( 'Match Rule :', 'wpdr-email-notice' ); ?>&nbsp;</span>
+			<span class="title"><?php esc_html_e( 'Match Rule :', 'email-notice-wp-document-revisions' ); ?>&nbsp;</span>
 			<select name="tm_ruleb">
-			<option value="-1"><?php esc_html_e( '-- No Change --', 'wpdr-email-notice' ); ?></option>
-			<option value="0"><?php esc_html_e( 'Any taxonomy element', 'wpdr-email-notice' ); ?></option>
-			<option value="1"><?php esc_html_e( 'All taxonomy elements-', 'wpdr-email-notice' ); ?></option>
+			<option value="-1"><?php esc_html_e( '-- No Change --', 'email-notice-wp-document-revisions' ); ?></option>
+			<option value="0"><?php esc_html_e( 'Any taxonomy element', 'email-notice-wp-document-revisions' ); ?></option>
+			<option value="1"><?php esc_html_e( 'All taxonomy elements-', 'email-notice-wp-document-revisions' ); ?></option>
 			</select>
 			</label>
 			</div>	
-			<p id="tm_descr" class="howto"><?php esc_html_e( 'Choose whether Any or All of these taxonomy elements must match for the lists to be used to send emails.', 'wpdr-email-notice' ); ?></p>
+			<p id="tm_descr" class="howto"><?php esc_html_e( 'Choose whether Any or All of these taxonomy elements must match for the lists to be used to send emails.', 'email-notice-wp-document-revisions' ); ?></p>
 			</div>
 			</fieldset>
 			<?php
@@ -3091,11 +3155,11 @@ class WPDR_Email_Notice {
 			<div class="inline-edit-col">
 			<div class="inline-edit-group wp-clearfix">
 			<label class="inline-edit-attach alignleft">
-			<span class="title" style="width: auto;"><?php esc_html_e( 'Document Attach :', 'wpdr-email-notice' ); ?>&nbsp;</span>
+			<span class="title" style="width: auto;"><?php esc_html_e( 'Document Attach :', 'email-notice-wp-document-revisions' ); ?>&nbsp;</span>
 			<select name="attachb">
-			<option value="-1"><?php esc_html_e( '-- No Change --', 'wpdr-email-notice' ); ?></option>
-			<option value="0"><?php esc_html_e( 'Do not Attach Document', 'wpdr-email-notice' ); ?></option>
-			<option value="1"><?php esc_html_e( 'Attach Document', 'wpdr-email-notice' ); ?></option>
+			<option value="-1"><?php esc_html_e( '-- No Change --', 'email-notice-wp-document-revisions' ); ?></option>
+			<option value="0"><?php esc_html_e( 'Do not Attach Document', 'email-notice-wp-document-revisions' ); ?></option>
+			<option value="1"><?php esc_html_e( 'Attach Document', 'email-notice-wp-document-revisions' ); ?></option>
 			</select>
 			</label>
 			</div>	
@@ -3109,11 +3173,11 @@ class WPDR_Email_Notice {
 			<div class="inline-edit-col">
 			<div class="inline-edit-group wp-clearfix">
 			<label class="inline-edit-pause alignleft">
-			<span class="title" style="width: auto;"><?php esc_html_e( 'Pause Mail :', 'wpdr-email-notice' ); ?>&nbsp;</span>
+			<span class="title" style="width: auto;"><?php esc_html_e( 'Pause Mail :', 'email-notice-wp-document-revisions' ); ?>&nbsp;</span>
 			<select name="list_pauseb">
-			<option value="-1"><?php esc_html_e( '-- No Change --', 'wpdr-email-notice' ); ?></option>
-			<option value="0"><?php esc_html_e( 'Do not Pause Mail', 'wpdr-email-notice' ); ?></option>
-			<option value="1"><?php esc_html_e( 'Pause Mail', 'wpdr-email-notice' ); ?></option>
+			<option value="-1"><?php esc_html_e( '-- No Change --', 'email-notice-wp-document-revisions' ); ?></option>
+			<option value="0"><?php esc_html_e( 'Do not Pause Mail', 'email-notice-wp-document-revisions' ); ?></option>
+			<option value="1"><?php esc_html_e( 'Pause Mail', 'email-notice-wp-document-revisions' ); ?></option>
 			</select>
 			</label>
 			</div>	
@@ -3318,20 +3382,20 @@ class WPDR_Email_Notice {
 		global $post;
 
 		$messages['doc_ext_list'] = array(
-			1  => __( 'Document External List updated.', 'wpdr-email-notice' ),
-			2  => __( 'Custom field updated.', 'wpdr-email-notice' ),
-			3  => __( 'Custom field deleted.', 'wpdr-email-notice' ),
-			4  => __( 'Document External List updated.', 'wpdr-email-notice' ),
+			1  => __( 'Document External List updated.', 'email-notice-wp-document-revisions' ),
+			2  => __( 'Custom field updated.', 'email-notice-wp-document-revisions' ),
+			3  => __( 'Custom field deleted.', 'email-notice-wp-document-revisions' ),
+			4  => __( 'Document External List updated.', 'email-notice-wp-document-revisions' ),
 			// phpcs:disable WordPress.Security.NonceVerification.Recommended
 			// translators: %s is the revision ID.
-			5  => isset( $_GET['revision'] ) ? sprintf( __( 'Document External List restored to revision from %s', 'wpdr-email-notice' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+			5  => isset( $_GET['revision'] ) ? sprintf( __( 'Document External List restored to revision from %s', 'email-notice-wp-document-revisions' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
 			// phpcs:enable WordPress.Security.NonceVerification.Recommended
-			6  => __( 'Document External List published.', 'wpdr-email-notice' ),
-			7  => __( 'Document External List saved.', 'wpdr-email-notice' ),
-			8  => __( 'Document External List submitted.', 'wpdr-email-notice' ),
+			6  => __( 'Document External List published.', 'email-notice-wp-document-revisions' ),
+			7  => __( 'Document External List saved.', 'email-notice-wp-document-revisions' ),
+			8  => __( 'Document External List submitted.', 'email-notice-wp-document-revisions' ),
 			// translators: %1$s is the date, %2$s is the preview link.
-			9  => sprintf( __( 'Document External List scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview document list</a>', 'wpdr-email-notice' ), date_i18n( sprintf( _x( '%1$s @ %2$s', '%1$s: date; %2$s: time', 'wpdr-email-notice' ), get_option( 'date_format' ), get_option( 'time_format' ) ), strtotime( $post->post_date ) ), esc_url( get_permalink( $post->ID ) ) ),
-			10 => __( 'Document External List draft updated.', 'wpdr-email-notice' ),
+			9  => sprintf( __( 'Document External List scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview document list</a>', 'email-notice-wp-document-revisions' ), date_i18n( sprintf( _x( '%1$s @ %2$s', '%1$s: date; %2$s: time', 'email-notice-wp-document-revisions' ), get_option( 'date_format' ), get_option( 'time_format' ) ), strtotime( $post->post_date ) ), esc_url( get_permalink( $post->ID ) ) ),
+			10 => __( 'Document External List draft updated.', 'email-notice-wp-document-revisions' ),
 		);
 
 		return $messages;
@@ -3381,74 +3445,74 @@ class WPDR_Email_Notice {
 		// value is the help text (as HTML).
 		$help = array(
 			'doc_ext_list'      => array(
-				__( 'Usage', 'wpdr-email-notice' )       =>
-				'<p>' . __( 'This screen allows a user to define a list of email users that will receive an email (generally with the document attached) if any taxonomy value of the list matches that on the document requested.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'The List is available for this processing once the List is published.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'When editing is completed, simply click <code>Update</code> or <code>Publish</code> to save your changes.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'There are three main areas associated with the List:', 'wpdr-email-notice' ) . '</p><ul><li>' .
-				__( 'List Attributes', 'wpdr-email-notice' ) . '</li><li>' .
-				__( 'Document External User List', 'wpdr-email-notice' ) . '</li><li>' .
-				__( 'Taxonomies', 'wpdr-email-notice' ) . '</li></ul>',
-				__( 'List Attributes', 'wpdr-email-notice' ) =>
-				'<p><strong>' . __( 'Taxonomy Match Rule', 'wpdr-email-notice' ) . '</strong></p><p>' .
-				__( 'See the section <strong>Document Taxonomies</strong> for the process to determine whether an individual External List term matches that on the Document.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'This flag indicates whether all the terms on the External List or at least one must match those on the Document for the External List to be considered matching the Document.', 'wpdr-email-notice' ) . '</p><p><strong>' .
-				__( 'Document Attach', 'wpdr-email-notice' ) . '</strong></p><p>' .
-				__( 'This is a text area where optional comment or information can be made about the External List.', 'wpdr-email-notice' ) . '</p><p><strong><p><strong>' .
-				__( 'Pause Mail', 'wpdr-email-notice' ) . '</strong></p><p>' .
-				__( 'This allows the External List to be paused from matching Documents.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'It is provided so that an External List can be withdrawn from processing temporarily without simply changing its status.', 'wpdr-email-notice' ) . '</p><p><strong><p><strong>' .
-				__( 'List Notes', 'wpdr-email-notice' ) . '</strong></p><p>' .
-				'<p>' . __( 'This is a text area where optional comment or information can be held about the External List.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'Use is made of the excerpt field as it intended to be a simple aide-memoire to administrators of the External Lists.', 'wpdr-email-notice' ) . '</p>',
-				__( 'Document External User List', 'wpdr-email-notice' ) =>
-				'<p>' . __( 'This panel consists of two parts. First are the elements to create or edit an individual user record into the table of email addresses, followed by a searchable list of the email addresses associated with the list.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'Note that changes made to this User List are stored immediately. There is no separate process to update the data permanently or to cancel the edits made so far.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'This holds a list of individual users that will be sent an email when the External List is selected.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'Each user record will contain the user name and email address and an optional pause attribute that pauses the sending of emails to the user.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'This pause attribute allows the user details to be retained in the User List but notification emails will not be sent to the specific user.', 'wpdr-email-notice' ) . '</p>',
-				__( 'Document Taxonomies', 'wpdr-email-notice' ) =>
-				'<p>' . __( 'These taxonomies are generally shown on the right part of the screen. They are the taxonomies that can be applied to Documents.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'At least one taxonomy term is required to be entered, although several can be.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'If there are multiple terms on the External List then the matching rule will used to determine whether just one term is needed for the External List to be selected or all terms present must match for notification.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'For hierarchical taxonomies, a term on the External List is considered matched if the term on the Document is either the same as that on the External List or is a child of the External List term.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'Because of this, it is not permitted to publish an External List when the terms entered contains a term and its parent since the term matching process means that the child term would be redundant.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'A Document can have additional terms present, i.e. it is not necessary that all Document terms must match.', 'wpdr-email-notice' ) . '</p>',
-				__( 'Publish', 'wpdr-email-notice' )     =>
-				'<p>' . __( 'By default, Documents are only accessible to logged in users. Documents can be published, thus making them accessible to the world, by toggling their visibility in the "Publish" box in the top right corner. Any document marked as published will be accessible to anyone with the proper URL.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'Similarly these user lists need to be published for the list to be eligible to be selected for sending emails to its users.', 'wpdr-email-notice' ) . '</p>',
-				__( 'Permissions', 'wpdr-email-notice' ) =>
-				'<p>' . __( 'It is expected that the emailing administration process will be centralised with only a handful of External Lists being created. Therefore the full WordPress set of access permissions is not required.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'The permission <strong>edit_doc_ext_lists</strong> is supplied that allows users to create, update, and publish any External List.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'The permission <strong>delete_doc_ext_lists</strong> is supplied that allows users to delete any External List.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'Users with <strong>edit_documents</strong> permission can read any External List since its use is from within the Document editing screen.', 'wpdr-email-notice' ) . '</p>',
+				__( 'Usage', 'email-notice-wp-document-revisions' )       =>
+				'<p>' . __( 'This screen allows a user to define a list of email users that will receive an email (generally with the document attached) if any taxonomy value of the list matches that on the document requested.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'The List is available for this processing once the List is published.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'When editing is completed, simply click <code>Update</code> or <code>Publish</code> to save your changes.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'There are three main areas associated with the List:', 'email-notice-wp-document-revisions' ) . '</p><ul><li>' .
+				__( 'List Attributes', 'email-notice-wp-document-revisions' ) . '</li><li>' .
+				__( 'Document External User List', 'email-notice-wp-document-revisions' ) . '</li><li>' .
+				__( 'Taxonomies', 'email-notice-wp-document-revisions' ) . '</li></ul>',
+				__( 'List Attributes', 'email-notice-wp-document-revisions' ) =>
+				'<p><strong>' . __( 'Taxonomy Match Rule', 'email-notice-wp-document-revisions' ) . '</strong></p><p>' .
+				__( 'See the section <strong>Document Taxonomies</strong> for the process to determine whether an individual External List term matches that on the Document.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'This flag indicates whether all the terms on the External List or at least one must match those on the Document for the External List to be considered matching the Document.', 'email-notice-wp-document-revisions' ) . '</p><p><strong>' .
+				__( 'Document Attach', 'email-notice-wp-document-revisions' ) . '</strong></p><p>' .
+				__( 'This is a text area where optional comment or information can be made about the External List.', 'email-notice-wp-document-revisions' ) . '</p><p><strong><p><strong>' .
+				__( 'Pause Mail', 'email-notice-wp-document-revisions' ) . '</strong></p><p>' .
+				__( 'This allows the External List to be paused from matching Documents.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'It is provided so that an External List can be withdrawn from processing temporarily without simply changing its status.', 'email-notice-wp-document-revisions' ) . '</p><p><strong><p><strong>' .
+				__( 'List Notes', 'email-notice-wp-document-revisions' ) . '</strong></p><p>' .
+				'<p>' . __( 'This is a text area where optional comment or information can be held about the External List.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'Use is made of the excerpt field as it intended to be a simple aide-memoire to administrators of the External Lists.', 'email-notice-wp-document-revisions' ) . '</p>',
+				__( 'Document External User List', 'email-notice-wp-document-revisions' ) =>
+				'<p>' . __( 'This panel consists of two parts. First are the elements to create or edit an individual user record into the table of email addresses, followed by a searchable list of the email addresses associated with the list.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'Note that changes made to this User List are stored immediately. There is no separate process to update the data permanently or to cancel the edits made so far.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'This holds a list of individual users that will be sent an email when the External List is selected.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'Each user record will contain the user name and email address and an optional pause attribute that pauses the sending of emails to the user.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'This pause attribute allows the user details to be retained in the User List but notification emails will not be sent to the specific user.', 'email-notice-wp-document-revisions' ) . '</p>',
+				__( 'Document Taxonomies', 'email-notice-wp-document-revisions' ) =>
+				'<p>' . __( 'These taxonomies are generally shown on the right part of the screen. They are the taxonomies that can be applied to Documents.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'At least one taxonomy term is required to be entered, although several can be.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'If there are multiple terms on the External List then the matching rule will used to determine whether just one term is needed for the External List to be selected or all terms present must match for notification.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'For hierarchical taxonomies, a term on the External List is considered matched if the term on the Document is either the same as that on the External List or is a child of the External List term.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'Because of this, it is not permitted to publish an External List when the terms entered contains a term and its parent since the term matching process means that the child term would be redundant.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'A Document can have additional terms present, i.e. it is not necessary that all Document terms must match.', 'email-notice-wp-document-revisions' ) . '</p>',
+				__( 'Publish', 'email-notice-wp-document-revisions' )     =>
+				'<p>' . __( 'By default, Documents are only accessible to logged in users. Documents can be published, thus making them accessible to the world, by toggling their visibility in the "Publish" box in the top right corner. Any document marked as published will be accessible to anyone with the proper URL.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'Similarly these user lists need to be published for the list to be eligible to be selected for sending emails to its users.', 'email-notice-wp-document-revisions' ) . '</p>',
+				__( 'Permissions', 'email-notice-wp-document-revisions' ) =>
+				'<p>' . __( 'It is expected that the emailing administration process will be centralised with only a handful of External Lists being created. Therefore the full WordPress set of access permissions is not required.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'The permission <strong>edit_doc_ext_lists</strong> is supplied that allows users to create, update, and publish any External List.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'The permission <strong>delete_doc_ext_lists</strong> is supplied that allows users to delete any External List.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'Users with <strong>edit_documents</strong> permission can read any External List since its use is from within the Document editing screen.', 'email-notice-wp-document-revisions' ) . '</p>',
 			),
 			'edit-doc_ext_list' => array(
-				__( 'Document External Lists', 'wpdr-email-notice' ) =>
-				'<p>' . __( 'Below is a list of all Document External Lists used to send email notifications to external users on an update to a Document. Click the list title to edit the document list.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'To add a new Document External List, click <strong>Add Document External List</strong> at the top of the screen.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'Note that whilst this functionality is primarily intended for people that are not users of this site, any email address can be used.', 'wpdr-email-notice' ) . '</p>',
+				__( 'Document External Lists', 'email-notice-wp-document-revisions' ) =>
+				'<p>' . __( 'Below is a list of all Document External Lists used to send email notifications to external users on an update to a Document. Click the list title to edit the document list.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'To add a new Document External List, click <strong>Add Document External List</strong> at the top of the screen.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'Note that whilst this functionality is primarily intended for people that are not users of this site, any email address can be used.', 'email-notice-wp-document-revisions' ) . '</p>',
 			),
 			'document'          => array(
-				__( 'Document Email Notifications', 'wpdr-email-notice' ) =>
-				'<p>' . __( 'Notification emails can be sent (or re-sent) for published Documents by clicking on the button "Send notification emails" (to internal users) or "Send external emails" (to  external users).', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'Internal users are those with user-ids on the site. They can decide whether they wish to receive these notifications or not and whether a copy of the document should be attached the mail.', 'wpdr-email-notice' ) . '&nbsp;' .
-				__( 'This data can also be updated by Administrators (also using Bulk Editing functions).', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'External users normally do not have a sign-on. Notifications are based on the concept of External Lists. A list will contain one or more taxonomy terms that will be matched again the document terms.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'Every published External List (except those marked as Paused) will be tested to see whether its terms match those on the Document.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'Those that match are listed below the button. If the user can maintain the External List, then they can choose to not send the mail to a List by unchecking the List before sending the Notification.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'A term on the List matches with one on the Document if they are same or, for hierarchical taxonomies, the List term is a parent of the Document term.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'When there are several terms on the List, a rule can be set so that the List is matched if either any term matches or all terms on the List must match.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'Potentially several Lists may match the Document. Emails will be sent to every user (except those individually paused) on each list that is matched.', 'wpdr-email-notice' ) . '</p>',
-				__( 'Document Email Extra Text', 'wpdr-email-notice' ) =>
-				'<p>' . __( 'You can include some message-specific additional text with the notification emails.', 'wpdr-email-notice' ) . '</p><p>' .
+				__( 'Document Email Notifications', 'email-notice-wp-document-revisions' ) =>
+				'<p>' . __( 'Notification emails can be sent (or re-sent) for published Documents by clicking on the button "Send notification emails" (to internal users) or "Send external emails" (to  external users).', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'Internal users are those with user-ids on the site. They can decide whether they wish to receive these notifications or not and whether a copy of the document should be attached the mail.', 'email-notice-wp-document-revisions' ) . '&nbsp;' .
+				__( 'This data can also be updated by Administrators (also using Bulk Editing functions).', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'External users normally do not have a sign-on. Notifications are based on the concept of External Lists. A list will contain one or more taxonomy terms that will be matched again the document terms.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'Every published External List (except those marked as Paused) will be tested to see whether its terms match those on the Document.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'Those that match are listed below the button. If the user can maintain the External List, then they can choose to not send the mail to a List by unchecking the List before sending the Notification.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'A term on the List matches with one on the Document if they are same or, for hierarchical taxonomies, the List term is a parent of the Document term.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'When there are several terms on the List, a rule can be set so that the List is matched if either any term matches or all terms on the List must match.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'Potentially several Lists may match the Document. Emails will be sent to every user (except those individually paused) on each list that is matched.', 'email-notice-wp-document-revisions' ) . '</p>',
+				__( 'Document Email Extra Text', 'email-notice-wp-document-revisions' ) =>
+				'<p>' . __( 'You can include some message-specific additional text with the notification emails.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
 				// phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment
-				__( 'The template used (Internal or External) has to contain the tag "%extra%" in it to use this capability.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'If neither template contains the tag then the various options are not shown.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'A checkbox which is initially disabled with label "Add Extra Text" is placed next to each Send button.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'On entering some text in the text field, the checkboxes will become active if the template allows it.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'The extra text will only be included if the corresponding checkbox is checked when the send button is clicked.', 'wpdr-email-notice' ) . '</p><p>' .
-				__( 'The Extra text can contains html tags to better format the output.', 'wpdr-email-notice' ) . '</p>',
+				__( 'The template used (Internal or External) has to contain the tag "%extra%" in it to use this capability.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'If neither template contains the tag then the various options are not shown.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'A checkbox which is initially disabled with label "Add Extra Text" is placed next to each Send button.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'On entering some text in the text field, the checkboxes will become active if the template allows it.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'The extra text will only be included if the corresponding checkbox is checked when the send button is clicked.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'The Extra text can contains html tags to better format the output.', 'email-notice-wp-document-revisions' ) . '</p>',
 			),
 		);
 
@@ -3492,7 +3556,7 @@ class WPDR_Email_Notice {
 			}
 		}
 		if ( $err_exists ) {
-			$messages = '<p>' . esc_html__( 'There are no terms defined for matching with this list. Please add at least one.', 'wpdr-email-notice' ) . '</p>';
+			$messages = '<p>' . esc_html__( 'There are no terms defined for matching with this list. Please add at least one.', 'email-notice-wp-document-revisions' ) . '</p>';
 		}
 		// Are there users.
 		$users_rec = get_post_meta( $post->ID, 'wpdr_en_addressees', true );
@@ -3505,7 +3569,7 @@ class WPDR_Email_Notice {
 			$users     = $users_rec['users'];
 		}
 		if ( 0 === count( $users ) ) {
-			$messages  .= '<p>' . esc_html__( 'There are no addressees defined for matching with this list. Please add at least one.', 'wpdr-email-notice' ) . '</p>';
+			$messages  .= '<p>' . esc_html__( 'There are no addressees defined for matching with this list. Please add at least one.', 'email-notice-wp-document-revisions' ) . '</p>';
 			$err_exists = true;
 		}
 
@@ -3523,13 +3587,13 @@ class WPDR_Email_Notice {
 			$err_exists = true;
 			$oclass     = 'notice-error';
 			if ( 0 === $err[0] ) {
-				$messages .= '<p>' . esc_html__( 'There are no terms defined for matching with this list. Please add at least one.', 'wpdr-email-notice' ) . '</p>';
+				$messages .= '<p>' . esc_html__( 'There are no terms defined for matching with this list. Please add at least one.', 'email-notice-wp-document-revisions' ) . '</p>';
 			} else {
 				$tax_l  = get_taxonomy( $err[0] )->label;
 				$parent = esc_attr( get_term( $err[1], $err[0] )->name );
 				$child  = esc_attr( get_term( $err[2], $err[0] )->name );
 				// translators: %1$s is the taxonomy name, %2$s is the parent term, %2$s is the child term.
-				$messages .= '<p>' . sprintf( __( 'Taxonomy: %1$s. Cannot have both parent (%2$s) and child terms (%3$s). Remove child term as parent term will match.', 'wpdr-email-notice' ), $tax_l, $parent, $child ) . '</p>';
+				$messages .= '<p>' . sprintf( __( 'Taxonomy: %1$s. Cannot have both parent (%2$s) and child terms (%3$s). Remove child term as parent term will match.', 'email-notice-wp-document-revisions' ), $tax_l, $parent, $child ) . '</p>';
 				// make sure js methods have been loaded in case we add something after.
 				if ( ! self::$js_loaded ) {
 					self::load_js_methods();
@@ -3552,16 +3616,16 @@ class WPDR_Email_Notice {
 						}
 					} else {
 						// translators: %s is the taxonomy name.
-						$messages .= '<p>' . sprintf( __( 'Taxonomy: %s. You must redo your non-hierarchical changes manually.', 'wpdr-email-notice' ), $tax_o->label );
+						$messages .= '<p>' . sprintf( __( 'Taxonomy: %s. You must redo your non-hierarchical changes manually.', 'email-notice-wp-document-revisions' ), $tax_o->label );
 						foreach ( $terms as $term ) {
 							if ( $term > 0 ) {
 								// term added, must be checked.
 								// translators: %1$s is the taxonomy term name.
-								$messages .= '<br />&nbsp;' . sprintf( __( 'Add Term: %1$s ', 'wpdr-email-notice' ), get_term( $term, $tax )->name );
+								$messages .= '<br />&nbsp;' . sprintf( __( 'Add Term: %1$s ', 'email-notice-wp-document-revisions' ), get_term( $term, $tax )->name );
 							} else {
 								// term removed, must be unchecked.
 								// translators: %1$s is the taxonomy term name.
-								$messages .= '<br />&nbsp;' . sprintf( __( 'Remove Term: %1$s ', 'wpdr-email-notice' ), get_term( -$term, $tax )->name );
+								$messages .= '<br />&nbsp;' . sprintf( __( 'Remove Term: %1$s ', 'email-notice-wp-document-revisions' ), get_term( -$term, $tax )->name );
 							}
 						}
 						$messages .= '</p>';
