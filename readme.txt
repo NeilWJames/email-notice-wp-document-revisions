@@ -5,7 +5,7 @@ Requires at least: 4.9
 Requires PHP: 7.4
 Requires Plugins: wp-document-revisions
 Tested up to: 6.8.0
-Stable tag: 3.2
+Stable tag: 3.2.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Add-on to WP Document Revisions to notify your users about new documents published or create user email lists to send non-users notifications.
