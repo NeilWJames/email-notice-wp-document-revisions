@@ -175,7 +175,7 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 		}
 		$ord = 'desc';
 		if ( ! empty( $_GET['order'] ) ) {
-		$order = sanitize_text_field( wp_unslash( $_GET['order'] ) );
+			$order = sanitize_text_field( wp_unslash( $_GET['order'] ) );
 			switch ( $order ) {
 				case 'asc':
 					$ord = 'asc';
