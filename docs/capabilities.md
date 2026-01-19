@@ -26,4 +26,4 @@ The process to set these is called on plugin activation.
 
 It will only process the named roles and will look to see if the capability is already defined for the role before attempting to add it.
 
-The capability will be added with *true* access, so if previously set to *false* then re-activating will not change its value.
+The capability will be added with *true* access, so if previously set to *false* then re-activating the plugin will not change its value.

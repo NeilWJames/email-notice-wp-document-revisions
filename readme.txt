@@ -4,8 +4,8 @@ Tags: administration, email, e-mail, document, automatic
 Requires at least: 4.9
 Requires PHP: 7.4
 Requires Plugins: wp-document-revisions
-Tested up to: 6.8.0
-Stable tag: 3.2.0
+Tested up to: 6.9
+Stable tag: 3.2.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Add-on to WP Document Revisions to notify your users about new documents published or create user email lists to send non-users notifications.
@@ -119,6 +119,11 @@ These are listed and described at [filters.md](../docs/filters.md).
 
 == Changelog ==
 
+= 3.2.1 =
+Release date: January 19, 2026
+
+ * NEW: Test up to WP 6.9 and PHP 8.2 with WP Coding Standards 3.3 and Plugin Check 1.8
+
 = 3.2 =
 Release date: April 18, 2025
 
@@ -130,25 +135,5 @@ Release date: April 18, 2025
 * FIX: Consistent use of word email (rather than e-mail)
 * FIX: Review uninstall process
 
-= 3.1 =
-Release date: December 24, 2024
+The full change log is in the [changelog](../docs/changelog.md).
 
-* NEW: Can add a notification-specific text message in the email.
-
-= 3.0 =
-Release date: August 23, 2024
-
-* NEW: Can pause sending to selected External User Lists or individual External Users.
-* NEW: Capability delete_doc_ext_lists to delete External User Lists.
-* FIX: Activation scripts not being executed.
-
-= 2.0 =
-Release date: September 14, 2023
-
-* NEW: Support External User Lists (of emails)
-* FIX: Ensure Uninstall works
-
-= 1.0 =
-Release date: June 6, 2023
-
-* Initial release based on recast of Janos Ver's plugin "WP JV Custom Email Settings"

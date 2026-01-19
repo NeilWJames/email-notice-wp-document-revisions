@@ -3,7 +3,7 @@
  * Plugin Name:       Email Notice for WP Document Revisions
  * Plugin URI:        http://github.com/NeilWJames/email-notice-wp-document-revisions
  * Description:       Add-on plugin to WP Document Revisions to notify users about new documents published.
- * Version:           3.2.0
+ * Version:           3.2.1
  * Author:            Neil James
  * Author URI:        http://github.com/NeilWJames
  * License:           GPLv3 or later
@@ -21,6 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Check that WP Document Revisions is active.
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 if ( ! in_array( 'wp-document-revisions/wp-document-revisions.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
 	if ( is_admin() ) {
 		echo wp_kses_post( '<div class="notice notice-warning is-dismissible"><p>' );

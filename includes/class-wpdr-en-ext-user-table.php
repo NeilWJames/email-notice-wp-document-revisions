@@ -22,8 +22,6 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 	/**
 	 * File version.
 	 *
-	 * @since 2.0.0
-	 *
 	 * @var string $version file version
 	 */
 	public static $version = '2.0.0';
@@ -31,16 +29,12 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 	/**
 	 * Post id being output.
 	 *
-	 * @since 2.0
-	 *
 	 * @var int $post_id post_id being displayd.
 	 */
 	private static $post_id = null;
 
 	/**
 	 * Whether the list of addresses is empty.
-	 *
-	 * @since 2.0
 	 *
 	 * @var int $no_addr Whether there are no users in the list..
 	 */

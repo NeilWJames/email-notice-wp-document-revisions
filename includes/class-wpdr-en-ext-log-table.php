@@ -148,28 +148,31 @@ class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$search = '';
 		if ( ! empty( $_GET['s'] ) ) {
-			$s      = sanitize_text_field( wp_unslash( $_GET['s'] ) );
+			$s      = esc_attr( sanitize_text_field( wp_unslash( $_GET['s'] ) ) );
 			$search = "AND (p.post_title LIKE '%{$s}%' OR l.user_name LIKE '%{$s}%' OR l.user_email LIKE '%{$s}%' )";
 		}
 
+		$orderby = 'time_mail_sent';
 		if ( ! empty( $_GET['orderby'] ) ) {
-			switch ( $_GET['orderby'] ) {
+			$orderby = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
+			switch ( $orderby ) {
 				case 'post_title':
 				case 'user_name':
 				case 'user_email':
 				case 'status':
-					$orderby = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
+				case 'time_mail_sent':
 					break;
 				default:
 					$orderby = 'time_mail_sent';
 					break;
 			}
 		}
+		$order = 'desc';
 		if ( ! empty( $_GET['order'] ) ) {
-			switch ( sanitize_text_field( wp_unslash( $_GET['order'] ) ) ) {
+			$order = sanitize_text_field( wp_unslash( $_GET['order'] ) );
+			switch ( $order ) {
 				case 'asc':
 				case 'desc':
-					$order = sanitize_text_field( wp_unslash( $_GET['order'] ) );
 					break;
 				default:
 					$order = 'desc';
@@ -195,8 +198,8 @@ class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 				ON l.doc_ext_list_id = t.ID
 				WHERE 1=1
 				{$search}
-				ORDER BY {$orderby} {$order}";
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				ORDER BY {$orderby} {$order}, l.id {$order}";
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$log_items    = $wpdb->get_results( $sql, ARRAY_A ); // ARRAY_A will ensure that we get associated array instead of stdClass.
 		$current_page = $this->get_pagenum();
 		$total_items  = count( $log_items );

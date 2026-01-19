@@ -21,16 +21,12 @@ class WPDR_Email_Notice {
 	/**
 	 * File version.
 	 *
-	 * @since 1.0.0
-	 *
 	 * @var string $version
 	 */
 	public static $version = '3.1';
 
 	/**
 	 * JS has been loaded.
-	 *
-	 * @since 2.0.0
 	 *
 	 * @var boolean $js_loaded
 	 */
@@ -39,16 +35,12 @@ class WPDR_Email_Notice {
 	/**
 	 * Temporary file name
 	 *
-	 * @since 1.0.0
-	 *
 	 * @var array|string $attach_file
 	 */
 	public static $attach_file = null;
 
 	/**
 	 * Default email content
-	 *
-	 * @since 2.0.0
 	 *
 	 * @var string $default_content
 	 */
@@ -57,16 +49,12 @@ class WPDR_Email_Notice {
 	/**
 	 * Default email content for external users
 	 *
-	 * @since 2.0.0
-	 *
 	 * @var string $default_exttext
 	 */
 	private static $default_exttext;
 
 	/**
 	 * Default email repeat
-	 *
-	 * @since 2.0.0
 	 *
 	 * @var string $default_repeat
 	 */
@@ -75,16 +63,12 @@ class WPDR_Email_Notice {
 	/**
 	 * Roles that can set user option to mail document information.
 	 *
-	 * @since 2.0.0
-	 *
 	 * @var string[] $internal_roles
 	 */
 	public static $internal_roles;
 
 	/**
 	 * Flag to determine whether to provide the internal list capability.
-	 *
-	 * @since 2.0.0
 	 *
 	 * @var bool $internal_list_needed
 	 */
@@ -380,6 +364,7 @@ class WPDR_Email_Notice {
 		self::$internal_list_needed = ! empty( self::$internal_roles );
 
 		// support languages.
+		// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound
 		load_plugin_textdomain( 'email-notice-wp-document-revisions', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 
 		// Adding settings to Settings->General.
@@ -1030,6 +1015,10 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function add_metabox_head() {
+		// Don't create the metabox if this is a PublishPress Revisions revision.
+		if ( (int) get_post_meta( get_the_ID(), '_rvy_base_post_id', true ) ) {
+			return;
+		}
 		add_meta_box( 'wpdr_en_sectionid', __( 'Document Email Notifications', 'email-notice-wp-document-revisions' ), array( $this, 'add_metabox' ), 'document', 'side', 'high' );
 	}
 
@@ -2051,7 +2040,7 @@ class WPDR_Email_Notice {
 			// get the parents.
 			$list = implode( ',', wp_list_pluck( $tt_ids, 'term_taxonomy_id' ) );
 			// Don't Use placeholders as prepare can get confused by comma-separated list.
-			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 			$pp_ids = $wpdb->get_results(
 				"SELECT p.term_taxonomy_id
 				 FROM {$wpdb->base_prefix}term_taxonomy t
@@ -2063,7 +2052,7 @@ class WPDR_Email_Notice {
 				 GROUP BY p.term_taxonomy_id',
 				ARRAY_A
 			);
-			// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 
 			if ( ! empty( $pp_ids ) ) {
 				$tt_ids  = $pp_ids;
@@ -2073,7 +2062,7 @@ class WPDR_Email_Notice {
 
 		// find the matching lists.
 		$tlist = implode( ',', wp_list_pluck( $tot_ids, 'term_taxonomy_id' ) );
-		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$olists = $wpdb->get_results(
 			"SELECT up.ID AS list_id,
 					up.post_title as list_title,
@@ -2113,7 +2102,7 @@ class WPDR_Email_Notice {
 			ARRAY_A
 		);
 
-		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 		// for putting in metabox, we just need to know if there are entries.
 		// Note. earliest point where we know there is a result.
 		if ( ! $all ) {
@@ -2986,7 +2975,7 @@ class WPDR_Email_Notice {
 				 *
 				 * @param string $afile attached file name.
 				 */
-				$afile = apply_filters( 'document_path', $afile );
+				$afile = apply_filters( 'document_path', $afile ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
 				// We need to change the file name back to a readable one, so copy it.
 				$file_name = get_post_field( 'post_name', $post_id );

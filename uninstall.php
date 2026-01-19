@@ -15,6 +15,8 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+
 global $wpdb;
 
 /**
@@ -54,7 +56,7 @@ function wpdr_en_del_options() {
 
 	// drop notifications logs.
 	$table_name = $wpdb->prefix . 'wpdr_notification_log';
-	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
+	// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
 	// %1$s should be changed to %i when all WP supported >= 6.2.
 	$wpdb->query(
 		$wpdb->prepare(
@@ -80,14 +82,15 @@ function wpdr_en_del_options() {
 			$table_name
 		)
 	);
-	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
+	// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
 }
 
 if ( ! is_multisite() ) {
 	wpdr_en_del_options();
 } else {
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 	$blog_ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" );
+	// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 	foreach ( $blog_ids as $_blog_id ) {
 		switch_to_blog( $_blog_id );
 		wpdr_en_del_options();
@@ -136,3 +139,5 @@ foreach ( $wp_roles->role_names as $wrole => $label ) {
 		$wp_roles->remove_cap( $wrole, 'delete_doc_ext_lists' );
 	}
 }
+
+// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound

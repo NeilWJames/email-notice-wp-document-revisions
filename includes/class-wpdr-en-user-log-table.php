@@ -153,33 +153,41 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 			$parm = '%%';
 		}
 
+		$ordby = 'time_mail_sent';
 		if ( ! empty( $_GET['orderby'] ) ) {
-			$orderby = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
+			$orderby = esc_attr( sanitize_text_field( wp_unslash( $_GET['orderby'] ) ) );
 			switch ( $orderby ) {
 				case 'post_title':
+					$ordby = 'post_title';
+					break;
 				case 'user_display_name':
+					$ordby = 'user_display_name';
+					break;
 				case 'user_email':
+					$ordby = 'user_email';
+					break;
 				case 'status':
+					$ordby = 'status';
 					break;
 				default:
-					$orderby = 'time_mail_sent';
 					break;
 			}
 		}
+		$ord = 'desc';
 		if ( ! empty( $_GET['order'] ) ) {
-			$order = sanitize_text_field( wp_unslash( $_GET['order'] ) );
+		$order = sanitize_text_field( wp_unslash( $_GET['order'] ) );
 			switch ( $order ) {
 				case 'asc':
-				case 'desc':
+					$ord = 'asc';
 					break;
+				case 'desc':
 				default:
-					$order = 'desc';
 					break;
 			}
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		// SQL prepared for user-entered data. Ordering data constrained to specific values and camnot be hijacked.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$log_items    = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT 	l.id as id,
@@ -197,10 +205,11 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 				 ON l.post_id = p.ID
 				 INNER JOIN {$wpdb->base_prefix}users u
 				 ON l.user_id = u.id
-				 WHERE ( p.post_title LIKE %s OR u.display_name LIKE %s )",
+				 WHERE ( p.post_title LIKE %s OR u.display_name LIKE %s )
+				 ",
 				$parm,
 				$parm
-			) . " ORDER BY {$orderby} {$order}",
+			) . " ORDER BY {$ordby} {$ord}, l.id {$ord}",
 			ARRAY_A // ARRAY_A will ensure that we get associated array instead of stdClass.
 		);
 		$current_page = $this->get_pagenum();

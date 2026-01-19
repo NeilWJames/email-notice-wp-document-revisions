@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.2.1
+
+Release date: January 18, 2026
+
+ * NEW: Test up to WP 6.9
+
 ## 3.2
 
 Release date: April 18, 2025
@@ -36,4 +42,4 @@ Release date: September 14, 2023
 
 Release date: June 6, 2023
 
-* NEW: Mail to System Users
+* Initial release based on recast of Janos Ver's plugin "WP JV Custom Email Settings"
