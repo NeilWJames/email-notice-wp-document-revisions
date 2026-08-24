@@ -1600,7 +1600,7 @@ class WPDR_Email_Notice {
 		$wpdr_en_ext_user_table->display();
 		echo '<input id="empty_addr" type="hidden" value="' . esc_attr( $wpdr_en_ext_user_table::$no_addr ) . '">';
 		echo '</div>';
-		remove_filter( 'set_url_scheme', array( __CLASS__, 'set_url_scheme' ), 10, 3 );
+		remove_filter( 'set_url_scheme', array( __CLASS__, 'set_url_scheme' ), 10 );
 	}
 
 	/**
@@ -2193,7 +2193,7 @@ class WPDR_Email_Notice {
 	 * @since 1.0
 	 * @param int    $post_id Post ID.
 	 * @param string $extra   Text string to be matched with %extra%.
-	 * @return int||null
+	 * @return int|null
 	 */
 	private function insert_extra( $post_id, $extra = null ) {
 		if ( empty( $extra ) ) {
@@ -2454,7 +2454,7 @@ class WPDR_Email_Notice {
 		 * Filters the delay time introduced to avoid flooding the mail system.
 		 *
 		 * @since 1.0
-		 * @param int 50000  default delay time (0.05 sec).
+		 * @param int $delay default delay time (0.05 sec).
 		 */
 		usleep( apply_filters( 'wpdr_en_mail_delay', 50000 ) );
 	}
@@ -2469,7 +2469,7 @@ class WPDR_Email_Notice {
 	 * @param int        $post_id    Post ID.
 	 * @param string     $user_email User email address.
 	 * @param string     $status     Status text.
-	 * @param int||null  $extra_id   Id of extra text string in DB (or nulll).
+	 * @param int|null   $extra_id   Id of extra text string in DB (or nulll).
 	 * @param int        $list_id    post_id of list for external mail.
 	 * @return string
 	 */

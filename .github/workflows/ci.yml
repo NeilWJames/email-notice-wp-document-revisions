@@ -14,9 +14,9 @@ jobs:
       TRAVIS_BUILD_DIR: ${{ github.workspace }}
     strategy: 
       matrix:
-        php_version: [8.2]
+        php_version: [8.3, 8.4]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2

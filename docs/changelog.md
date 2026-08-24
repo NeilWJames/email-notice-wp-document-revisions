@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.2.2
+
+Release date: August 26, 2026
+
+ * NEW: Test up to WP 7.1 and PHP 8.3/8.4 with WP Coding Standards 3.4 and Plugin Check 2.1
+
 ## 3.2.1
 
 Release date: January 18, 2026

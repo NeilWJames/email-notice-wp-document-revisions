@@ -6,6 +6,11 @@
  * @package WP Document Revisions Email Notice
  */
 
+// No direct access allowed to plugin php file.
+if ( ! defined( 'ABSPATH' ) ) {
+	die( esc_html__( 'You are not allowed to call this file directly.', 'email-notice-wp-document-revisions' ) );
+}
+
 // Load WP_List_Table if not loaded.
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
