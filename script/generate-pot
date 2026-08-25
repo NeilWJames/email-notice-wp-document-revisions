@@ -5,7 +5,7 @@ set -e
 VERSION=$(grep -i "Stable tag:" readme.txt | awk -F' ' '{print $NF}' | tr -d '\r')
 
 wp-pot \
-  --domain wpdr-email-notice \
+  --domain email-notice-wp-document-revisions \
   --dest-file languages/wpdr-email-notice.pot \
   --src "wpdr-email-notice.php" --src "includes/*.php" \
   --package "Email Notice WP Document Revisions $VERSION" --relative-to "." \
