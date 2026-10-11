@@ -150,7 +150,7 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( ! empty( $_GET['s'] ) ) {
-			$parm = '%' . sanitize_text_field( wp_unslash( $_GET['s'] ) ) . '%';
+			$parm = '%' . $wpdb->esc_like( sanitize_text_field( wp_unslash( $_GET['s'] ) ) ) . '%';
 		} else {
 			$parm = '%%';
 		}

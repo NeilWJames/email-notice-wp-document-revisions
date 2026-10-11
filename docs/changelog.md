@@ -9,6 +9,7 @@ Release date: (in development)
 * The email logs (Document Emails menu) and the External List part of the Document metabox need the new read_doc_ext_lists capability (previously edit_documents). On upgrade it is given to every role and user that has edit_doc_ext_lists; give it to anyone else who needs this access.
 * Sending External List emails needs read_doc_ext_lists as well as the right to edit the Document.
 * Users without edit_doc_ext_lists always send to every matched List.
+* If you chose Auto for "Internal Notice mode" (Settings > Writing), choose it again and save: since 3.2 it was stored as Manual.
 
 * NEW: Capability read_doc_ext_lists controls who sees Document External Lists: the email logs (Document Emails menu) and the External List part of the Document metabox. Given on upgrade to every role and user with edit_doc_ext_lists.
 * FIX: Security: Sending to External Lists needs read_doc_ext_lists; only users with edit_doc_ext_lists can choose which matched Lists to send to (the unticking was not enforced before).
@@ -28,8 +29,16 @@ Release date: (in development)
 * FIX: Security: Bulk subscribe/unsubscribe only changes users the current user may edit.
 * FIX: The Email Address setting replaces WordPress's default From address (the site domain was worked out wrongly, so it never matched).
 * FIX: The plugin tables' indexes are named, so the table check on update no longer logs "Incorrect index name" database errors.
+* FIX: Auto mode works again: the Internal Notice mode was saved as 0, so automatic notices were never sent (since 3.2). A Document is mailed once, when first published, and the result is shown only to the user who published it, with a working link to the log.
+* FIX: The "Notify internal users about" setting is saved and applied (it was saved empty and had no effect). Until the setting is saved again, all three kinds of Document are notified, as before.
+* FIX: A user created other than on the Add New User screen (from code, an import or registration) no longer stops with "The link you followed has expired".
+* FIX: The internal log records each email's status, and extra text sent to internal users is stored and shown in the log.
+* FIX: Repeat emails to External List addresses include the %repeat% text.
+* FIX: Ticking Document Attach or Pause on the External List edit screen switches it on (only switching off worked). Bulk Edit of Lists works on sites not in English. A List saved from code no longer stops with "The link you followed has expired".
+* FIX: The internal log search treats % and _ as ordinary characters.
 * DEV: Script and style sources moved to src/js and src/css; minified copies are in build/js and build/css, made with `npm run build` (terser, clean-css) or the Build assets workflow. Asset versions are the file times, so browsers pick up rebuilt files.
 * DEV: PHPUnit test suite in tests/ (see tests/test_suite.md); runs locally with script/install-wp-tests and in CI.
+* DEV: Tests added for the internal log, bulk subscribe/unsubscribe, External List settings and the fixed bugs. A duplicate loader of the bulk action class with a wrong path is removed.
 * DEV: AJAX handlers reply with wp_send_json() instead of echo and die, so they can be tested.
 * DEV: Plugin header version set to match the readme Stable tag.
 * DEV: PHPCompatibility now checks against PHP 8.0+, the plugin's minimum.

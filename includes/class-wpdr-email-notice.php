@@ -75,6 +75,17 @@ class WPDR_Email_Notice {
 	private static $internal_list_needed;
 
 	/**
+	 * "Notify internal users about" setting keys, with the value saved and the document status they cover.
+	 *
+	 * @var string[][] $notify_about_keys
+	 */
+	private static $notify_about_keys = array(
+		'Chkbx_Public'   => array( 'Public', 'Public' ),
+		'Chkbx_Password' => array( 'Password', 'Password protected' ),
+		'Chkbx_Private'  => array( 'Private', 'Private' ),
+	);
+
+	/**
 	 * Constructor
 	 *
 	 * @since 1.0.0
@@ -457,16 +468,16 @@ class WPDR_Email_Notice {
 			'writing',
 			'wpdr_en_set_notification_mode',
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => 'intval',
+				'type'              => 'string',
+				'sanitize_callback' => array( __CLASS__, 'sanitize_notification_mode' ),
 			),
 		);
 		register_setting(
 			'writing',
 			'wpdr_en_set_notification_about',
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
+				'type'              => 'array',
+				'sanitize_callback' => array( __CLASS__, 'sanitize_notification_about' ),
 			),
 		);
 		register_setting(
@@ -539,12 +550,6 @@ class WPDR_Email_Notice {
 
 			add_filter( 'manage_users_columns', array( $this, 'all_users_column_register' ) );
 			add_filter( 'manage_users_custom_column', array( $this, 'all_users_column_rows' ), 10, 3 );
-
-			// Bulk subscribe/unsubscribe users.
-			if ( ! class_exists( 'WPDR_EN_All_Users_Bulk_Action' ) ) {
-				include_once __DIR__ . '/includes/class-wpdr-en-all-users-bulk-action.php';
-				new WPDR_EN_All_Users_Bulk_Action();
-			}
 
 			// Send options.
 			add_action( 'wp_ajax_wpdr_en_send_notification_manual', array( $this, 'send_notification_manual' ) );
@@ -816,10 +821,8 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function set_notification_mode() {
-		$opt = get_option( 'wpdr_en_set_notification_mode' );
-		if ( ! isset( $opt ) ) {
-			$opt = 'Manual';
-		}
+		// Anything but Auto is Manual (before 4.0.0 the setting was saved as 0).
+		$opt = ( 'Auto' === get_option( 'wpdr_en_set_notification_mode' ) ? 'Auto' : 'Manual' );
 		echo '<input type="radio" name="wpdr_en_set_notification_mode" value="Auto" ' . checked( 'Auto', $opt, false ) . '>' . esc_html__( 'Auto', 'email-notice-wp-document-revisions' ) . '</input> ' . esc_html__( '(send emails automatically when you publish a post)', 'email-notice-wp-document-revisions' ) . '<br/>';
 		echo '<input type="radio" name="wpdr_en_set_notification_mode" value="Manual" ' . checked( 'Manual', $opt, false ) . '>' . esc_html__( 'Manual', 'email-notice-wp-document-revisions' ) . '</input> ' . esc_html__( '(you need to press a button to send notification)', 'email-notice-wp-document-revisions' );
 	}
@@ -831,26 +834,61 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function set_notification_about() {
-		$options          = get_option( 'wpdr_en_set_notification_about' );
-		$public_checked   = '';
-		$password_checked = '';
-		$private_checked  = '';
-		if ( ! empty( $options ) ) {
-			if ( array_key_exists( 'Chkbx_Public', $options ) ) {
-				$public_checked = 'checked="checked"';
-			}
-			if ( array_key_exists( 'Chkbx_Password', $options ) ) {
-				$password_checked = ' checked="checked" ';
-			}
-			if ( array_key_exists( 'Chkbx_Private', $options ) ) {
-				$private_checked = ' checked="checked" ';
-			}
-		}
-		echo '<input type="checkbox" id="Chkbx_Public" name="wpdr_en_set_notification_about[Chkbx_Public]" value="Public" ' . esc_attr( $public_checked ) . '>' . esc_html__( 'Public posts', 'email-notice-wp-document-revisions' ) . '</input><br/>';
-		echo '<input type="checkbox" id="Chkbx_Password" name="wpdr_en_set_notification_about[Chkbx_Password]" value="Password"' . esc_attr( $password_checked ) . '>' . esc_html__( 'Password', 'email-notice-wp-document-revisions' ) . '</input> ' . esc_html__( 'protected posts (password will', 'email-notice-wp-document-revisions' ) . ' <strong>' . esc_html__( 'NOT', 'email-notice-wp-document-revisions' ) . '</strong> ' . esc_html__( 'be included in notification email)', 'email-notice-wp-document-revisions' ) . '<br/>';
-		echo '<input type="checkbox" id="Chkbx_Private" name="wpdr_en_set_notification_about[Chkbx_Private]" value="Private"' . esc_attr( $private_checked ) . '>' . esc_html__( 'Private posts', 'email-notice-wp-document-revisions' ) . '</input> ';
+		echo '<input type="checkbox" id="Chkbx_Public" name="wpdr_en_set_notification_about[Chkbx_Public]" value="Public"' . checked( self::notify_about( 'Public' ), true, false ) . '>' . esc_html__( 'Public posts', 'email-notice-wp-document-revisions' ) . '</input><br/>';
+		echo '<input type="checkbox" id="Chkbx_Password" name="wpdr_en_set_notification_about[Chkbx_Password]" value="Password"' . checked( self::notify_about( 'Password protected' ), true, false ) . '>' . esc_html__( 'Password', 'email-notice-wp-document-revisions' ) . '</input> ' . esc_html__( 'protected posts (password will', 'email-notice-wp-document-revisions' ) . ' <strong>' . esc_html__( 'NOT', 'email-notice-wp-document-revisions' ) . '</strong> ' . esc_html__( 'be included in notification email)', 'email-notice-wp-document-revisions' ) . '<br/>';
+		echo '<input type="checkbox" id="Chkbx_Private" name="wpdr_en_set_notification_about[Chkbx_Private]" value="Private"' . checked( self::notify_about( 'Private' ), true, false ) . '>' . esc_html__( 'Private posts', 'email-notice-wp-document-revisions' ) . '</input> ';
 		echo '<br />' . esc_html__( 'Notifications are sent only to those Internal users who can read the document', 'email-notice-wp-document-revisions' );
 		echo '<br />' . esc_html__( 'Notifications can only be sent to External users for Public documents.', 'email-notice-wp-document-revisions' );
+	}
+
+	/**
+	 * Sanitize the Internal Notice mode: Auto or Manual.
+	 *
+	 * @since 4.0.0
+	 * @param mixed $value Submitted value.
+	 * @return string
+	 */
+	public static function sanitize_notification_mode( $value ) {
+		return ( 'Auto' === $value ? 'Auto' : 'Manual' );
+	}
+
+	/**
+	 * Sanitize the "Notify internal users about" checkboxes: keep only the known keys.
+	 *
+	 * @since 4.0.0
+	 * @param mixed $value Submitted value (no box ticked submits nothing).
+	 * @return string[]
+	 */
+	public static function sanitize_notification_about( $value ) {
+		$clean = array();
+		foreach ( self::$notify_about_keys as $key => $values ) {
+			if ( is_array( $value ) && isset( $value[ $key ] ) ) {
+				$clean[ $key ] = $values[0];
+			}
+		}
+		return $clean;
+	}
+
+	/**
+	 * Whether internal users are told about documents with this status.
+	 *
+	 * Until the setting is saved as a list (before 4.0.0 it could not be), they are told about all of them.
+	 *
+	 * @since 4.0.0
+	 * @param string $pstatus Status from post_status(): Public, Password protected or Private.
+	 * @return bool
+	 */
+	public static function notify_about( $pstatus ) {
+		$about = get_option( 'wpdr_en_set_notification_about' );
+		if ( ! is_array( $about ) ) {
+			return true;
+		}
+		foreach ( self::$notify_about_keys as $key => $values ) {
+			if ( $pstatus === $values[1] ) {
+				return array_key_exists( $key, $about );
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -969,17 +1007,17 @@ class WPDR_Email_Notice {
 		echo '<h3>' . esc_html__( 'Document Email Settings', 'email-notice-wp-document-revisions' ) . '</h3>';
 		echo '</div>'; // wpdr_en-header end.
 
-		$wpdr_en_user_notification = '';
-		$wpdr_en_user_attachment   = '';
+		$notify = 0;
+		$attach = 0;
 		if ( ! empty( $user->ID ) ) {
-			$wpdr_en_user_notification = checked( 1, (int) get_user_meta( $user->ID, 'wpdr_en_user_notification', true ), false );
-			$wpdr_en_user_attachment   = checked( 1, (int) get_user_meta( $user->ID, 'wpdr_en_user_attachment', true ), false );
+			$notify = (int) get_user_meta( $user->ID, 'wpdr_en_user_notification', true );
+			$attach = (int) get_user_meta( $user->ID, 'wpdr_en_user_attachment', true );
 		}
 
 		echo '<div class="wpdr_en-content">';
-		echo '<input type="checkbox" name="wpdr_en_user_notification" value="1" ' . esc_attr( $wpdr_en_user_notification ) . '>' . esc_html__( 'Notify me by email when a new document is published', 'email-notice-wp-document-revisions' ) . '</input><br/>';
+		echo '<input type="checkbox" name="wpdr_en_user_notification" value="1"' . checked( 1, $notify, false ) . '>' . esc_html__( 'Notify me by email when a new document is published', 'email-notice-wp-document-revisions' ) . '</input><br/>';
 
-		echo '<input type="checkbox" name="wpdr_en_user_attachment" value="1" ' . esc_attr( $wpdr_en_user_attachment ) . '>' . esc_html__( 'Also send me the document as an attachment by email when a new document is published', 'email-notice-wp-document-revisions' ) . '</input><br/>';
+		echo '<input type="checkbox" name="wpdr_en_user_attachment" value="1"' . checked( 1, $attach, false ) . '>' . esc_html__( 'Also send me the document as an attachment by email when a new document is published', 'email-notice-wp-document-revisions' ) . '</input><br/>';
 		echo '</div>'; // wpdr_en-content end.
 		echo '</div>'; // wpdr_en-wrapper end.
 	}
@@ -992,8 +1030,11 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function save_user_profile( $user_id ) {
-		// Can be called from add_user or update_user.
-		if ( ! ( check_admin_referer( 'update-user_' . $user_id ) || check_admin_referer( 'create-user', '_wpnonce_create-user' ) ) ) {
+		// Only from the profile and Add New User forms. A user created any other way (code, import,
+		// registration) is left alone: check_admin_referer() would stop that request.
+		$profile = isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'update-user_' . $user_id );
+		$create  = isset( $_POST['_wpnonce_create-user'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_create-user'] ) ), 'create-user' );
+		if ( ! ( $profile || $create ) ) {
 			return;
 		}
 		if ( ! current_user_can( 'edit_user', $user_id ) ) {
@@ -2034,7 +2075,7 @@ class WPDR_Email_Notice {
 		global $wpdb;
 		$pstatus = $this->post_status( $post_id );
 
-		if ( ! in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) ) {
+		if ( ! in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) || ! self::notify_about( $pstatus ) ) {
 			return $result;
 		}
 
@@ -2312,7 +2353,7 @@ class WPDR_Email_Notice {
 		}
 
 		// insert extra into its table.
-		$extra_id = $this->insert_extra( $extra );
+		$extra_id = $this->insert_extra( $post_id, $extra );
 
 		// post considered no protected if field is empty.
 		$no_password = empty( get_post_field( 'post_password', $post_id ) );
@@ -2568,6 +2609,7 @@ class WPDR_Email_Notice {
 					'post_id'        => $post_id,
 					'time_mail_sent' => current_time( 'mysql' ),
 					'user_email'     => $user_email,
+					'status'         => $status,
 					'extra_text_id'  => $extra_id,
 				)
 			);
@@ -2620,7 +2662,7 @@ class WPDR_Email_Notice {
 			$prev = $wpdb->get_row(
 				$wpdb->prepare(
 					"SELECT COUNT(1), MAX(time_mail_sent) FROM {$wpdb->prefix}wpdr_ext_notice_log" .
-					' WHERE user_email = %d AND post_id = %d AND status NOT LIKE %s GROUP BY user_email, post_id',
+					' WHERE user_email = %s AND post_id = %d AND status NOT LIKE %s GROUP BY user_email, post_id',
 					$user_email,
 					$post_id,
 					$test
@@ -2964,40 +3006,57 @@ class WPDR_Email_Notice {
 		if ( get_option( 'wpdr_en_set_notification_mode' ) !== 'Auto' ) {
 			return;
 		}
-		$notification_sent = get_post_meta( $post_id, 'wpdr_en_notification_sent', true );
-		$pstatus           = $this->post_status( $post_id );
-		$recipients        = $this->prepare_mail_recipients( $post_id );
-		$hasrecipient      = ! empty( $recipients );
-		if ( in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) && ( empty( $notification_sent ) || 0 === $notification_sent ) && $hasrecipient ) {
-			$message = null;
-			$result  = array();
-			add_post_meta( $post_id, 'wpdr_en_notification_sent', '0', true );
-			// No extra text possible here.
-			$result = $this->notify( $post_id, '' );
-
-			if ( $result['error'] ) {
-				// Error.
-				if ( 0 === $result['logged_count'] || 0 === $result['sent_count'] ) {
-					$message = '<br>' . __( 'Error sending notifications.', 'email-notice-wp-document-revisions' ) . '<a href="' . $result['log_page_url'] . '">' . __( 'Check log', 'email-notice-wp-document-revisions' ) . '</a> ' . __( 'for details.', 'email-notice-wp-document-revisions' );
-				} else {
-					// Warning.
-					set_transient( 'auto_notification_result', 'update-nag' );
-					$message = '<br>' . $result['sent_count'] . ' ' . __( 'email(s) out of', 'email-notice-wp-document-revisions' ) . ' ' . ( $result['sent_count'] + $result['sending_error_count'] ) . ' ' . __( 'sent with', 'email-notice-wp-document-revisions' ) . ' ' . ( $result['sent_count'] + $result['sending_error_count'] - $result['logged_count'] ) . ' ' . __( 'log issues.', 'email-notice-wp-document-revisions' ) . '<a href="' . $result['log_page_url'] . '">' . __( 'Check log', 'email-notice-wp-document-revisions' ) . '</a> ' . __( 'for details.', 'email-notice-wp-document-revisions' );
-				}
-			} else {
-				// Emails sent successfully.
-				set_transient( 'auto_notification_result', 'updated' );
-				$message = '<br>' . $result['sent_count'] . ' ' . __( 'notification(s) sent.', 'email-notice-wp-document-revisions' ) . ' <a href="' . $result['log_page_url'] . '">' . __( 'Check log', 'email-notice-wp-document-revisions' ) . '</a> ' . __( 'for details.', 'email-notice-wp-document-revisions' );
-			}
-			set_transient( 'auto_notification_message', $message );
-			remove_action( 'transition_post_status', array( $this, 'send_notification_auto' ) );
-
-			// remove attachment file if set.
-			self::remove_attachment();
-		} else {
-			delete_transient( 'auto_notification_message' );
-			delete_transient( 'auto_notification_result' );
+		// Sent once only: the flag is '1' after a successful send.
+		$notification_sent = (string) get_post_meta( $post_id, 'wpdr_en_notification_sent', true );
+		if ( '' !== $notification_sent && '0' !== $notification_sent ) {
+			return;
 		}
+		$pstatus = $this->post_status( $post_id );
+		if ( ! in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) || empty( $this->prepare_mail_recipients( $post_id ) ) ) {
+			return;
+		}
+
+		add_post_meta( $post_id, 'wpdr_en_notification_sent', '0', true );
+		// No extra text possible here.
+		$result   = $this->notify( $post_id, '' );
+		$log_link = ' <a href="' . esc_url( $result['log_page_url'] ) . '">' . esc_html__( 'Check log', 'email-notice-wp-document-revisions' ) . '</a> ' . esc_html__( 'for details.', 'email-notice-wp-document-revisions' );
+
+		if ( ! $result['error'] ) {
+			// Emails sent successfully.
+			$class   = 'notice notice-success';
+			$message = esc_html( $result['sent_count'] . ' ' . __( 'notification(s) sent.', 'email-notice-wp-document-revisions' ) );
+		} elseif ( 0 === $result['logged_count'] || 0 === $result['sent_count'] ) {
+			// Error.
+			$class   = 'notice notice-error';
+			$message = esc_html__( 'Error sending notifications.', 'email-notice-wp-document-revisions' );
+		} else {
+			// Warning.
+			$class   = 'notice notice-warning';
+			$message = esc_html( $result['sent_count'] . ' ' . __( 'email(s) out of', 'email-notice-wp-document-revisions' ) . ' ' . ( $result['sent_count'] + $result['sending_error_count'] ) . ' ' . __( 'sent with', 'email-notice-wp-document-revisions' ) . ' ' . ( $result['sent_count'] + $result['sending_error_count'] - $result['logged_count'] ) . ' ' . __( 'log issues.', 'email-notice-wp-document-revisions' ) );
+		}
+
+		// Shown on the next admin page of the user who published.
+		set_transient(
+			self::auto_notice_key(),
+			array(
+				'class'   => $class,
+				'message' => $message . $log_link,
+			),
+			300
+		);
+
+		// remove attachment file if set.
+		self::remove_attachment();
+	}
+
+	/**
+	 * Transient name holding the result of an automatic send for the current user.
+	 *
+	 * @since 4.0.0
+	 * @return string
+	 */
+	private static function auto_notice_key() {
+		return 'wpdr_en_auto_notice_' . get_current_user_id();
 	}
 
 	/**
@@ -3007,14 +3066,14 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function admin_notice_auto_notification() {
-		$message = get_transient( 'auto_notification_message' );
-		if ( ! empty( $message ) ) {
-			echo '<div class="' . esc_attr( get_transient( 'auto_notification_result' ) ) . '" id="wpdr_en_notification_div">';
-			echo '<p>' . esc_html( $message ) . '</p>';
-			echo '</div>';
-			delete_transient( 'auto_notification_message' );
-			delete_transient( 'auto_notification_result' );
+		$notice = get_transient( self::auto_notice_key() );
+		if ( ! is_array( $notice ) || empty( $notice['message'] ) ) {
+			return;
 		}
+		delete_transient( self::auto_notice_key() );
+		echo '<div class="' . esc_attr( $notice['class'] ) . '" id="wpdr_en_notification_div">';
+		echo '<p>' . wp_kses( $notice['message'], array( 'a' => array( 'href' => array() ) ) ) . '</p>';
+		echo '</div>';
 	}
 
 	/**
@@ -3292,54 +3351,50 @@ class WPDR_Email_Notice {
 			return;
 		}
 
-		if ( isset( $_GET['bulk_edit'] ) && 'update' === strtolower( sanitize_text_field( wp_unslash( $_GET['bulk_edit'] ) ) ) ) {
-			check_admin_referer( 'bulk-posts' );
-			if ( isset( $_GET['tm_ruleb'] ) ) {
-				$tm_rule = (int) $_GET['tm_ruleb'];
-				if ( -1 !== $tm_rule ) {
-					update_post_meta( $post_id, 'wpdr_en_tm', $tm_rule );
-				}
-			}
-			if ( isset( $_GET['attachb'] ) ) {
-				$attach = (int) $_GET['attachb'];
-				if ( -1 !== $attach ) {
-					update_post_meta( $post_id, 'wpdr_en_attach', $attach );
-				}
-			}
-			if ( isset( $_GET['list_pauseb'] ) ) {
-				$pause = (int) $_GET['list_pauseb'];
-				if ( -1 !== $pause ) {
-					update_post_meta( $post_id, 'wpdr_en_pause', $pause );
-				}
-			}
-		} else {
-			if ( defined( 'DOING_AJAX' ) && DOING_AJAX && isset( $_POST['_inline_edit'] ) ) {
-				// Are we doing Quick Edit.
-				if ( ! wp_verify_nonce( wp_unslash( sanitize_key( $_POST['_inline_edit'] ) ), 'inlineeditnonce' ) ) {
-					return;
-				}
-
-				// specific post ID is held in post_ID for QE.
-				if ( isset( $_POST['post_ID'] ) ) {
-					$post_id = wp_unslash( (int) $_POST['post_ID'] );
-				}
-			} else {
-				// normal update.
-				check_admin_referer( 'update-post_' . $post_id );
-
-			}
-
-			if ( isset( $_POST['tm_rule'] ) ) {
-				$tm_rule = (int) $_POST['tm_rule'];
-				update_post_meta( $post_id, 'wpdr_en_tm', $tm_rule );
-			}
-
-			$attach = ( isset( $_POST['wpdr_en_attach'] ) ? (int) $_POST['wpdr_en_attach'] : 0 );
-			update_post_meta( $post_id, 'wpdr_en_attach', $attach );
-
-			$pause = ( isset( $_POST['wpdr_en_pause'] ) ? (int) $_POST['wpdr_en_pause'] : 0 );
-			update_post_meta( $post_id, 'wpdr_en_pause', $pause );
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
 		}
+
+		// Only the list edit form, Quick Edit and Bulk Edit set these values; a save from code, REST or an
+		// import leaves them alone (each form's nonce is checked rather than dying with check_admin_referer()).
+		if ( isset( $_GET['bulk_edit'] ) ) {
+			// Bulk Edit (the button value is translated, so only its presence is checked).
+			if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'bulk-posts' ) ) {
+				return;
+			}
+			$fields = array(
+				'tm_ruleb'    => 'wpdr_en_tm',
+				'attachb'     => 'wpdr_en_attach',
+				'list_pauseb' => 'wpdr_en_pause',
+			);
+			foreach ( $fields as $field => $meta_key ) {
+				// -1 is "No Change".
+				$value = ( isset( $_GET[ $field ] ) ? (int) $_GET[ $field ] : -1 );
+				if ( 0 === $value || 1 === $value ) {
+					update_post_meta( $post_id, $meta_key, $value );
+				}
+			}
+			return;
+		}
+
+		if ( wp_doing_ajax() && isset( $_POST['_inline_edit'] ) ) {
+			// Quick Edit.
+			if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_inline_edit'] ) ), 'inlineeditnonce' ) ) {
+				return;
+			}
+		} elseif ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'update-post_' . $post_id ) ) {
+			// Not the edit form.
+			return;
+		}
+
+		if ( isset( $_POST['tm_rule'] ) ) {
+			update_post_meta( $post_id, 'wpdr_en_tm', ( 1 === (int) $_POST['tm_rule'] ? 1 : 0 ) );
+		}
+
+		// A ticked box is sent and an unticked one is not. Its value is not used: on the edit form it holds
+		// the value when the page was loaded, so ticking a box did not switch the setting on.
+		update_post_meta( $post_id, 'wpdr_en_attach', ( isset( $_POST['wpdr_en_attach'] ) ? 1 : 0 ) );
+		update_post_meta( $post_id, 'wpdr_en_pause', ( isset( $_POST['wpdr_en_pause'] ) ? 1 : 0 ) );
 	}
 
 	/**
