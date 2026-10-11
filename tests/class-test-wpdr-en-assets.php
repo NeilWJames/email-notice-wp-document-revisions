@@ -106,6 +106,27 @@ class Test_WPDR_EN_Assets extends WPDR_EN_UnitTestCase {
 	}
 
 	/**
+	 * The List edit screen loads the address script and the list style; other screens load nothing.
+	 */
+	public function test_list_screen_enqueues_assets() {
+		global $post;
+		wp_set_current_user( self::$users['editor'] );
+		$post = get_post( self::create_list() ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$this->reset_js_loaded();
+		WPDR_Email_Notice::load_js_methods();
+
+		$this->assertStringEndsWith( '/src/js/wpdr-en-address.js', wp_scripts()->registered['wpdr_en_script']->src );
+		$this->assertStringEndsWith( '/src/css/wpdr-en-mail.css', wp_styles()->registered['wpdr_en_css']->src );
+
+		$post = get_post( self::factory()->post->create() ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$this->reset_js_loaded();
+		WPDR_Email_Notice::load_js_methods();
+		$this->assertFalse( wp_script_is( 'wpdr_en_script', 'registered' ) );
+		$post = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	}
+
+	/**
 	 * Allow load_js_methods() to run again in this request.
 	 *
 	 * @return void
