@@ -1,29 +1,29 @@
 # Email Notice WP Document Revisions - Capability and Security Model
 
-Document External Lists contain lists of email addresses - which are, of course, personal data. As such they need to be treated carefully and have limited availability.
+Document External Lists hold email addresses, which are personal data, so access is deliberately limited.
+Only published Lists are used for sending, so there are no separate Private or Others capabilities.
 
-It is expected that only a few people will have the right to maintain or direcly access them for a site.
+## Capabilities
 
-Furthermore only Published Document External Lists are used by Document Editors, so there is no specific use case to support Private or Others capabilities.
+| Capability | Allows |
+|---|---|
+| *read_doc_ext_lists* | See both email logs (**Document Emails** menu); see the External List part of the Document metabox and send External List emails for Documents the user can edit. |
+| *edit_doc_ext_lists* | Create, edit and publish any External List, and its addresses; untick matched Lists before sending (other users always send to every matched List). |
+| *delete_doc_ext_lists* | Delete any External List. |
 
-The *edit_documents* capability is required to read them since they are used only within the Document maintenance process.
+*edit_doc_ext_lists* does not include *read_doc_ext_lists*: List maintainers need both (the defaults and the 4.0.0 upgrade give both).
 
-Maintainers of Document External Lists are required to have the *edit_doc_ext_lists* capability and may maintain any Document External List.
+Internal (WordPress user) notifications need no extra capability: anyone who can edit a Document can send them for it.
 
-The *delete_doc_ext_lists* is required to delete any of these lists.
+## Default permissions
 
-## Default Permissions
+1. *administrator*: *read_doc_ext_lists*, *edit_doc_ext_lists* and *delete_doc_ext_lists*.
+1. *editor*: *read_doc_ext_lists* and *edit_doc_ext_lists*.
 
-The delivered software allocates very limited permissions:
+The defaults can be changed with the filter *wpdr_en_doc_ext_list_roles*. They are set on plugin activation, only for the named roles, and only where the role does not already have the capability, so a capability set to *false* stays *false*.
 
-1. *administrator* has *edit_doc_ext_lists* and *delete_doc_ext_lists*.
+## Upgrading to 4.0.0
 
-1. *editor* has *edit_doc_ext_lists*
+Before 4.0.0 anyone with *edit_documents* could see the Lists, the logs and the External List part of the metabox.
 
-These default roles and their capabilities are filtered by the filter *wpdr_en_doc_ext_list_roles*.
-
-The process to set these is called on plugin activation.
-
-It will only process the named roles and will look to see if the capability is already defined for the role before attempting to add it.
-
-The capability will be added with *true* access, so if previously set to *false* then re-activating the plugin will not change its value.
+On upgrade, every role and every user that has *edit_doc_ext_lists* is given *read_doc_ext_lists*. Anyone else who needs this access (for example Authors who send External List emails) must be given *read_doc_ext_lists*, e.g. with a role editor plugin.

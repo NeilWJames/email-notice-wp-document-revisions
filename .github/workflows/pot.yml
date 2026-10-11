@@ -2,23 +2,32 @@ name: Generate POT file
 
 on:
   workflow_dispatch:
-    branches: [main]
+
+# Needs to push a branch and open a PR.
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   generate-pot:
+    # workflow_dispatch can't be limited to a branch, so skip runs started from any other branch.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-      
+
+      # script/generate-pot uses wp-pot (PHP strings only; version from readme.txt Stable tag).
       - name: Install WP-POT-CLI
         run: npm install --global wp-pot-cli
 
       - name: Generate POT file
-        run: script/generate-pot
+        run: bash script/generate-pot
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
-            commit-message: "Update POT file"
-            title: "Update POT file"
+          commit-message: "Update POT file"
+          title: "Update POT file"
+          branch: automated/generate-pot
+          delete-branch: true

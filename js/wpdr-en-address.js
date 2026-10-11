@@ -14,7 +14,6 @@ function wpdr_en_insert() {
 			user_name     : user_name,
 			email         : email,
 			pause         : pause,
-			userid        : wpdr_en_obj.user,
 			wpdr_en_nonce : wpdr_en_obj.wpdr_en_nonce
 		},
 		success  : function(response) {
@@ -51,7 +50,6 @@ function wpdr_en_delete( id, rec_num ) {
 			action	      : 'wpdr_en_del_address',
 			post_id       : id,
 			del_rec       : rec_num,
-			userid        : wpdr_en_obj.user,
 			wpdr_en_nonce : wpdr_en_obj.wpdr_en_nonce
 		},
 		success  : function(response) {
@@ -77,11 +75,12 @@ function wpdr_en_delete( id, rec_num ) {
 	event.preventDefault();
 }
 
-function wpdr_en_edit( user_name, email, pause ) {
-	document.getElementById("wpdr-en-user-name").value     = user_name;
-	document.getElementById("wpdr-en-email").value         = email;
+function wpdr_en_edit( btn ) {
+	// Values come from the button's data attributes (escaped server-side).
+	document.getElementById("wpdr-en-user-name").value     = btn.dataset.userName;
+	document.getElementById("wpdr-en-email").value         = btn.dataset.email;
 	document.getElementById("wpdr-en-email").disabled      = true;
-	document.getElementById("wpdr_pause").checked          = ( 1 == pause );
+	document.getElementById("wpdr_pause").checked          = ( 1 == btn.dataset.pause );
 	document.getElementById("clear_address").style.display = "block";
 	document.getElementById("add_address").value           = wpdr_en_obj.edit_address;
 	document.getElementById("add_address").disabled        = false;

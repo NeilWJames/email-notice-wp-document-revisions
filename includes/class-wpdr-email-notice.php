@@ -23,7 +23,7 @@ class WPDR_Email_Notice {
 	 *
 	 * @var string $version
 	 */
-	public static $version = '3.1';
+	public static $version = '4.0';
 
 	/**
 	 * JS has been loaded.
@@ -118,8 +118,8 @@ class WPDR_Email_Notice {
 		  status varchar(100) NOT NULL,
 		  extra_text_id bigint(20) DEFAULT NULL,
 		  PRIMARY KEY  (id),
-		  INDEX (user_id),
-		  INDEX (post_id, user_id)  
+		  KEY user_id (user_id),
+		  KEY post_id (post_id,user_id)
 		) $charset_collate;";
 
 		$table_name = $wpdb->prefix . 'wpdr_ext_notice_log';
@@ -135,8 +135,8 @@ class WPDR_Email_Notice {
 		  status varchar(100) NOT NULL,
 		  extra_text_id bigint(20) DEFAULT NULL,
 		  PRIMARY KEY  (id),
-		  INDEX (post_id, user_email),
-		  INDEX (doc_ext_list_id)
+		  KEY post_id (post_id,user_email),
+		  KEY doc_ext_list_id (doc_ext_list_id)
 		) $charset_collate;";
 
 		$table_name = $wpdb->prefix . 'wpdr_en_extra_text';
@@ -147,10 +147,11 @@ class WPDR_Email_Notice {
 		  post_id bigint(20) NOT NULL,
 		  extra_text varchar(250),
 		  PRIMARY KEY  (id),
-		  INDEX (post_id)
+		  KEY post_id (post_id)
 		) $charset_collate;";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		// Indexes are named as MySQL named the original unnamed ones, so existing tables are left as they are.
 		dbDelta( $sql );
 
 		update_option( 'wpdr_en_db_version', self::$version );
@@ -174,17 +175,19 @@ class WPDR_Email_Notice {
 			$wp_roles = new WP_Roles();
 		}
 
-		// default roles that should have the edit_and/or delete doc_ext_lists capability.
+		// default roles that should have the read, edit and/or delete doc_ext_lists capability.
 		// can be overridden by 3rd party plugins.
 		// deliberately very limited.
 		$defaults = array(
 			'administrator' =>
 			array(
+				'read_doc_ext_lists',
 				'edit_doc_ext_lists',
 				'delete_doc_ext_lists',
 			),
 			'editor'        =>
 			array(
+				'read_doc_ext_lists',
 				'edit_doc_ext_lists',
 			),
 		);
@@ -200,6 +203,9 @@ class WPDR_Email_Notice {
 
 		foreach ( $defaults as $role => $caps ) {
 
+			if ( ! isset( $wp_roles->roles[ $role ] ) ) {
+				continue;
+			}
 			$role_caps = $wp_roles->roles[ $role ]['capabilities'];
 
 			// loop  through capacities for role.
@@ -208,6 +214,52 @@ class WPDR_Email_Notice {
 				if ( ! array_key_exists( $cap, $role_caps ) ) {
 					$wp_roles->add_cap( $role, $cap, true );
 				}
+			}
+		}
+	}
+
+	/**
+	 * Upgrade to 4.0: give read_doc_ext_lists to every role and user that has edit_doc_ext_lists.
+	 *
+	 * Before 4.0 anyone with edit_documents could see the External Lists, logs and metabox section;
+	 * from 4.0 that needs read_doc_ext_lists. List editors keep their access; anyone else must be
+	 * given the capability explicitly.
+	 *
+	 * Runs whatever the current user, as it is a one-off data change for the site.
+	 *
+	 * @since 4.0.0
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 * @global WP_Roles $wp_roles WP_Roles object.
+	 * @return void
+	 */
+	private function upgrade_read_capability() {
+		global $wpdb, $wp_roles;
+		if ( ! is_object( $wp_roles ) ) {
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			$wp_roles = new WP_Roles();
+		}
+
+		// Roles.
+		foreach ( (array) $wp_roles->roles as $role => $data ) {
+			if ( ! empty( $data['capabilities']['edit_doc_ext_lists'] ) && ! array_key_exists( 'read_doc_ext_lists', $data['capabilities'] ) ) {
+				$wp_roles->add_cap( $role, 'read_doc_ext_lists', true );
+			}
+		}
+		// Make the loaded role objects match what was saved.
+		$wp_roles->for_site();
+
+		// Users given edit_doc_ext_lists individually (not through a role).
+		$users = get_users(
+			array(
+				'blog_id'      => get_current_blog_id(),
+				'meta_key'     => $wpdb->get_blog_prefix() . 'capabilities', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value'   => 'edit_doc_ext_lists', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'meta_compare' => 'LIKE',
+			)
+		);
+		foreach ( $users as $user ) {
+			if ( ! empty( $user->caps['edit_doc_ext_lists'] ) && ! array_key_exists( 'read_doc_ext_lists', $user->caps ) ) {
+				$user->add_cap( 'read_doc_ext_lists', true );
 			}
 		}
 	}
@@ -223,6 +275,10 @@ class WPDR_Email_Notice {
 	 */
 	public function db_version_check() {
 		$current_db_ver = get_option( 'wpdr_en_db_version' );
+		// Existing site from before 4.0 (new installs get the capability with the defaults below).
+		if ( ! empty( $current_db_ver ) && version_compare( $current_db_ver, '4.0', '<' ) ) {
+			$this->upgrade_read_capability();
+		}
 		if ( self::$version !== $current_db_ver ) {
 			if ( current_user_can( 'activate_plugins' ) ) {
 				global $wp_roles;
@@ -230,10 +286,14 @@ class WPDR_Email_Notice {
 					// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 					$wp_roles = new WP_Roles();
 				}
-				// check that a role has been allocated with edit and/or delete. if not set default.
+				// check that a role has been allocated with read, edit and delete. if not set default.
+				$found_read   = false;
 				$found_edit   = false;
 				$found_delete = false;
 				foreach ( (array) $wp_roles->roles as $role => $data ) {
+					if ( array_key_exists( 'read_doc_ext_lists', $data['capabilities'] ) ) {
+						$found_read = true;
+					}
 					if ( array_key_exists( 'edit_doc_ext_lists', $data['capabilities'] ) ) {
 						// found. no more to do.
 						$found_edit = true;
@@ -243,7 +303,8 @@ class WPDR_Email_Notice {
 						$found_delete = true;
 					}
 				}
-				if ( ! $found_edit || ! $found_delete ) {
+				// install_capabilities() only adds what a default role is missing.
+				if ( ! $found_read || ! $found_edit || ! $found_delete ) {
 					$this->install_capabilities();
 				}
 			}
@@ -316,7 +377,7 @@ class WPDR_Email_Notice {
 				'edit_published_posts'   => 'edit_doc_ext_lists',
 				'edit_others_posts'      => 'edit_doc_ext_lists',
 				'publish_posts'          => 'edit_doc_ext_lists',
-				'read'                   => 'edit_documents',
+				'read'                   => 'read_doc_ext_lists',
 				'read_private_posts'     => 'edit_doc_ext_lists',
 				'delete_posts'           => 'edit_doc_ext_lists',
 				'delete_private_posts'   => 'delete_doc_ext_lists',
@@ -608,7 +669,6 @@ class WPDR_Email_Notice {
 			$nonce_array = array(
 				'wpdr_en_nonce' => wp_create_nonce( 'wpdr_en_nonce' ),
 				'ajaxurl'       => admin_url( 'admin-ajax.php' ),
-				'user'          => get_current_user_id(),
 				'add_address'   => __( 'Add Address to List', 'email-notice-wp-document-revisions' ),
 				'edit_address'  => __( 'Edit existing Address', 'email-notice-wp-document-revisions' ),
 			);
@@ -1036,8 +1096,10 @@ class WPDR_Email_Notice {
 
 		// Is extra text possible?
 		$extra_int = str_contains( $this->get_content( -1 ), '%extra%' );
-		$extra_ext = str_contains( $this->get_content( 0 ), '%extra%' );
-		$extra     = $extra_int || $extra_ext;
+		// External lists are only shown to users who can read them.
+		$can_read_lists = current_user_can( 'read_doc_ext_lists' );
+		$extra_ext      = $can_read_lists && str_contains( $this->get_content( 0 ), '%extra%' );
+		$extra          = $extra_int || $extra_ext;
 
 		echo '<div class="wpdr-en-add-meta"><div>';
 		if ( $extra ) {
@@ -1105,56 +1167,59 @@ class WPDR_Email_Notice {
 		// phpcs:enable
 		echo '<span id="wpdr-en-message" style="display: none; margin-left: 5px;">' . esc_html__( 'Sending email notifications...', 'email-notice-wp-document-revisions' ) . '</span>';
 		echo '</span></div>';
-		// external users.
-		echo '<br />';
-		$ext_notice_sent = (string) get_post_meta( $document_id, 'wpdr_en_ext_notice_sent', true );
-		// only need to know if there are recipients so do a shortcut version. Not selected lsts yet.
-		$ext_lists       = $this->prepare_mail_ext_users( $document_id, array(), false );
-		$hasextrecipient = ! empty( $ext_lists );
-		$read            = ( current_user_can( 'edit_doc_ext_lists' ) ? '' : ' readonly' );
-		if ( ( ! empty( $ext_notice_sent ) || '1' === $ext_notice_sent ) && 'Public' === $pstatus && $hasextrecipient ) {
-			echo '<div class="wpdr-en-add-text"><div>';
-			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'email-notice-wp-document-revisions' ) . '" />';
-			echo '</div>';
-			// Is extra text available for external.
-			if ( $extra ) {
-				echo '<div style="margin-left: 5px; margin-right: 5px;"><label>';
-				if ( $extra_ext ) {
+		// external users (only for those who can read the lists).
+		if ( $can_read_lists ) {
+			echo '<br />';
+			$ext_notice_sent = (string) get_post_meta( $document_id, 'wpdr_en_ext_notice_sent', true );
+			// only need to know if there are recipients so do a shortcut version. Not selected lsts yet.
+			$ext_lists       = $this->prepare_mail_ext_users( $document_id, array(), false );
+			$hasextrecipient = ! empty( $ext_lists );
+			// Only list editors may deselect lists (the server ignores the selection from anyone else).
+			$read = ( current_user_can( 'edit_doc_ext_lists' ) ? '' : ' disabled' );
+			if ( ( ! empty( $ext_notice_sent ) || '1' === $ext_notice_sent ) && 'Public' === $pstatus && $hasextrecipient ) {
+				echo '<div class="wpdr-en-add-text"><div>';
+				echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'email-notice-wp-document-revisions' ) . '" />';
+				echo '</div>';
+				// Is extra text available for external.
+				if ( $extra ) {
+					echo '<div style="margin-left: 5px; margin-right: 5px;"><label>';
+					if ( $extra_ext ) {
+						echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" disabled />';
+					} else {
+						echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" class="wpdr_en_not_use" disabled />';
+					}
+					echo esc_html__( 'Add Extra text', 'email-notice-wp-document-revisions' ) . '</label></div>';
+				}
+				echo '</div>';
+				// output the list(s) available (disabled if cannot edit the lists).
+				foreach ( $ext_lists as $list ) {
+					echo '<br /><label>&nbsp;&nbsp;';
+					echo '<input name="wpdr-en-ext-list" type="checkbox" value="' . esc_attr( $list['list_id'] ) . '" checked="checked"' . esc_attr( $read ) . '>  ' . esc_html( $list['list_title'] );
+					echo '</label>';
+				}
+			} elseif ( 'Public' === $pstatus && ( empty( $ext_notice_sent ) || '0' === $ext_notice_sent ) && $hasextrecipient ) {
+				echo '<div class="wpdr-en-add-text"><div>';
+				echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Send external list email(s)', 'email-notice-wp-document-revisions' ) . '"/>';
+				// Is extra text available for external.
+				echo '</div><div style=" 5px; margin-right: 5px;"><label>';
+				if ( str_contains( $this->get_content( 0 ), '%extra%' ) ) {
 					echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" disabled />';
+					$extra = true;
 				} else {
 					echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" class="wpdr_en_not_use" disabled />';
 				}
 				echo esc_html__( 'Add Extra text', 'email-notice-wp-document-revisions' ) . '</label></div>';
+				// output the list(s) available (disabled if cannot edit the lists).
+				foreach ( $ext_lists as $list ) {
+					echo '<br /><label>&nbsp;&nbsp;';
+					echo '<input name="wpdr-en-ext-list" type="checkbox" value="' . esc_attr( $list['list_id'] ) . '" checked="checked"' . esc_attr( $read ) . '>  ' . esc_html( $list['list_title'] );
+					echo '</label>';
+				}
+			} elseif ( empty( $ext_notice_sent ) || '0' === $ext_notice_sent ) {
+				echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Send external list email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
+			} elseif ( ! empty( $ext_notice_sent ) || '1' === $ext_notice_sent ) {
+				echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
 			}
-			echo '</div>';
-			// output the list(s) available (text box readonly if cannot edit the lists).
-			foreach ( $ext_lists as $list ) {
-				echo '<br /><label>&nbsp;&nbsp;';
-				echo '<input name="wpdr-en-ext-list" type="checkbox" value="' . esc_attr( $list['list_id'] ) . esc_attr( $read ) . '" checked="checked">  ' . esc_attr( $list['list_title'] );
-				echo '</label>';
-			}
-		} elseif ( 'Public' === $pstatus && ( empty( $ext_notice_sent ) || '0' === $ext_notice_sent ) && $hasextrecipient ) {
-			echo '<div class="wpdr-en-add-text"><div>';
-			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Send external list email(s)', 'email-notice-wp-document-revisions' ) . '"/>';
-			// Is extra text available for external.
-			echo '</div><div style=" 5px; margin-right: 5px;"><label>';
-			if ( str_contains( $this->get_content( 0 ), '%extra%' ) ) {
-				echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" disabled />';
-				$extra = true;
-			} else {
-				echo '<input type="checkbox" id="wpdr-en-ext-extra" value="0" class="wpdr_en_not_use" disabled />';
-			}
-			echo esc_html__( 'Add Extra text', 'email-notice-wp-document-revisions' ) . '</label></div>';
-			// output the list(s) available (text box readonly if cannot edit the lists).
-			foreach ( $ext_lists as $list ) {
-				echo '<br /><label>&nbsp;&nbsp;';
-				echo '<input name="wpdr-en-ext-list" type="checkbox" value="' . esc_attr( $list['list_id'] ) . esc_attr( $read ) . '" checked="checked">  ' . esc_attr( $list['list_title'] );
-				echo '</label>';
-			}
-		} elseif ( empty( $ext_notice_sent ) || '0' === $ext_notice_sent ) {
-			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Send external list email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
-		} elseif ( ! empty( $ext_notice_sent ) || '1' === $ext_notice_sent ) {
-			echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
 		}
 		echo '</div>';
 		echo '</div>';
@@ -1171,17 +1236,75 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function notification_log_menu() {
-		add_submenu_page( 'edit.php?post_type=doc_ext_list', __( 'External User Email Log', 'email-notice-wp-document-revisions' ), __( 'External User Email Log', 'email-notice-wp-document-revisions' ), 'edit_documents', 'wpdr_en_ext_notice_log', array( $this, 'ext_notice_log_list' ) );
+		add_submenu_page( 'edit.php?post_type=doc_ext_list', __( 'External User Email Log', 'email-notice-wp-document-revisions' ), __( 'External User Email Log', 'email-notice-wp-document-revisions' ), 'read_doc_ext_lists', 'wpdr_en_ext_notice_log', array( $this, 'ext_notice_log_list' ) );
 		// internal list menu item may be removed later.
-		add_submenu_page( 'edit.php?post_type=doc_ext_list', __( 'Internal User Email Log', 'email-notice-wp-document-revisions' ), __( 'Internal User Email Log', 'email-notice-wp-document-revisions' ), 'edit_documents', 'wpdr_en_notification_log', array( $this, 'notification_log_list' ) );
+		add_submenu_page( 'edit.php?post_type=doc_ext_list', __( 'Internal User Email Log', 'email-notice-wp-document-revisions' ), __( 'Internal User Email Log', 'email-notice-wp-document-revisions' ), 'read_doc_ext_lists', 'wpdr_en_notification_log', array( $this, 'notification_log_list' ) );
+	}
+
+	/**
+	 * Send a JSON error response for an AJAX request and stop.
+	 *
+	 * @since 3.3.0
+	 * @param string      $code Error code shown to the user.
+	 * @param string|null $msg  Error message (default "Something went wrong").
+	 * @return void
+	 */
+	private static function ajax_error( $code, $msg = null ) {
+		$result = array(
+			'error'               => true,
+			'error_msg'           => ( is_null( $msg ) ? __( 'Something went wrong', 'email-notice-wp-document-revisions' ) : $msg ),
+			'logged_count'        => 0,
+			'sent_count'          => 0,
+			'sending_error_count' => 0,
+			'error_code'          => $code,
+		);
+		wp_send_json( $result );
+	}
+
+	/**
+	 * Check that an address-list AJAX request is for a Document External List the current user can edit.
+	 *
+	 * Sends a JSON error response and stops if not.
+	 *
+	 * @since 3.3.0
+	 * @param int $id Post ID from the request.
+	 * @return int
+	 */
+	private static function check_list_post( $id ) {
+		$list = get_post( $id );
+		if ( ! $list instanceof WP_Post || 'doc_ext_list' !== $list->post_type ) {
+			self::ajax_error( 'F-13' );
+		}
+		if ( ! current_user_can( 'edit_post', $id ) ) {
+			self::ajax_error( 'F-12', __( 'You do not have permission to edit this list.', 'email-notice-wp-document-revisions' ) );
+		}
+		return $id;
+	}
+
+	/**
+	 * Check that a send request is for a Document the current user can edit.
+	 *
+	 * Sends a JSON error response and stops if not.
+	 *
+	 * @since 3.3.0
+	 * @param int $post_id Post ID from the request.
+	 * @return int
+	 */
+	private static function check_send_post( $post_id ) {
+		$document = get_post( $post_id );
+		if ( ! $document instanceof WP_Post || 'document' !== $document->post_type ) {
+			self::ajax_error( 'F-07' );
+		}
+		if ( ! current_user_can( 'edit_document', $post_id ) ) {
+			self::ajax_error( 'F-08', __( 'You do not have permission to send notifications for this document.', 'email-notice-wp-document-revisions' ) );
+		}
+		return $post_id;
 	}
 
 	/**
 	 * Edit address in post.
 	 *
 	 * @since 2.0
-	 *
-	 * @global WP_Post $post Post object.
 	 */
 	public static function edit_address() {
 		// Avoid being easily hacked.
@@ -1191,33 +1314,11 @@ class WPDR_Email_Notice {
 				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-11',
 			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
+			wp_send_json( $result );
 		}
 
-		// set user.
-		if ( ! isset( $_POST['userid'] ) || ! wp_set_current_user( sanitize_text_field( wp_unslash( $_POST['userid'] ) ) ) instanceof WP_User ) {
-			$result = array(
-				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
-				'error_code' => 'F-12',
-			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
-		}
-
-		// set post_id.
-		if ( ! isset( $_POST['post_id'] ) || ! get_post( sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) ) instanceof WP_Post ) {
-			$result = array(
-				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
-				'error_code' => 'F-13',
-			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
-		}
-		$id = sanitize_text_field( wp_unslash( $_POST['post_id'] ) );
-		global $post;
+		// The post must be a Document External List that the current user can edit.
+		$id = self::check_list_post( isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0 );
 
 		$user_name = '';
 		$email     = '';
@@ -1231,14 +1332,20 @@ class WPDR_Email_Notice {
 		if ( isset( $_POST['pause'] ) ) {
 			$pause = (int) sanitize_text_field( wp_unslash( $_POST['pause'] ) );
 		}
+		// Anything entered must be a valid address (sanitize_email() returns '' for rubbish, so check before relying on it).
+		if ( ! empty( $email ) ) {
+			$email = sanitize_email( $email );
+			if ( ! is_email( $email ) ) {
+				self::ajax_error( 'F-17', __( 'Invalid email address', 'email-notice-wp-document-revisions' ) );
+			}
+		}
 		if ( empty( $user_name ) || empty( $email ) ) {
 			$result = array(
 				'error'      => true,
 				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-14',
 			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
+			wp_send_json( $result );
 		}
 
 		$users_rec = get_post_meta( $id, 'wpdr_en_addressees', true );
@@ -1292,8 +1399,7 @@ class WPDR_Email_Notice {
 			'error_msg'  => $rpt,
 			'error_code' => '',
 		);
-		header( 'Content-Type: application/json' );
-		die( wp_json_encode( $result ) );
+		wp_send_json( $result );
 	}
 
 	/**
@@ -1309,33 +1415,11 @@ class WPDR_Email_Notice {
 				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-11',
 			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
+			wp_send_json( $result );
 		}
 
-		// set user.
-		if ( ! isset( $_POST['userid'] ) || ! wp_set_current_user( sanitize_text_field( wp_unslash( $_POST['userid'] ) ) ) instanceof WP_User ) {
-			$result = array(
-				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
-				'error_code' => 'F-12',
-			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
-		}
-
-		// set post_id.
-		if ( ! isset( $_POST['post_id'] ) || ! get_post( sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) ) instanceof WP_Post ) {
-			$result = array(
-				'error'      => true,
-				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
-				'error_code' => 'F-13',
-			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
-		}
-		$id = sanitize_text_field( wp_unslash( $_POST['post_id'] ) );
-		global $post;
+		// The post must be a Document External List that the current user can edit.
+		$id = self::check_list_post( isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0 );
 
 		$del_rec = null;
 		if ( isset( $_POST['del_rec'] ) ) {
@@ -1347,8 +1431,7 @@ class WPDR_Email_Notice {
 				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-14',
 			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
+			wp_send_json( $result );
 		}
 
 		$users_rec = get_post_meta( $id, 'wpdr_en_addressees', true );
@@ -1359,8 +1442,7 @@ class WPDR_Email_Notice {
 				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-15',
 			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
+			wp_send_json( $result );
 		}
 
 		$users_rec = json_decode( $users_rec, true );
@@ -1382,8 +1464,7 @@ class WPDR_Email_Notice {
 				'error_msg'  => __( 'Something went wrong', 'email-notice-wp-document-revisions' ),
 				'error_code' => 'F-16',
 			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
+			wp_send_json( $result );
 		}
 
 		// repack and update.
@@ -1408,8 +1489,7 @@ class WPDR_Email_Notice {
 			'error_msg'  => $rpt,
 			'error_code' => '',
 		);
-		header( 'Content-Type: application/json' );
-		die( wp_json_encode( $result ) );
+		wp_send_json( $result );
 	}
 
 	/**
@@ -1429,12 +1509,11 @@ class WPDR_Email_Notice {
 				'sending_error_count' => 0,
 				'error_code'          => 'F-21',
 			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
+			wp_send_json( $result );
 		}
 		$result = array();
 		if ( isset( $_GET['post_id'] ) ) {
-			$post_id = sanitize_text_field( wp_unslash( $_GET['post_id'] ) );
+			$post_id = absint( $_GET['post_id'] );
 			// generate new report.
 			ob_start();
 			self::ext_user_list( $post_id );
@@ -1457,8 +1536,7 @@ class WPDR_Email_Notice {
 				'error_code' => 'F-22',
 			);
 		}
-		header( 'Content-Type: application/json' );
-		die( wp_json_encode( $result ) );
+		wp_send_json( $result );
 	}
 
 	/**
@@ -1510,7 +1588,7 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function notification_log_list() {
-		if ( ! current_user_can( 'edit_documents' ) ) {
+		if ( ! current_user_can( 'read_doc_ext_lists' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'email-notice-wp-document-revisions' ) );
 		}
 
@@ -1541,7 +1619,7 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function ext_notice_log_list() {
-		if ( ! current_user_can( 'edit_documents' ) ) {
+		if ( ! current_user_can( 'read_doc_ext_lists' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'email-notice-wp-document-revisions' ) );
 		}
 
@@ -2796,12 +2874,12 @@ class WPDR_Email_Notice {
 				'sending_error_count' => 0,
 				'error_code'          => 'F-02',
 			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
+			wp_send_json( $result );
 		}
 		$result = array();
 		if ( isset( $_POST['post_id'] ) ) {
-			$post_id = sanitize_text_field( wp_unslash( $_POST['post_id'] ) );
+			// The post must be a Document that the current user can edit.
+			$post_id = self::check_send_post( absint( $_POST['post_id'] ) );
 			$extra   = sanitize_text_field( wp_unslash( $_POST['extra'] ) ); // phpcs:ignore
 			$extra   = wp_kses_post( $extra );
 			$result  = $this->notify( $post_id, $extra );
@@ -2813,8 +2891,7 @@ class WPDR_Email_Notice {
 				'error_code' => 'F-06',
 			);
 		}
-		header( 'Content-Type: application/json' );
-		die( wp_json_encode( $result ) );
+		wp_send_json( $result );
 	}
 
 	/**
@@ -2834,16 +2911,20 @@ class WPDR_Email_Notice {
 				'sending_error_count' => 0,
 				'error_code'          => 'F-02',
 			);
-			header( 'Content-Type: application/json' );
-			die( wp_json_encode( $result ) );
+			wp_send_json( $result );
 		}
 
 		// input validated.
 		$result = array();
 		if ( isset( $_POST['post_id'] ) ) {
-			$post_id = sanitize_text_field( wp_unslash( $_POST['post_id'] ) );
-			// if all lists wanted then no lists array found.
-			if ( isset( $_POST['lists'] ) ) {
+			// The post must be a Document that the current user can edit.
+			$post_id = self::check_send_post( absint( $_POST['post_id'] ) );
+			// External Lists are only available to users who can read them.
+			if ( ! current_user_can( 'read_doc_ext_lists' ) ) {
+				self::ajax_error( 'F-09', __( 'You do not have permission to send to Document External Lists.', 'email-notice-wp-document-revisions' ) );
+			}
+			// if all lists wanted then no lists array found. Only list editors may choose lists.
+			if ( isset( $_POST['lists'] ) && current_user_can( 'edit_doc_ext_lists' ) ) {
 				$lists = wp_parse_id_list( wp_unslash( $_POST['lists'] ) );
 			} else {
 				$lists = array();
@@ -2860,8 +2941,7 @@ class WPDR_Email_Notice {
 				'error_code' => 'F-06',
 			);
 		}
-		header( 'Content-Type: application/json' );
-		die( wp_json_encode( $result ) );
+		wp_send_json( $result );
 	}
 
 	/**
@@ -3474,7 +3554,7 @@ class WPDR_Email_Notice {
 				'<p>' . __( 'It is expected that the emailing administration process will be centralised with only a handful of External Lists being created. Therefore the full WordPress set of access permissions is not required.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
 				__( 'The permission <strong>edit_doc_ext_lists</strong> is supplied that allows users to create, update, and publish any External List.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
 				__( 'The permission <strong>delete_doc_ext_lists</strong> is supplied that allows users to delete any External List.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
-				__( 'Users with <strong>edit_documents</strong> permission can read any External List since its use is from within the Document editing screen.', 'email-notice-wp-document-revisions' ) . '</p>',
+				__( 'The permission <strong>read_doc_ext_lists</strong> is supplied that allows users to see the External Lists, the email logs and the External List part of the Document screen, and to send External List emails for Documents they can edit.', 'email-notice-wp-document-revisions' ) . '</p>',
 			),
 			'edit-doc_ext_list' => array(
 				__( 'Document External Lists', 'email-notice-wp-document-revisions' ) =>
@@ -3489,7 +3569,7 @@ class WPDR_Email_Notice {
 				__( 'This data can also be updated by Administrators (also using Bulk Editing functions).', 'email-notice-wp-document-revisions' ) . '</p><p>' .
 				__( 'External users normally do not have a sign-on. Notifications are based on the concept of External Lists. A list will contain one or more taxonomy terms that will be matched again the document terms.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
 				__( 'Every published External List (except those marked as Paused) will be tested to see whether its terms match those on the Document.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
-				__( 'Those that match are listed below the button. If the user can maintain the External List, then they can choose to not send the mail to a List by unchecking the List before sending the Notification.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
+				__( 'Those that match are listed below the button (only for users with the read_doc_ext_lists permission). If the user can maintain the External List, then they can choose to not send the mail to a List by unchecking the List before sending the Notification.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
 				__( 'A term on the List matches with one on the Document if they are same or, for hierarchical taxonomies, the List term is a parent of the Document term.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
 				__( 'When there are several terms on the List, a rule can be set so that the List is matched if either any term matches or all terms on the List must match.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
 				__( 'Potentially several Lists may match the Document. Emails will be sent to every user (except those individually paused) on each list that is matched.', 'email-notice-wp-document-revisions' ) . '</p>',

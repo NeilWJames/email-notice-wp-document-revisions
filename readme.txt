@@ -5,7 +5,7 @@ Requires at least: 5.9
 Requires PHP: 8.0
 Requires Plugins: wp-document-revisions
 Tested up to: 7.1
-Stable tag: 3.2.2
+Stable tag: 4.0.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Add-on to WP Document Revisions to notify your users about new documents published or create user email lists to send non-users notifications.
@@ -65,7 +65,16 @@ If the plugin WP Document Revisions is not activated, this plugin will output an
 
 == Upgrade Notice ==
 
-No specific instructions.
+= 4.0.0 =
+Breaking: Document External Lists, the email logs and the External List part of the Document screen now need the new read_doc_ext_lists capability. Roles and users with edit_doc_ext_lists get it on upgrade; give it to anyone else who needs it.
+
+== Migration Notice ==
+
+= Upgrading to 4.0.0 =
+
+* The email logs (Document Emails menu) and the External List part of the Document metabox now need the new read_doc_ext_lists capability (previously edit_documents).
+* On upgrade, read_doc_ext_lists is given to every role and user that has edit_doc_ext_lists. Give it to any other role or user that needs this access, e.g. Authors who send External List emails.
+* Sending External List emails needs read_doc_ext_lists as well as the right to edit the Document. Only users with edit_doc_ext_lists can choose which matched Lists to send to.
 
 == Frequently Asked Questions ==
 
@@ -107,7 +116,7 @@ You can customize notification email template (both subject and content) In the 
 Details are given in the [tags documentation](../docs/tags.md).
 
 = Where are the logs? =
-Logs of notifications are available at Document Emails -> Internal User Email Log (for WordPress users) or Document Emails -> External User Email Log, where you can view which users were notified about which post and if email sending was successful or not (please note that bounce messages are not processed). 
+Users with the read_doc_ext_lists capability can see the logs of notifications at Document Emails -> Internal User Email Log (for WordPress users) or Document Emails -> External User Email Log, where you can view which users were notified about which post and if email sending was successful or not (please note that bounce messages are not processed). 
 
 = I've multisite. Does this plugin work for me as well? =
 Yes, it does, but in that case each site will have its own log in Document Emails.
@@ -119,16 +128,35 @@ These are listed and described at [filters.md](../docs/filters.md).
 
 == Changelog ==
 
+= 4.0.0 =
+Release date: (in development)
+
+Breaking changes: see Upgrading to 4.0.0 under Migration Notice.
+
+* NEW: Capability read_doc_ext_lists controls who sees Document External Lists: the email logs (Document Emails menu) and the External List part of the Document metabox. Given on upgrade to every role and user with edit_doc_ext_lists.
+* FIX: Security: Sending to External Lists needs read_doc_ext_lists; only users with edit_doc_ext_lists can choose which matched Lists to send to (the unticking was not enforced before).
+* FIX: Security: The email logs need read_doc_ext_lists (previously any user with edit_documents could see every address).
+* FIX: Security: Sending notifications now checks that the user can edit the Document being mailed.
+* FIX: Security: Adding or deleting External List addresses now checks that the user can edit the List, instead of trusting a user ID sent by the browser. Email addresses are validated.
+* FIX: Security: External List address table escapes names and email addresses.
+* FIX: The plugin tables' indexes are named, so the table check on update no longer logs "Incorrect index name" database errors.
+* DEV: PHPUnit test suite in tests/ (see tests/test_suite.md); runs locally with script/install-wp-tests and in CI.
+* DEV: AJAX handlers reply with wp_send_json() instead of echo and die, so they can be tested.
+* DEV: Plugin header version set to match the readme Stable tag.
+* DEV: PHPCompatibility now checks against PHP 8.0+, the plugin's minimum.
+* DEV: CI skips translation-only changes and runs with read-only permissions.
+* DEV: Generate POT workflow restricted to main and given the permissions it needs to open its PR.
+
 = 3.2.2 =
 Release date: August 26, 2026
 
- * NEW: Test up to WP 7.1 and PHP 8.3/8.4 with WP Coding Standards 3.4 and Plugin Check 2.1
+ * NEW: Test up to WP 7.1 and PHP 8.3 with WP Coding Standards 3.4 and Plugin Check 2.1
  
 = 3.2.1 =
 Release date: January 19, 2026
 
  * NEW: Test up to WP 6.9 and PHP 8.2 with WP Coding Standards 3.3 and Plugin Check 1.8
-
+ 
 = 3.2 =
 Release date: April 18, 2025
 

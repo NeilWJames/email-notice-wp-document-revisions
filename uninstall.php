@@ -138,6 +138,9 @@ foreach ( $wp_roles->role_names as $wrole => $label ) {
 	if ( array_key_exists( 'delete_doc_ext_lists', $role_caps ) ) {
 		$wp_roles->remove_cap( $wrole, 'delete_doc_ext_lists' );
 	}
+	if ( array_key_exists( 'read_doc_ext_lists', $role_caps ) ) {
+		$wp_roles->remove_cap( $wrole, 'read_doc_ext_lists' );
+	}
 }
 
 // phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound

@@ -6,11 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
 	/************************************************************************************************************/
 	/* Invoke notification sending */
 	/************************************************************************************************************/	    
-	if ( ! !! document.getElementById("wpdr-en-notify") ) {
+	// Either section may be absent: internal if no roles can receive mail, external without read_doc_ext_lists.
+	const notify   = document.getElementById("wpdr-en-notify");
+	const ext_note = document.getElementById("wpdr-en-ext-note");
+	if ( ! notify && ! ext_note ) {
 		return;
 	}
 
-	document.getElementById("wpdr-en-notify").addEventListener('click', event => {
+	if ( notify ) notify.addEventListener('click', event => {
 		//Disable button
 		document.getElementById("wpdr-en-notify").disabled = true;
 	
@@ -33,8 +36,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		var postid = document.getElementById('post_ID').value;
 		
 		// Get extra text
-		var extra = document.getElementById('wpdr-en-extra').value;
-		if ( ! document.getElementById('wpdr-en-int-extra').checked ) {
+		var extra_box = document.getElementById('wpdr-en-extra');
+		var extra     = ( extra_box ? extra_box.value : '' );
+		var int_extra = document.getElementById('wpdr-en-int-extra');
+		if ( ! int_extra || ! int_extra.checked ) {
 			extra = '';
 		};
 		if ( extra.length > 0 ) {
@@ -84,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.getElementById("wpdr-en-notify").disabled = false;		
 	});			
 
-	document.getElementById("wpdr-en-ext-note").addEventListener('click', event => {
+	if ( ext_note ) ext_note.addEventListener('click', event => {
 		//Disable button
 		document.getElementById("wpdr-en-ext-note").disabled = true;
 	
@@ -117,8 +122,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 		// Get extra text
-		var extra = document.getElementById('wpdr-en-extra').value;
-		if ( ! document.getElementById('wpdr-en-ext-extra').checked ) {
+		var extra_box = document.getElementById('wpdr-en-extra');
+		var extra     = ( extra_box ? extra_box.value : '' );
+		var ext_extra = document.getElementById('wpdr-en-ext-extra');
+		if ( ! ext_extra || ! ext_extra.checked ) {
 			extra = '';
 		};
 		if ( extra.length > 0 ) {
@@ -177,11 +184,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	// This is fireable only when one or other mail send button is not disabled.
-	document.getElementById("wpdr-en-extra").addEventListener('input', event => {
+	const extra_text = document.getElementById("wpdr-en-extra");
+	if ( extra_text ) extra_text.addEventListener('input', event => {
 		// The target is the textarea.
 		const mty_text = ( 0 === event.target.value.length );
-		const int_butt = document.getElementById("wpdr-en-notify").disabled;
-		const ext_butt = document.getElementById("wpdr-en-ext-note").disabled;
+		const int_butt = ( ! notify || notify.disabled );
+		const ext_butt = ( ! ext_note || ext_note.disabled );
 		if ( ! int_butt ) {
 			const int_add = document.getElementById("wpdr-en-int-extra");
 			//check that it is active.

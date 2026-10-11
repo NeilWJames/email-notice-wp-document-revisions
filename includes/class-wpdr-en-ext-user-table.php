@@ -69,9 +69,9 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 		// set the post.
 		// phpcs:disable WordPress.Security.NonceVerification
 		if ( isset( $_GET['post'] ) ) {
-			self::$post_id = sanitize_text_field( wp_unslash( $_GET['post'] ) );
+			self::$post_id = absint( $_GET['post'] );
 		} elseif ( isset( $_POST['post'] ) ) {
-			self::$post_id = sanitize_text_field( wp_unslash( $_POST['post'] ) );
+			self::$post_id = absint( $_POST['post'] );
 		} else {
 			global $post;
 			if ( ! is_null( $post ) ) {
@@ -134,7 +134,7 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 			case 'rec_num':
 			case 'user_name':
 			case 'email':
-				return $item[ $column_name ];
+				return esc_html( $item[ $column_name ] );
 			case 'pause':
 				return '<input type="checkbox"' . ( 0 === $item[ $column_name ] ? '' : '  checked="checked"' ) . ' disabled></>&nbsp;';
 		}
@@ -148,12 +148,24 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 	 * @return string[]
 	 */
 	public function column_rec_num( $item ) {
+		// Values go in escaped data attributes, never into the onclick JavaScript itself.
 		$actions = array(
-			'edit'   => '<button onclick=\'wpdr_en_edit( "' . $item['user_name'] . '", "' . $item['email'] . '", "' . $item['pause'] . '" )\'>' . __( 'Edit', 'email-notice-wp-document-revisions' ) . '</button>',
-			'delete' => sprintf( '<button onclick="wpdr_en_delete(%s, %s)">' . __( 'Delete', 'email-notice-wp-document-revisions' ) . '</button>', self::$post_id, $item['rec_num'] ),
+			'edit'   => sprintf(
+				'<button onclick="wpdr_en_edit( this )" data-user-name="%1$s" data-email="%2$s" data-pause="%3$d">%4$s</button>',
+				esc_attr( $item['user_name'] ),
+				esc_attr( $item['email'] ),
+				(int) $item['pause'],
+				esc_html__( 'Edit', 'email-notice-wp-document-revisions' )
+			),
+			'delete' => sprintf(
+				'<button onclick="wpdr_en_delete( %1$d, %2$d )">%3$s</button>',
+				(int) self::$post_id,
+				(int) $item['rec_num'],
+				esc_html__( 'Delete', 'email-notice-wp-document-revisions' )
+			),
 		);
 
-		return sprintf( '%1$s %2$s', $item['rec_num'], $this->row_actions( $actions ) );
+		return sprintf( '%1$d %2$s', (int) $item['rec_num'], $this->row_actions( $actions ) );
 	}
 
 	/**

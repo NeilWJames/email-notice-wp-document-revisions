@@ -4,15 +4,24 @@ name: CI
 on:
   push:
     branches: [ main ]
+    # A change to the translation template only (the Generate POT PR) needs no tests.
+    paths-ignore:
+      - 'languages/**'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - 'languages/**'
+
+# Every job only reads the repository.
+permissions:
+  contents: read
 
 jobs:
   phpcs:
     runs-on: ubuntu-latest
     env:
       TRAVIS_BUILD_DIR: ${{ github.workspace }}
-    strategy: 
+    strategy:
       matrix:
         php_version: [8.3, 8.4]
     steps:
@@ -24,17 +33,68 @@ jobs:
           php-version: ${{ matrix.php_version }}
           extensions: mysqli
 
+      # No composer.lock (gitignored), so key the cache on composer.json.
       - name: Cache Composer packages
         id: composer-cache
         uses: actions/cache@v6
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ matrix.php_version }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-${{ matrix.php_version }}-${{ hashFiles('composer.json') }}
           restore-keys: |
             ${{ runner.os }}-php-${{ matrix.php_version }}-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
-      
+
       - name: phpcs
         run: script/cibuild-phpcs
+
+  phpunit:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+    strategy:
+      matrix:
+        php_version: [8.3, 8.4]
+    env:
+      WP_TESTS_DIR: /tmp/wordpress-tests-lib
+      WP_CORE_DIR: /tmp/wordpress
+      # The required parent plugin; tests/bootstrap.php loads it from here.
+      WPDR_PLUGIN_DIR: /tmp/wp-document-revisions
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php_version }}
+          extensions: mysqli
+          coverage: none
+
+      - name: Cache Composer packages
+        uses: actions/cache@v6
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php_version }}-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php_version }}-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Get WP Document Revisions (latest release)
+        run: |
+          curl -sSL -o /tmp/wpdr.zip https://downloads.wordpress.org/plugin/wp-document-revisions.latest-stable.zip
+          unzip -q /tmp/wpdr.zip -d /tmp
+
+      - name: Install WordPress and the test library
+        run: bash script/install-wp-tests wordpress_test root root 127.0.0.1:3306 latest
+
+      - name: phpunit
+        run: sh script/cibuild-phpunit
