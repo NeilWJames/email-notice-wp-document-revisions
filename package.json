@@ -1,19 +1,22 @@
 {
   "name": "email-notice-wp-document-revisions",
   "private": true,
-  "description": "Build tools for Email Notice for WP Document Revisions: minifies src/ into build/.",
+  "description": "Build and test tools for Email Notice for WP Document Revisions: minifies src/ into build/ and runs the JS tests.",
   "license": "GPL-3.0-or-later",
-  "type": "module",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "build": "node script/build-assets.mjs",
     "build:force": "node script/build-assets.mjs --force",
-    "build:check": "node script/build-assets.mjs --check"
+    "build:check": "node script/build-assets.mjs --check",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "devDependencies": {
     "clean-css": "^5.3.3",
+    "jest": "^30.0.0",
+    "jest-environment-jsdom": "^30.0.0",
     "terser": "^5.36.0"
   }
 }

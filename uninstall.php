@@ -39,6 +39,8 @@ function wpdr_en_del_options() {
 	delete_option( 'wpdr_en_set_exttext' );
 	delete_option( 'wpdr_en_set_ext_attach' );
 	delete_option( 'wpdr_en_set_repeat' );
+	delete_option( 'wpdr_en_set_log_days' );
+	wp_clear_scheduled_hook( 'wpdr_en_purge_logs' );
 
 	// Automatic send result notice used before 4.0.0 (since then per user and expiring after 5 minutes).
 	delete_transient( 'auto_notification_message' );

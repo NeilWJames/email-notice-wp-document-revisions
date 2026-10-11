@@ -54,6 +54,16 @@ function wpdr_en_missing_wpdr_notice() {
 	echo '</p></div>';
 }
 
+/**
+ * Deactivation: stop the daily log clean-up.
+ *
+ * @since 4.0.0
+ * @return void
+ */
+function wpdr_en_deactivate() {
+	wp_clear_scheduled_hook( 'wpdr_en_purge_logs' );
+}
+
 // Check that WP Document Revisions is active (the notice is shown with the other admin notices).
 if ( ! wpdr_en_wpdr_active() ) {
 	if ( is_admin() ) {
@@ -66,14 +76,17 @@ if ( ! wpdr_en_wpdr_active() ) {
  * Email Notice WP Document Revisions.
  */
 
-// Only use when Admin (Load when needed).
-if ( is_admin() ) {
+// Only use when Admin (Load when needed), or for WP-Cron (daily log clean-up).
+if ( is_admin() || wp_doing_cron() ) {
 	global $wpdr_en;
 	require_once __DIR__ . '/includes/class-wpdr-email-notice.php';
 	$wpdr_en = new WPDR_Email_Notice();
 
 	// Install tables and capabilities when plugin activated.
 	register_activation_hook( __FILE__, array( $wpdr_en, 'db_version_check' ) );
+
+	// Stop the daily log clean-up when the plugin is deactivated (admin_init schedules it again).
+	register_deactivation_hook( __FILE__, 'wpdr_en_deactivate' );
 
 	// Bulk subscribe/unsubscribe users.
 	if ( ! class_exists( 'WPDR_EN_All_Users_Bulk_Action' ) ) {

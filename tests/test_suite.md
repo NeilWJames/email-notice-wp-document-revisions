@@ -1,9 +1,11 @@
-# PHPUnit test suite
+# Test suites
+
+PHPUnit (PHP, below) and Jest (JavaScript, see [JavaScript tests](#javascript-tests)).
 
 Integration tests run inside WordPress (the core test library) with WP Document Revisions loaded,
 so they exercise the real hooks, capabilities and database tables.
 
-**Status:** 154 tests in 17 classes (3 multisite-only); no known-bug tests left. 151 passed, 3 skipped (multisite) in the sandbox 2026-10-11 (all 154 pass as multisite); phpcs clean. Line coverage 84% (pcov), now including `uninstall.php`. The 147-test round is confirmed on 62wp and in CI.
+**Status:** 163 tests in 18 classes (3 multisite-only); no known-bug tests left. 160 passed, 3 skipped (multisite) in the sandbox 2026-10-12 (all 163 pass as multisite); phpcs clean. Line coverage 84% (pcov), now including `uninstall.php`. The 147-test round is confirmed on 62wp and in CI.
 
 ## Running
 
@@ -81,12 +83,13 @@ WP_Ajax_UnitTestCase defines `DOING_AJAX` for the rest of the run.
 | File | Tests | Covers |
 |---|---|---|
 | `class-test-wpdr-en-address-table.php` | 3 | Security fix #3: Edit button values in escaped `data-*` attributes, Delete post ID forced to int, cells escaped |
-| `class-test-wpdr-en-admin-pages.php` | 24 | Smoke tests (no PHP notices, output escaped): each settings field with a hostile stored value, settings/sections/fields registered; both log pages render (table, search, script); log column style only on log pages; Document metabox states (send, re-send, disabled for drafts, no extra-text box without `%extra%`) and its PublishPress Revisions exclusion; List metaboxes added and rendered (notes escaped, saved terms kept), refused without `edit_doc_ext_lists`; help tabs per screen and filter; List update messages; List error notice (draft warning, hidden when complete); log rows removed when a document or user is deleted |
+| `class-test-wpdr-en-admin-pages.php` | 25 | Smoke tests (no PHP notices, output escaped): each settings field with a hostile stored value, settings/sections/fields registered; both log pages render (table, search, script); log column style only on log pages; Document metabox states (send, re-send, disabled for drafts, no extra-text box without `%extra%`) and its PublishPress Revisions exclusion; List metaboxes added and rendered (notes escaped, saved terms kept), refused without `edit_doc_ext_lists`; help tabs per screen and filter; List update messages; List error notice (draft warning, hidden when complete); log rows removed when a document or user is deleted |
 | `class-test-wpdr-en-assets.php` | 6 | Stage 2: every `src/` file has a `build/` copy (JS, CSS); built JS keeps the global functions called from HTML; debug mode loads `src/` with file-time versions; document and List screens enqueue their script and style (nothing on other screens) |
-| `class-test-wpdr-en-bug-fixes.php` | 17 | Bugs fixed in 4.0.0: Internal Notice mode saved (Auto/Manual) and shown, old 0 shown as Manual; "notify about" saved (known keys only), shown (all ticked until saved) and applied; Auto mode sends once on publish, notice for the publisher only; internal log status; internal extra text stored; internal and external %repeat%; `user_register` from code doesn't die; profile save (nonce, edit_user, roles without the choice), profile fields (Add New User shows them unticked), Add New User saves them, Users column |
+| `class-test-wpdr-en-bug-fixes.php` | 18 | Bugs fixed in 4.0.0: Internal Notice mode saved (Auto/Manual) and shown, old 0 shown as Manual; "notify about" saved (known keys only), shown (all ticked until saved) and applied; Auto mode sends once on publish, notice for the publisher only; internal log status; internal extra text stored; internal and external %repeat%; `user_register` from code doesn't die; profile save (nonce, edit_user, roles without the choice), profile fields (Add New User shows them unticked), labels ("me" on one's own profile, "this user" otherwise), Add New User saves them, Users column |
 | `class-test-wpdr-en-bulk-action.php` | 6 | Bulk subscribe/unsubscribe: menu actions, subscribe, unsubscribe (attachment off), other actions and empty selection ignored, roles without the choice refused and cleared |
 | `class-test-wpdr-en-capabilities.php` | 13 | 4.0.0 `read_doc_ext_lists`: default roles; install adds it when no role has it (whoever loads the page); tables checked only when the version changes; upgrade from 3.x gives it to roles and users with `edit_doc_ext_lists` (whoever loads the page), keeps an explicit denial, runs once; CPT read cap; log pages and menu items; metabox list section hidden / shown / fixed for read-only users |
 | `class-test-wpdr-en-internal.php` | 5 | Internal recipients: opted-in only, private needs read access, drafts not sent, log row, HTML mail |
+| `class-test-wpdr-en-log-purge.php` | 7 | Deleting old log entries: internal by the Writing setting (none, recent kept, old deleted); external by each List's days (90 deletes after 90 days, 0 or none keeps); unused extra text deleted; daily job scheduled on `admin_init`, run by the hook, cleared on deactivation; List days saved only with `delete_doc_ext_lists`, whole positive number; field read-only for others; setting sanitized |
 | `class-test-wpdr-en-list-edit.php` | 8 | External List settings: list columns and cell values (attach falls back to the site setting), Quick/Bulk Edit fields; saving from the edit form (a ticked box is on), Quick Edit, Bulk Edit (translated button, No Change, bad nonce, only 0/1), from code (no change, no die), without edit rights |
 | `class-test-wpdr-en-matching.php` | 9 | External Lists: any/all rule, parent term matches child (not the reverse), paused/draft lists and paused addresses skipped, selected lists only, public documents only, log row + sent flag |
 | `class-test-wpdr-en-multisite.php` | 3 | Multisite only, skipped otherwise (run with `WP_MULTISITE=1`): security #6 — internal mail only to the site's members, only the site's own Lists used; a site is set up by its own (non-network) administrator |
@@ -96,17 +99,44 @@ WP_Ajax_UnitTestCase defines `DOING_AJAX` for the rest of the run.
 | `class-test-wpdr-en-user-log.php` | 9 | Internal log table: rows newest first with titles and names, search by title or name, `%` searched as text, sorting by each column, unknown sort ignored, 20 per page, columns and empty message, links by capability, extra text from sending |
 | `class-test-wpdr-en-zz-ajax-address.php` | 9 | Security fix #1: add/update/delete by an editor; contributor refused even when sending an admin `userid`; non-list refused; invalid email (F-17). Address search returns the filtered table; bad nonce (F-21), no post ID (F-22) |
 | `class-test-wpdr-en-zz-ajax-send.php` | 14 | Security fix #2 (internal and external): editor can send; contributor and non-owning author get F-08; non-document F-07; bad nonce F-02. 4.0.0: author can send internal for own document; external needs `read_doc_ext_lists` (F-09); list choice honoured only for list editors |
-| `class-test-wpdr-en-zzz-uninstall.php` | 1 | `uninstall.php` removes settings, Lists, sent flags, user settings, role and user capabilities, and drops the tables (rolled back afterwards) |
+| `class-test-wpdr-en-zzz-uninstall.php` | 1 | `uninstall.php` removes settings (including log days and the daily job), Lists, sent flags, user settings, role and user capabilities, and drops the tables (rolled back afterwards) |
 Tests for bugs not yet fixed go in the relevant class with `@group known-bug` (excluded by default); remove the tag when fixed.
+
+## JavaScript tests
+
+**Status:** 29 Jest tests in 3 files (`tests/js`), all passing in the sandbox 2026-10-12; 100% of `src/js` lines and branches (V8 coverage).
+
+Run from the plugin folder (Node 20+): one-off `npm install`, then `npm test` (or `npm run test:coverage`, report in `coverage/js`).
+CI: the `js` job in `ci.yml` runs `npm run test:coverage` on Node 22 and uploads to Codecov with the flag `js` (PHP uploads use `php`).
+
+How it works:
+
+- `jest.config.cjs`: jsdom environment, tests in `tests/js/*.test.js`, coverage of `src/js` (the sources, not `build/`).
+- `tests/js/global-script-transform.cjs`: the scripts are plain browser scripts whose top-level functions are globals
+  (called from `onclick` attributes); the transform appends lines making them globals under Jest too.
+- `tests/js/helpers.js`: `loadScript( name, html )` sets the page, fakes `wpdr_en_obj` (same keys as `load_js_methods()`),
+  `jQuery.ajax` (a Jest mock: its calls hold the request, and the test calls `success` / `error` / `complete` itself) and `alert`,
+  loads the script and fires `DOMContentLoaded`; `lastRequest( ajax )`; `asOnclick( fn, ...args )` calls a function with
+  `window.event` set, as an inline handler does.
+
+| File | Tests | Covers |
+|---|---|---|
+| `wpdr-email-notice.test.js` | 14 | Document metabox: internal and external requests (post ID, nonce, ticked lists, extra text only when ticked); button disabled and progress shown until the request completes, no second send; success, partial and failure messages (the "out of" text), alert with the error code, re-send label; response values cannot add markup; failed request; unticking all lists disables the button; extra-text boxes follow the text, the template and the buttons; one or no section |
+| `wpdr-en-address.test.js` | 13 | List edit screen: Add (request, form submit stopped, no global variables), result table shown and entry reset, error shown as text, Delete, Edit/Clear, Add enabled only with name and email, no event; search keeps the edit action; "updated" message removed when the save was refused; unsaved terms restored; Quick Edit copies the row settings (not into Bulk Edit), ticking updates the value, other clicks ignored |
+| `wpdr-en-log.test.js` | 2 | Extra Text shown and hidden; a row without extra text ignored |
 
 ## Planned
 
+- JS: end-to-end tests in a browser (e.g. Playwright) for the screens as a whole.
 - The loading code at the end of `wpdr-email-notice.php` runs in the bootstrap, before coverage starts, so it shows as not covered.
 - Attachments (internal preference, list setting, size filter, temp file cleanup).
 - Uninstall.
 
 ## Change log
 
+- 2026-10-12: Log deletion: new `class-test-wpdr-en-log-purge.php` (7); settings field for the internal log days (admin pages, 1); uninstall checks the option and the daily job. 163 tests.
+- 2026-10-12: Profile labels test (bug-fixes, 1). 155 tests.
+- 2026-10-12: JavaScript tests: Jest + jsdom, 29 tests in `tests/js`, 100% of `src/js`; CI `js` job with Codecov flag `js`. Scripts fixed (see changelog 4.0.0).
 - 2026-10-11: Bugs and tech debt: new `class-test-wpdr-en-plugin.php` (3) and `class-test-wpdr-en-zzz-uninstall.php` (1, runs last as `uninstall.php` can only be loaded once); per-version table check (capabilities), site set-up by its own administrator (multisite), Add New User (2). `uninstall.php` added to coverage. 154 tests.
 - 2026-10-11: Smoke tests: new `class-test-wpdr-en-admin-pages.php` (24); List screen assets (1); address search AJAX (2). 147 tests; line coverage 69% → 83%.
 - 2026-10-11: Coverage round: known bugs fixed and their tests moved to `class-test-wpdr-en-bug-fixes.php` (`class-test-wpdr-en-known-bugs.php` removed); new `class-test-wpdr-en-user-log.php` (9), `class-test-wpdr-en-bulk-action.php` (6), `class-test-wpdr-en-list-edit.php` (8). Bootstrap no longer unhooks `save_user_profile`. 120 tests; line coverage 55% → 69%.

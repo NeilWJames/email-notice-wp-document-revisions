@@ -18,6 +18,16 @@ Writing contains:
 - External Notice email content - template to generate the email content for external users
 - Also whether to always attach the document to the mail.
 - Notification email repeat - template to generate a message to be included if a mail has previously for the document.
+- Internal email log - delete internal log entries for Documents not modified for this many days (empty or 0 keeps them).
+
+## Deleting old log entries
+
+Once a day, log entries are deleted for Documents that have not been modified for a set number of days:
+
+- Internal log: the number of days in Settings > Writing (Internal email log).
+- External log: the number of days in each Document External List's attributes (Email Log), so that, say, a List used for a monthly report can keep 90 days while others keep everything. Only users who can delete Lists (*delete_doc_ext_lists*) can change it.
+
+Empty or 0 keeps the entries. Extra text no longer used by any log entry is deleted with them. The daily job uses WP-Cron; it is stopped when the plugin is deactivated.
 
 Private sites, i.e. ones requiring logon wishing to send emails to External users should attach the Document to the email since otherwise they would not be able to access it.
  

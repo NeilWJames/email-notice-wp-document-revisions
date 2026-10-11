@@ -381,6 +381,26 @@ class Test_WPDR_EN_Bug_Fixes extends WPDR_EN_UnitTestCase {
 	}
 
 	/**
+	 * The labels say "me" on the user's own profile and "this user" when adding or editing someone else.
+	 */
+	public function test_profile_labels() {
+		global $wpdr_en;
+		$user = get_user_by( 'id', self::$users['subscriber'] );
+
+		wp_set_current_user( $user->ID );
+		$own = self::output( array( $wpdr_en, 'user_profile' ), array( $user ) );
+		$this->assertStringContainsString( 'Notify me by email', $own );
+		$this->assertStringContainsString( 'Also send me the document', $own );
+
+		wp_set_current_user( 1 );
+		$other = self::output( array( $wpdr_en, 'user_profile' ), array( $user ) );
+		$this->assertStringContainsString( 'Notify this user by email', $other );
+		$this->assertStringContainsString( 'Also send this user the document', $other );
+
+		$this->assertStringContainsString( 'Notify this user by email', self::output( array( $wpdr_en, 'user_profile' ), array( 'add-new-user' ) ) );
+	}
+
+	/**
 	 * A user added on the Add New User screen gets the settings ticked there.
 	 */
 	public function test_add_new_user_saves_settings() {

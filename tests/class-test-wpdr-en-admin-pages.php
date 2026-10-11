@@ -131,6 +131,7 @@ class Test_WPDR_EN_Admin_Pages extends WPDR_EN_UnitTestCase {
 			'external text'   => array( 'set_exttext', 'wpdr_en_set_exttext' ),
 			'external attach' => array( 'set_ext_attach', 'wpdr_en_set_ext_attach' ),
 			'repeat text'     => array( 'set_repeat', 'wpdr_en_set_repeat' ),
+			'log days'        => array( 'set_log_days', 'wpdr_en_set_log_days' ),
 		);
 	}
 
@@ -165,11 +166,11 @@ class Test_WPDR_EN_Admin_Pages extends WPDR_EN_UnitTestCase {
 	public function test_settings_registered() {
 		global $wp_registered_settings, $wp_settings_fields;
 
-		foreach ( array( 'email_from', 'email_from_address', 'notification_mode', 'notification_about', 'subject', 'content', 'exttext', 'ext_attach', 'repeat' ) as $name ) {
+		foreach ( array( 'email_from', 'email_from_address', 'notification_mode', 'notification_about', 'subject', 'content', 'exttext', 'ext_attach', 'repeat', 'log_days' ) as $name ) {
 			$this->assertArrayHasKey( 'wpdr_en_set_' . $name, $wp_registered_settings );
 		}
 		$this->assertCount( 2, $wp_settings_fields['general']['wpdr_en_general_settings'] );
-		$this->assertCount( 7, $wp_settings_fields['writing']['wpdr_en_writing_settings'] );
+		$this->assertCount( 8, $wp_settings_fields['writing']['wpdr_en_writing_settings'] );
 	}
 
 	/**

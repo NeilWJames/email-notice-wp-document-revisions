@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <ruleset name="WordPress Coding Standards">
 
-	<extensions>*/php</extensions>
+	<!-- PHP only: folders such as tests/ also hold the JavaScript tests. -->
+	<arg name="extensions" value="php"/>
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>

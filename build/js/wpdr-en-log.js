@@ -1,1 +1,1 @@
-function wpdr_en_extra(e){var t="extra_"+e,n=document.getElementById(t),d=getComputedStyle(n).display;n.style.display="none"==d?"block":"none"}
+function wpdr_en_extra(e){const t=document.getElementById("extra_"+e);t&&(t.style.display="none"===getComputedStyle(t).display?"block":"none")}

@@ -102,6 +102,9 @@ class WPDR_Email_Notice {
 		add_action( 'admin_init', array( $this, 'admin_init' ), 200 );
 		// Add the notification log options.
 		add_action( 'admin_menu', array( $this, 'notification_log_menu' ), 30 );
+
+		// Daily removal of old log entries (WP-Cron; the plugin is also loaded for cron requests).
+		add_action( 'wpdr_en_purge_logs', array( $this, 'purge_logs' ) );
 	}
 
 	/**
@@ -526,14 +529,20 @@ class WPDR_Email_Notice {
 		add_settings_field( 'wpdr_en_set_exttext', __( 'External Notice email content', 'email-notice-wp-document-revisions' ), array( $this, 'set_exttext' ), 'writing', 'wpdr_en_writing_settings' );
 		add_settings_field( 'wpdr_en_set_ext_attach', '', array( $this, 'set_ext_attach' ), 'writing', 'wpdr_en_writing_settings' );
 		add_settings_field( 'wpdr_en_set_repeat', __( 'Notification email repeat', 'email-notice-wp-document-revisions' ), array( $this, 'set_repeat' ), 'writing', 'wpdr_en_writing_settings' );
-		// phpcs:disable
-		// #TODO: purge.
-		// add_settings_field( 'wpdr_en_set_notification_log', __( 'Logging', 'email-notice-wp-document-revisions' ), array( $this, 'set_notification_log' ), 'writing', 'wpdr_en_writing_settings' );
-		// phpcs:enable
-		// phpcs:disable
-		// #TODO: purge.
-		// register_setting( 'writing', 'wpdr_en_set_notification_log' );.
-		// phpcs:enable
+		register_setting(
+			'writing',
+			'wpdr_en_set_log_days',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => 'absint',
+			),
+		);
+		add_settings_field( 'wpdr_en_set_log_days', __( 'Internal email log', 'email-notice-wp-document-revisions' ), array( $this, 'set_log_days' ), 'writing', 'wpdr_en_writing_settings' );
+
+		// Old log entries are removed once a day.
+		if ( ! wp_next_scheduled( 'wpdr_en_purge_logs' ) ) {
+			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'wpdr_en_purge_logs' );
+		}
 
 		if ( self::$internal_list_needed ) {
 			// Profile values.
@@ -949,16 +958,75 @@ class WPDR_Email_Notice {
 		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'email-notice-wp-document-revisions' );
 	}
 
-	// #TODO: purge.
-
 	/**
-	 * Settings field to set purge interval.
+	 * Settings field: days to keep internal log entries after the Document was last modified.
 	 *
-	 * @since 1.0
+	 * @since 4.0.0
 	 * @return void
 	 */
-	public function purge_notification_log() {
-		echo 'Purge log every <input type="number" id="wpdr_en_set_notification_log" name="wpdr_en_set_notification_log" value="' . esc_attr( get_option( 'wpdr_en_set_notification_log' ) ) . '" min="0" max="999" size="3"></input> day(s). Zero or empty value means no purge needed.<br>';
+	public function set_log_days() {
+		$days = absint( get_option( 'wpdr_en_set_log_days' ) );
+		echo '<label for="wpdr_en_set_log_days">' . esc_html__( 'Delete entries for Documents not modified for', 'email-notice-wp-document-revisions' ) . ' ';
+		echo '<input type="number" id="wpdr_en_set_log_days" name="wpdr_en_set_log_days" value="' . esc_attr( $days ? $days : '' ) . '" min="0" step="1" class="small-text" /> ';
+		echo esc_html__( 'days', 'email-notice-wp-document-revisions' ) . '</label>';
+		echo '<br/>' . esc_html__( 'Empty or 0 keeps them. Checked once a day. External log entries are kept as set on each Document External List.', 'email-notice-wp-document-revisions' );
+	}
+
+	/**
+	 * Delete old log entries: those for Documents not modified for the number of days set.
+	 *
+	 * Internal log: the Settings > Writing value. External log: each List's own value.
+	 * Extra text no longer used by any log entry is deleted too. Runs daily (WP-Cron).
+	 *
+	 * @since 4.0.0
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 * @return int[] Rows deleted: 'internal', 'external', 'extra_text'.
+	 */
+	public function purge_logs() {
+		global $wpdb;
+		$now    = current_time( 'mysql', true );
+		$result = array(
+			'internal'   => 0,
+			'external'   => 0,
+			'extra_text' => 0,
+		);
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$days = absint( get_option( 'wpdr_en_set_log_days' ) );
+		if ( $days > 0 ) {
+			$result['internal'] = (int) $wpdb->query(
+				$wpdb->prepare(
+					"DELETE l FROM {$wpdb->prefix}wpdr_notification_log l
+					 INNER JOIN {$wpdb->posts} p ON p.ID = l.post_id
+					 WHERE p.post_modified_gmt < DATE_SUB( %s, INTERVAL %d DAY )",
+					$now,
+					$days
+				)
+			);
+		}
+
+		// Each List's days are in its wpdr_en_log_days meta (none or 0: keep).
+		$result['external'] = (int) $wpdb->query(
+			$wpdb->prepare(
+				"DELETE e FROM {$wpdb->prefix}wpdr_ext_notice_log e
+				 INNER JOIN {$wpdb->posts} p ON p.ID = e.post_id
+				 INNER JOIN {$wpdb->postmeta} m ON m.post_id = e.doc_ext_list_id AND m.meta_key = 'wpdr_en_log_days'
+				 WHERE CAST( m.meta_value AS UNSIGNED ) > 0
+				 AND p.post_modified_gmt < DATE_SUB( %s, INTERVAL CAST( m.meta_value AS UNSIGNED ) DAY )",
+				$now
+			)
+		);
+
+		if ( $result['internal'] || $result['external'] ) {
+			$result['extra_text'] = (int) $wpdb->query(
+				"DELETE x FROM {$wpdb->prefix}wpdr_en_extra_text x
+				 WHERE NOT EXISTS ( SELECT 1 FROM {$wpdb->prefix}wpdr_notification_log l WHERE l.extra_text_id = x.id )
+				 AND NOT EXISTS ( SELECT 1 FROM {$wpdb->prefix}wpdr_ext_notice_log e WHERE e.extra_text_id = x.id )"
+			);
+		}
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+
+		return $result;
 	}
 
 	/**
@@ -1015,9 +1083,17 @@ class WPDR_Email_Notice {
 		}
 
 		echo '<div class="wpdr_en-content">';
-		echo '<input type="checkbox" name="wpdr_en_user_notification" value="1"' . checked( 1, $notify, false ) . '>' . esc_html__( 'Notify me by email when a new document is published', 'email-notice-wp-document-revisions' ) . '</input><br/>';
+		// "me" on the user's own profile; "this user" when adding or editing someone else.
+		if ( ! $new_user && get_current_user_id() === (int) $user->ID ) {
+			$notify_label = __( 'Notify me by email when a new document is published', 'email-notice-wp-document-revisions' );
+			$attach_label = __( 'Also send me the document as an attachment by email when a new document is published', 'email-notice-wp-document-revisions' );
+		} else {
+			$notify_label = __( 'Notify this user by email when a new document is published', 'email-notice-wp-document-revisions' );
+			$attach_label = __( 'Also send this user the document as an attachment by email when a new document is published', 'email-notice-wp-document-revisions' );
+		}
+		echo '<input type="checkbox" name="wpdr_en_user_notification" value="1"' . checked( 1, $notify, false ) . '>' . esc_html( $notify_label ) . '</input><br/>';
 
-		echo '<input type="checkbox" name="wpdr_en_user_attachment" value="1"' . checked( 1, $attach, false ) . '>' . esc_html__( 'Also send me the document as an attachment by email when a new document is published', 'email-notice-wp-document-revisions' ) . '</input><br/>';
+		echo '<input type="checkbox" name="wpdr_en_user_attachment" value="1"' . checked( 1, $attach, false ) . '>' . esc_html( $attach_label ) . '</input><br/>';
 		echo '</div>'; // wpdr_en-content end.
 		echo '</div>'; // wpdr_en-wrapper end.
 	}
@@ -1826,9 +1902,9 @@ class WPDR_Email_Notice {
 			</tr>
 			<tr>
 			<td><div id="clear_address" name="clear_address" style="display:none;" >
-			<input type="submit" class="button button-large" value="<?php echo esc_html_e( 'Clear values', 'email-notice-wp-document-revisions' ); ?>" onclick="wpdr_en_clear()"/>
+			<input type="submit" class="button button-large" value="<?php esc_attr_e( 'Clear values', 'email-notice-wp-document-revisions' ); ?>" onclick="wpdr_en_clear()"/>
 			</div></td>
-			<td><input type="submit" id="add_address" name="add_address" class="button button-large" value="<?php echo esc_html_e( 'Add Address to List', 'email-notice-wp-document-revisions' ); ?>" onclick="wpdr_en_insert()" disabled /></td>
+			<td><input type="submit" id="add_address" name="add_address" class="button button-large" value="<?php esc_attr_e( 'Add Address to List', 'email-notice-wp-document-revisions' ); ?>" onclick="wpdr_en_insert()" disabled /></td>
 			</tr>
 			<tr>
 			<td></td>
@@ -1880,6 +1956,23 @@ class WPDR_Email_Notice {
 		<fieldset>
 		<input type="checkbox" id="wpdr_en_pause" name="wpdr_en_pause" value="<?php echo esc_attr( $pause ) . '" ' . checked( 1, $pause, false ); ?>>
 		<label for="wpdr_en_pause"><?php esc_html_e( 'Pause this List', 'email-notice-wp-document-revisions' ); ?></label>
+		</fieldset>
+		<h3 id="log_days_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Email Log', 'email-notice-wp-document-revisions' ); ?></h3>
+		<fieldset>
+		<?php
+		$log_days   = absint( get_post_meta( $post->ID, 'wpdr_en_log_days', true ) );
+		$can_delete = current_user_can( 'delete_doc_ext_lists' );
+		?>
+		<label for="wpdr_en_log_days"><?php esc_html_e( 'Delete this List\'s log entries for Documents not modified for', 'email-notice-wp-document-revisions' ); ?>
+		<input type="number" id="wpdr_en_log_days" name="wpdr_en_log_days" min="0" step="1" class="small-text" value="<?php echo esc_attr( $log_days ? $log_days : '' ); ?>"<?php disabled( ! $can_delete ); ?>>
+		<?php esc_html_e( 'days', 'email-notice-wp-document-revisions' ); ?></label><br />
+		<?php
+		esc_html_e( 'Empty or 0 keeps them. Checked once a day.', 'email-notice-wp-document-revisions' );
+		if ( ! $can_delete ) {
+			// Explains why the box is greyed out.
+			echo ' ' . esc_html__( 'Only users who can delete Lists can change this.', 'email-notice-wp-document-revisions' );
+		}
+		?>
 		</fieldset>
 		<h3 id="note_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Document List Notes', 'email-notice-wp-document-revisions' ); ?></h3>
 		<fieldset>
@@ -3395,6 +3488,11 @@ class WPDR_Email_Notice {
 		// the value when the page was loaded, so ticking a box did not switch the setting on.
 		update_post_meta( $post_id, 'wpdr_en_attach', ( isset( $_POST['wpdr_en_attach'] ) ? 1 : 0 ) );
 		update_post_meta( $post_id, 'wpdr_en_pause', ( isset( $_POST['wpdr_en_pause'] ) ? 1 : 0 ) );
+
+		// Log retention (edit form only): deleting log entries needs the right to delete Lists.
+		if ( isset( $_POST['wpdr_en_log_days'] ) && current_user_can( 'delete_doc_ext_lists' ) ) {
+			update_post_meta( $post_id, 'wpdr_en_log_days', absint( $_POST['wpdr_en_log_days'] ) );
+		}
 	}
 
 	/**
@@ -3602,6 +3700,8 @@ class WPDR_Email_Notice {
 				__( 'Pause Mail', 'email-notice-wp-document-revisions' ) . '</strong></p><p>' .
 				__( 'This allows the External List to be paused from matching Documents.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
 				__( 'It is provided so that an External List can be withdrawn from processing temporarily without simply changing its status.', 'email-notice-wp-document-revisions' ) . '</p><p><strong><p><strong>' .
+				__( 'Email Log', 'email-notice-wp-document-revisions' ) . '</strong></p><p>' .
+				__( 'The number of days after a Document was last modified that this List\'s log entries for it are kept. They are deleted once a day; empty or 0 keeps them. Only users who can delete Lists can change it.', 'email-notice-wp-document-revisions' ) . '</p><p><strong>' .
 				__( 'List Notes', 'email-notice-wp-document-revisions' ) . '</strong></p><p>' .
 				'<p>' . __( 'This is a text area where optional comment or information can be held about the External List.', 'email-notice-wp-document-revisions' ) . '</p><p>' .
 				__( 'Use is made of the excerpt field as it intended to be a simple aide-memoire to administrators of the External Lists.', 'email-notice-wp-document-revisions' ) . '</p>',
@@ -3791,4 +3891,3 @@ class WPDR_Email_Notice {
 }
 
 // #TODO: add export log functionality
-// #TODO: add purge functionality: uncomment related code and configuration options; implement scheduler to truncate logs regularly + manually on view log page

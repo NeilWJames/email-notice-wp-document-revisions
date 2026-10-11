@@ -133,5 +133,33 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           files: coverage.xml
+          flags: php
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  js:
+    name: js (Jest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Tests the src/ scripts (build/ is kept up to date by the Build assets workflow).
+      # No package-lock.json (gitignored), so npm install rather than npm ci.
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Jest with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage/js/lcov.info
+          flags: js
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false

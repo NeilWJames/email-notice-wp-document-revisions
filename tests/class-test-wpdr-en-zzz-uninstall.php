@@ -55,6 +55,8 @@ class Test_WPDR_EN_ZZZ_Uninstall extends WPDR_EN_UnitTestCase {
 		update_post_meta( $doc, 'wpdr_en_notification_sent', '1' );
 		update_post_meta( $doc, 'wpdr_en_ext_notice_sent', '1' );
 		update_option( 'wpdr_en_set_subject', 'Subject' );
+		update_option( 'wpdr_en_set_log_days', 90 );
+		wp_schedule_event( time(), 'daily', 'wpdr_en_purge_logs' );
 		self::subscribe( self::$users['subscriber'] );
 		$author = new WP_User( self::$users['author'] );
 		$author->add_cap( 'read_doc_ext_lists' );
@@ -78,6 +80,8 @@ class Test_WPDR_EN_ZZZ_Uninstall extends WPDR_EN_UnitTestCase {
 
 		$this->assertFalse( get_option( 'wpdr_en_set_subject' ), 'settings' );
 		$this->assertFalse( get_option( 'wpdr_en_db_version' ), 'version' );
+		$this->assertFalse( get_option( 'wpdr_en_set_log_days' ), 'log days' );
+		$this->assertFalse( wp_next_scheduled( 'wpdr_en_purge_logs' ), 'daily clean-up' );
 		$this->assertNull( get_post( $list ), 'lists' );
 		$this->assertSame( '', get_post_meta( $doc, 'wpdr_en_notification_sent', true ), 'internal flag' );
 		$this->assertSame( '', get_post_meta( $doc, 'wpdr_en_ext_notice_sent', true ), 'external flag' );

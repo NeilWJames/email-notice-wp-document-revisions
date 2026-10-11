@@ -1,8 +1,55 @@
+/*
+// Scripts for the Document External List edit screen (address list, Quick Edit).
+// @version: 4.0
+*/
+
+/**
+ * Stop the button's form submit: these buttons sit inside the List's edit form.
+ *
+ * Called from inline onclick handlers, so the event is the window's current event.
+ */
+function wpdr_en_stop() {
+	const evt = window.event;
+	if ( evt ) {
+		evt.stopPropagation();
+		evt.preventDefault();
+	}
+}
+
+/**
+ * Show the List's address table returned by an address change, and reset the entry fields.
+ *
+ * @param {Object} response AJAX response; error_msg holds the table HTML, JSON-encoded.
+ */
+function wpdr_en_address_done( response ) {
+	if ( response.error ) {
+		document.getElementById('wpdr-en-message').textContent = response.error_msg + ' ( ' + response.error_code + ' )';
+		return;
+	}
+	wpdr_en_reset_entry();
+	document.getElementById('wpdr-en-message').innerHTML = '';
+	document.getElementById("current-list").innerHTML    = JSON.parse(response.error_msg);
+}
+
+/**
+ * Empty the address entry fields and return the button to "Add".
+ */
+function wpdr_en_reset_entry() {
+	document.getElementById("wpdr-en-user-name").value     = "";
+	document.getElementById("wpdr-en-email").value         = "";
+	document.getElementById("wpdr-en-email").disabled      = false;
+	document.getElementById("wpdr_pause").checked          = false;
+	document.getElementById("wpdr_pause").disabled         = false;
+	document.getElementById("clear_address").style.display = "none";
+	document.getElementById("add_address").value           = wpdr_en_obj.add_address;
+	document.getElementById("add_address").disabled        = true;
+}
+
 function wpdr_en_insert() {
-	id        = document.getElementById("post_ID").value;
-	user_name = document.getElementById("wpdr-en-user-name").value;
-	email     = document.getElementById("wpdr-en-email").value;
-	pause     = + document.getElementById("wpdr_pause").checked;
+	const id        = document.getElementById("post_ID").value;
+	const user_name = document.getElementById("wpdr-en-user-name").value;
+	const email     = document.getElementById("wpdr-en-email").value;
+	const pause     = + document.getElementById("wpdr_pause").checked;
 	// Add the message.
 	jQuery.ajax({
 		type     : 'POST',
@@ -16,28 +63,9 @@ function wpdr_en_insert() {
 			pause         : pause,
 			wpdr_en_nonce : wpdr_en_obj.wpdr_en_nonce
 		},
-		success  : function(response) {
-			if (response.error) {
-				document.getElementById('wpdr-en-message').innerHTML = response.error_msg + ' ( ' + response.error_code + ' )';					
-			} else {					
-				//Emails sent successfully					
-				document.getElementById('wpdr-en-message').innerHTML   = '';					
-				document.getElementById("wpdr-en-user-name").value     = "";
-				document.getElementById("wpdr-en-email").value         = "";
-				document.getElementById("wpdr-en-email").disabled      = false;
-				document.getElementById("wpdr_pause").checked          = false;
-				document.getElementById("wpdr_pause").disabled         = false;
-				document.getElementById("clear_address").style.display = "none";
-				document.getElementById("add_address").value           = wpdr_en_obj.add_address;
-				document.getElementById("add_address").disabled        = true;
-				var rpt = JSON.parse(response.error_msg);
-				document.getElementById("current-list").innerHTML = rpt;
-				document.getElementById("current-list").location.reload();
-			}
-		}
-	}); 		
-	event.stopPropagation();
-	event.preventDefault();
+		success  : wpdr_en_address_done
+	});
+	wpdr_en_stop();
 }
 
 function wpdr_en_delete( id, rec_num ) {
@@ -52,27 +80,9 @@ function wpdr_en_delete( id, rec_num ) {
 			del_rec       : rec_num,
 			wpdr_en_nonce : wpdr_en_obj.wpdr_en_nonce
 		},
-		success  : function(response) {
-			if (response.error) {
-				document.getElementById('wpdr-en-message').innerHTML = response.error_msg + ' ( ' + response.error_code + ' )';					
-			} else {					
-				//Emails sent successfully					
-				document.getElementById('wpdr-en-message').innerHTML   = "";
-				document.getElementById("wpdr-en-user-name").value     = "";
-				document.getElementById("wpdr-en-email").value         = "";
-				document.getElementById("wpdr-en-email").disabled      = false;
-				document.getElementById("wpdr_pause").checked          = false;
-				document.getElementById("wpdr_pause").disabled         = false;
-				document.getElementById("clear_address").style.display = "none";
-				document.getElementById("add_address").disabled        = true;
-				var rpt = JSON.parse(response.error_msg);
-				document.getElementById("current-list").innerHTML = rpt;
-				document.getElementById("current-list").location.reload();
-			}
-		}
+		success  : wpdr_en_address_done
 	});
-	event.stopPropagation();
-	event.preventDefault();
+	wpdr_en_stop();
 }
 
 function wpdr_en_edit( btn ) {
@@ -85,22 +95,13 @@ function wpdr_en_edit( btn ) {
 	document.getElementById("add_address").value           = wpdr_en_obj.edit_address;
 	document.getElementById("add_address").disabled        = false;
 	document.getElementById("user-entry").scrollIntoView();
-	event.stopPropagation();
-	event.preventDefault();
+	wpdr_en_stop();
 }
 
 function wpdr_en_clear() {
-	document.getElementById("wpdr-en-user-name").value     = "";
-	document.getElementById("wpdr-en-email").value         = "";
-	document.getElementById("wpdr-en-email").disabled      = false;
-	document.getElementById("wpdr_pause").checked          = false;
-	document.getElementById("wpdr_pause").disabled         = false;
-document.getElementById("clear_address").style.display     = "none";
-	document.getElementById("add_address").value           = wpdr_en_obj.add_address;
-	document.getElementById("add_address").disabled        = true;
+	wpdr_en_reset_entry();
 	document.getElementById("user-entry").scrollIntoView();
-	event.stopPropagation();
-	event.preventDefault();
+	wpdr_en_stop();
 }
 
 /**
@@ -140,9 +141,11 @@ function wpdr_en_attr_value( edit_row ) {
 }
 
 /**
- * Copies the cueent attribute vales into the QE equivalent..
+ * Copies the current attribute values into the Quick Edit row.
+ *
+ * @param {Event} event Click or key press on the list table.
  */
-function set_qe_values() {
+function set_qe_values( event ) {
 	let tag = event.target.tagName.toLowerCase();
 	let cls = event.target.classList;
 	if ( tag === "button" && cls.contains( "editinline" ) ) {
@@ -191,19 +194,15 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 
-	// Make sure attach/pause attributes value updated.
-	//document.getElementById("wpdr_en_attach").addEventListener( "click", wpdr_en_attr_value );
-	//document.getElementById("wpdr_en_pause").addEventListener( "click", wpdr_en_attr_value );
-
 	// make sure quick edit parameters are shown with the correct values.
 	const list = document.getElementById("the-list");
 	if ( list !== null ) {
 		// add to parent to ensure elements attached to this are executed first.
 		list.parentElement.addEventListener('click', event => {
-			set_qe_values();
+			set_qe_values( event );
 		});
 		list.parentElement.addEventListener('keypress', event => {
-			set_qe_values();
+			set_qe_values( event );
 		});
 	}
 

@@ -134,6 +134,7 @@ Release date: (in development)
 
 Breaking changes: see Upgrading to 4.0.0 under Migration Notice.
 
+* NEW: Old log entries are deleted daily for Documents not modified for a set number of days: internal entries by a Settings > Writing value, external entries by a value on each Document External List (changed only by users who can delete Lists). Empty or 0 keeps them.
 * NEW: Capability read_doc_ext_lists controls who sees Document External Lists: the email logs (Document Emails menu) and the External List part of the Document metabox. Given on upgrade to every role and user with edit_doc_ext_lists.
 * FIX: Security: Sending to External Lists needs read_doc_ext_lists; only users with edit_doc_ext_lists can choose which matched Lists to send to (the unticking was not enforced before).
 * FIX: Security: The email logs need read_doc_ext_lists (previously any user with edit_documents could see every address).
@@ -159,13 +160,16 @@ Breaking changes: see Upgrading to 4.0.0 under Migration Notice.
 * FIX: Repeat emails to External List addresses include the %repeat% text.
 * FIX: Ticking Document Attach or Pause on the External List edit screen switches it on (only switching off worked). Bulk Edit of Lists works on sites not in English. A List saved from code no longer stops with "The link you followed has expired".
 * FIX: The internal log search treats % and _ as ordinary characters.
-* FIX: The Add New User screen shows the Document Email settings; they are saved if the new user's role can receive notifications.
+* FIX: The Add New User screen shows the Document Email settings; they are saved if the new user's role can receive notifications. When adding or editing another user they read "this user" rather than "me".
 * FIX: Translations in the plugin's languages folder are loaded (it looked in includes/languages).
 * FIX: The plugin works when WP Document Revisions is network-activated, and the notice that WP Document Revisions is missing is shown with the other admin notices (it was printed before the page).
 * FIX: Multisite: each site's tables are checked once, not on every admin page, and a site gets its capabilities and tables when anyone first opens its admin (only a network administrator could install the capabilities).
 * FIX: Uninstall removes the capabilities from every site's roles and from users given them directly, the External List sent flags on Documents, and the settings of every user on the network.
+* FIX: Document metabox: the message when only some emails were sent no longer shows "undefined"; the Send button stays disabled and the progress icon shown until sending finishes (both were reset straight away); a failed request shows an error instead of "Sending..." for ever; the script error on every send (from `$`, undefined in WordPress) is gone.
+* FIX: External List addresses: no script error after adding or deleting an address, no stray global variables, and the address error message is shown as text.
 * DEV: Script and style sources moved to src/js and src/css; minified copies are in build/js and build/css, made with `npm run build` (terser, clean-css) or the Build assets workflow. Asset versions are the file times, so browsers pick up rebuilt files.
 * DEV: PHPUnit test suite in tests/ (see tests/test_suite.md); runs locally with script/install-wp-tests and in CI.
+* DEV: JavaScript tests with Jest and jsdom in tests/js (`npm test`), run in CI with coverage sent to Codecov (flag js; PHP has flag php).
 * DEV: Tests added for the internal log, bulk subscribe/unsubscribe, External List settings, the admin screens, plugin loading, uninstall and the fixed bugs; uninstall.php is included in coverage. Class descriptions and @package tags made consistent. A duplicate loader of the bulk action class with a wrong path is removed.
 * DEV: AJAX handlers reply with wp_send_json() instead of echo and die, so they can be tested.
 * DEV: Plugin header version set to match the readme Stable tag.
