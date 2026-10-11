@@ -91,13 +91,6 @@ function wpdr_en_tests_setup() {
 
 	// Settings, default templates and the AJAX/save hooks are set up on admin_init.
 	$wpdr_en->admin_init();
-
-	/*
-	 * Known bug: save_user_profile() uses check_admin_referer(), which dies when a user is
-	 * created outside the profile form, so every factory-created user would fail.
-	 * Unhooked here; covered by Test_WPDR_EN_Known_Bugs::test_user_register_does_not_die().
-	 */
-	remove_action( 'user_register', array( $wpdr_en, 'save_user_profile' ) );
 }
 wpdr_en_tests_setup();
 

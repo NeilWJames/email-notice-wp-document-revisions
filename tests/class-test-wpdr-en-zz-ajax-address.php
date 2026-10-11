@@ -189,4 +189,79 @@ class Test_WPDR_EN_ZZ_Ajax_Address extends WPDR_EN_Ajax_UnitTestCase {
 		$this->assertSame( 'F-12', $response['error_code'] );
 		$this->assertCount( 1, self::list_addresses( $list_id ) );
 	}
+
+	/**
+	 * Call the address search (a GET request) as a user and return the decoded response.
+	 *
+	 * @param int   $user_id User to act as.
+	 * @param array $get     GET fields.
+	 * @return array Decoded response.
+	 */
+	private function search( $user_id, $get ) {
+		wp_set_current_user( $user_id );
+		$_GET                 = $get;
+		$_REQUEST             = $get;
+		$this->_last_response = '';
+		try {
+			$this->_handleAjax( 'wpdr_en_search_list' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
+		$response = json_decode( $this->_last_response, true );
+		$this->assertIsArray( $response, 'AJAX response is JSON: ' . $this->_last_response );
+		return $response;
+	}
+
+	/**
+	 * The address search returns the List's address table, filtered.
+	 */
+	public function test_search_returns_table() {
+		$list_id = self::create_list(
+			array(
+				'addresses' => array(
+					array(
+						'user_name' => 'Ann',
+						'email'     => 'ann@example.org',
+					),
+					array(
+						'user_name' => 'Bob',
+						'email'     => 'bob@example.org',
+					),
+				),
+			)
+		);
+		wp_set_current_user( self::$users['editor'] );
+
+		$response = $this->search(
+			self::$users['editor'],
+			array(
+				'wpdr_en_nonce' => wp_create_nonce( 'wpdr_en_nonce' ),
+				'post_id'       => $list_id,
+				's'             => 'bob',
+			)
+		);
+
+		$this->assertFalse( $response['error'] );
+		$html = json_decode( $response['error_msg'] );
+		$this->assertStringContainsString( 'bob@example.org', $html );
+		$this->assertStringNotContainsString( 'ann@example.org', $html );
+	}
+
+	/**
+	 * The address search needs a valid nonce and a post ID.
+	 */
+	public function test_search_rejects_bad_requests() {
+		$response = $this->search(
+			self::$users['editor'],
+			array(
+				'wpdr_en_nonce' => 'bad',
+				'post_id'       => 1,
+			)
+		);
+		$this->assertSame( 'F-21', $response['error_code'] );
+
+		wp_set_current_user( self::$users['editor'] );
+		$response = $this->search( self::$users['editor'], array( 'wpdr_en_nonce' => wp_create_nonce( 'wpdr_en_nonce' ) ) );
+		$this->assertSame( 'F-22', $response['error_code'] );
+	}
 }

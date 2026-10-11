@@ -38,7 +38,7 @@ Release date: (in development)
 * FIX: The internal log search treats % and _ as ordinary characters.
 * DEV: Script and style sources moved to src/js and src/css; minified copies are in build/js and build/css, made with `npm run build` (terser, clean-css) or the Build assets workflow. Asset versions are the file times, so browsers pick up rebuilt files.
 * DEV: PHPUnit test suite in tests/ (see tests/test_suite.md); runs locally with script/install-wp-tests and in CI.
-* DEV: Tests added for the internal log, bulk subscribe/unsubscribe, External List settings and the fixed bugs. A duplicate loader of the bulk action class with a wrong path is removed.
+* DEV: Tests added for the internal log, bulk subscribe/unsubscribe, External List settings, the admin screens and the fixed bugs. A duplicate loader of the bulk action class with a wrong path is removed.
 * DEV: AJAX handlers reply with wp_send_json() instead of echo and die, so they can be tested.
 * DEV: Plugin header version set to match the readme Stable tag.
 * DEV: PHPCompatibility now checks against PHP 8.0+, the plugin's minimum.
