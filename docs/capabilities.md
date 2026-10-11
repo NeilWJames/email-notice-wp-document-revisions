@@ -20,7 +20,7 @@ Internal (WordPress user) notifications need no extra capability: anyone who can
 1. *administrator*: *read_doc_ext_lists*, *edit_doc_ext_lists* and *delete_doc_ext_lists*.
 1. *editor*: *read_doc_ext_lists* and *edit_doc_ext_lists*.
 
-The defaults can be changed with the filter *wpdr_en_doc_ext_list_roles*. They are set on plugin activation, only for the named roles, and only where the role does not already have the capability, so a capability set to *false* stays *false*.
+The defaults can be changed with the filter *wpdr_en_doc_ext_list_roles*. They are set on plugin activation (on a network, when each site's admin is first opened), only for the named roles, and only where the role does not already have the capability, so a capability set to *false* stays *false*.
 
 ## Upgrading to 4.0.0
 

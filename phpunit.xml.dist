@@ -23,6 +23,7 @@
 		<include>
 			<directory suffix=".php">./includes</directory>
 			<file>./wpdr-email-notice.php</file>
+			<file>./uninstall.php</file>
 		</include>
 	</coverage>
 </phpunit>

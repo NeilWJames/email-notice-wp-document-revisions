@@ -20,17 +20,44 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this file directly.' );
 }
 
-// Check that WP Document Revisions is active.
-// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-if ( ! in_array( 'wp-document-revisions/wp-document-revisions.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
+/**
+ * Whether WP Document Revisions is active on this site or for the whole network.
+ *
+ * Plugins load in name order, so this one loads before WP Document Revisions and its class
+ * cannot be checked for yet.
+ *
+ * @since 4.0.0
+ * @return bool
+ */
+function wpdr_en_wpdr_active() {
+	$wpdr = 'wp-document-revisions/wp-document-revisions.php';
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+	if ( in_array( $wpdr, (array) apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
+		return true;
+	}
+	return is_multisite() && array_key_exists( $wpdr, (array) get_site_option( 'active_sitewide_plugins', array() ) );
+}
+
+/**
+ * Admin notice shown when WP Document Revisions is not active.
+ *
+ * @since 4.0.0
+ * @return void
+ */
+function wpdr_en_missing_wpdr_notice() {
+	echo '<div class="notice notice-warning is-dismissible"><p>';
+	// translators: Do not translate Email Notice WP Document Revisions or WP Document Revisions.
+	esc_html_e( 'Plugin Email Notice WP Document Revisions is activated but its required plugin WP Document Revisions is not.', 'email-notice-wp-document-revisions' );
+	echo '</p><p>';
+	// translators: Do not translate Email Notice WP Document Revisions.
+	esc_html_e( 'Plugin Email Notice WP Document Revisions will not activate its functionality.', 'email-notice-wp-document-revisions' );
+	echo '</p></div>';
+}
+
+// Check that WP Document Revisions is active (the notice is shown with the other admin notices).
+if ( ! wpdr_en_wpdr_active() ) {
 	if ( is_admin() ) {
-		echo wp_kses_post( '<div class="notice notice-warning is-dismissible"><p>' );
-		// translators: Do not translate Email Notice WP Document Revisions or WP Document Revisions.
-		esc_html_e( 'Plugin Email Notice WP Document Revisions is activated but its required plugin WP Document Revisions is not.', 'email-notice-wp-document-revisions' );
-		echo wp_kses_post( '</p><p>' );
-		// translators: Do not translate Email Notice WP Document Revisions.
-		esc_html_e( 'Plugin Email Notice WP Document Revisions will not activate its functionality.', 'email-notice-wp-document-revisions' );
-		echo wp_kses_post( '</p></div>' );
+		add_action( 'admin_notices', 'wpdr_en_missing_wpdr_notice' );
 	}
 	return;
 }

@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Email Notice WP Document Revisions class.
+ * Email Notice for WP Document Revisions: settings, metaboxes, Document External Lists and sending.
  */
 class WPDR_Email_Notice {
 
@@ -290,39 +290,36 @@ class WPDR_Email_Notice {
 		if ( ! empty( $current_db_ver ) && version_compare( $current_db_ver, '4.0', '<' ) ) {
 			$this->upgrade_read_capability();
 		}
-		if ( self::$version !== $current_db_ver ) {
-			if ( current_user_can( 'activate_plugins' ) ) {
-				global $wp_roles;
-				if ( ! is_object( $wp_roles ) ) {
-					// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-					$wp_roles = new WP_Roles();
-				}
-				// check that a role has been allocated with read, edit and delete. if not set default.
-				$found_read   = false;
-				$found_edit   = false;
-				$found_delete = false;
-				foreach ( (array) $wp_roles->roles as $role => $data ) {
-					if ( array_key_exists( 'read_doc_ext_lists', $data['capabilities'] ) ) {
-						$found_read = true;
-					}
-					if ( array_key_exists( 'edit_doc_ext_lists', $data['capabilities'] ) ) {
-						// found. no more to do.
-						$found_edit = true;
-					}
-					if ( array_key_exists( 'delete_doc_ext_lists', $data['capabilities'] ) ) {
-						// found. no more to do.
-						$found_delete = true;
-					}
-				}
-				// install_capabilities() only adds what a default role is missing.
-				if ( ! $found_read || ! $found_edit || ! $found_delete ) {
-					$this->install_capabilities();
-				}
+		// Once per site (each site of a network has its own version option, tables and roles), whoever
+		// loads the page: on a network the first visitor to a site's admin is rarely a network administrator.
+		if ( self::$version === $current_db_ver ) {
+			return;
+		}
+		global $wp_roles;
+		if ( ! is_object( $wp_roles ) ) {
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			$wp_roles = new WP_Roles();
+		}
+		// check that a role has been allocated with read, edit and delete. if not set default.
+		$found_read   = false;
+		$found_edit   = false;
+		$found_delete = false;
+		foreach ( (array) $wp_roles->roles as $role => $data ) {
+			if ( array_key_exists( 'read_doc_ext_lists', $data['capabilities'] ) ) {
+				$found_read = true;
+			}
+			if ( array_key_exists( 'edit_doc_ext_lists', $data['capabilities'] ) ) {
+				$found_edit = true;
+			}
+			if ( array_key_exists( 'delete_doc_ext_lists', $data['capabilities'] ) ) {
+				$found_delete = true;
 			}
 		}
-		if ( ( self::$version !== $current_db_ver ) || is_multisite() ) {
-			$this->install_plugin_tables();
+		// install_capabilities() only adds what a default role is missing.
+		if ( ! $found_read || ! $found_edit || ! $found_delete ) {
+			$this->install_capabilities();
 		}
+		$this->install_plugin_tables();
 	}
 
 	/**
@@ -439,8 +436,9 @@ class WPDR_Email_Notice {
 		self::$internal_list_needed = ! empty( self::$internal_roles );
 
 		// support languages.
+		// The plugin's languages folder (this file is in includes/).
 		// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound
-		load_plugin_textdomain( 'email-notice-wp-document-revisions', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+		load_plugin_textdomain( 'email-notice-wp-document-revisions', false, dirname( plugin_basename( __DIR__ ) ) . '/languages' );
 
 		// Adding settings to Settings->General.
 		register_setting(
@@ -988,15 +986,17 @@ class WPDR_Email_Notice {
 	}
 
 	/**
-	 * Add subscription to notifications to User's Profile screen.
+	 * Add subscription to notifications to the User's Profile and Add New User screens.
 	 *
 	 * @since 1.0
-	 * @param WP_User $user User record.
+	 * @param WP_User|string $user User record; on Add New User, the form's name ('add-new-user' or 'add-existing-user').
 	 * @return void
 	 */
 	public function user_profile( $user ) {
-		// user_new_form does not have a WP_User (but no roles yet) and then see if User has the choice.
-		if ( ! $user instanceof WP_User || ! (bool) array_intersect( $user->roles, self::$internal_roles ) ) {
+		// Add New User has no user yet (the role is checked when it is saved); adding an existing user
+		// to a network site keeps that user's own settings. Otherwise the user's role must have the choice.
+		$new_user = ( 'add-new-user' === $user );
+		if ( ! $new_user && ( ! $user instanceof WP_User || ! (bool) array_intersect( $user->roles, self::$internal_roles ) ) ) {
 			return;
 		}
 		// Wrapper.
@@ -1009,7 +1009,7 @@ class WPDR_Email_Notice {
 
 		$notify = 0;
 		$attach = 0;
-		if ( ! empty( $user->ID ) ) {
+		if ( ! $new_user && ! empty( $user->ID ) ) {
 			$notify = (int) get_user_meta( $user->ID, 'wpdr_en_user_notification', true );
 			$attach = (int) get_user_meta( $user->ID, 'wpdr_en_user_attachment', true );
 		}

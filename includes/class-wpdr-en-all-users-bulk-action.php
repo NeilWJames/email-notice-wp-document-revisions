@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Main WP_Document_Revisions_Email_Notice_Bulk_Action class.
+ * Bulk subscribe and unsubscribe actions on the Users screen.
  */
 class WPDR_EN_All_Users_Bulk_Action {
 

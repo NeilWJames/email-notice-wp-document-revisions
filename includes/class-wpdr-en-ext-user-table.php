@@ -1,9 +1,9 @@
 <?php
 /**
- * WP Document Revisions Email User List Table Functionality
+ * Email Notice WP Document Revisions External List Address Table Functionality
  *
  * @author  Neil W. James <neil@familyjames.com>
- * @package WP Document Revisions Email Notice
+ * @package Email Notice WP Document Revisions
  */
 
 // No direct access allowed to plugin php file.
@@ -19,7 +19,7 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 }
 
 /**
- * Main WP_Document_Revisions_Email_Notice_Log_Table class.
+ * Address table of a Document External List.
  */
 class WPDR_EN_Ext_User_Table extends WP_List_Table {
 

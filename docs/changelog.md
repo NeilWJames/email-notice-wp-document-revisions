@@ -36,9 +36,14 @@ Release date: (in development)
 * FIX: Repeat emails to External List addresses include the %repeat% text.
 * FIX: Ticking Document Attach or Pause on the External List edit screen switches it on (only switching off worked). Bulk Edit of Lists works on sites not in English. A List saved from code no longer stops with "The link you followed has expired".
 * FIX: The internal log search treats % and _ as ordinary characters.
+* FIX: The Add New User screen shows the Document Email settings; they are saved if the new user's role can receive notifications.
+* FIX: Translations in the plugin's languages folder are loaded (it looked in includes/languages).
+* FIX: The plugin works when WP Document Revisions is network-activated, and the notice that WP Document Revisions is missing is shown with the other admin notices (it was printed before the page).
+* FIX: Multisite: each site's tables are checked once, not on every admin page, and a site gets its capabilities and tables when anyone first opens its admin (only a network administrator could install the capabilities).
+* FIX: Uninstall removes the capabilities from every site's roles and from users given them directly, the External List sent flags on Documents, and the settings of every user on the network.
 * DEV: Script and style sources moved to src/js and src/css; minified copies are in build/js and build/css, made with `npm run build` (terser, clean-css) or the Build assets workflow. Asset versions are the file times, so browsers pick up rebuilt files.
 * DEV: PHPUnit test suite in tests/ (see tests/test_suite.md); runs locally with script/install-wp-tests and in CI.
-* DEV: Tests added for the internal log, bulk subscribe/unsubscribe, External List settings, the admin screens and the fixed bugs. A duplicate loader of the bulk action class with a wrong path is removed.
+* DEV: Tests added for the internal log, bulk subscribe/unsubscribe, External List settings, the admin screens, plugin loading, uninstall and the fixed bugs; uninstall.php is included in coverage. Class descriptions and @package tags made consistent. A duplicate loader of the bulk action class with a wrong path is removed.
 * DEV: AJAX handlers reply with wp_send_json() instead of echo and die, so they can be tested.
 * DEV: Plugin header version set to match the readme Stable tag.
 * DEV: PHPCompatibility now checks against PHP 8.0+, the plugin's minimum.

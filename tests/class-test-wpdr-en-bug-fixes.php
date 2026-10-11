@@ -355,7 +355,8 @@ class Test_WPDR_EN_Bug_Fixes extends WPDR_EN_UnitTestCase {
 	}
 
 	/**
-	 * The profile shows the user's settings; nothing for the Add New User form or roles without the choice.
+	 * The profile shows the user's settings; Add New User shows them unticked; nothing for adding an
+	 * existing user to a network site or for roles without the choice.
 	 */
 	public function test_profile_fields() {
 		global $wpdr_en;
@@ -367,13 +368,39 @@ class Test_WPDR_EN_Bug_Fixes extends WPDR_EN_UnitTestCase {
 		$this->assertSame( 1, substr_count( $html, "checked='checked'" ), 'notify ticked, attach not' );
 		$this->assertStringNotContainsString( '&#039;', $html, 'checked attribute not escaped' );
 
-		$this->assertSame( '', self::output( array( $wpdr_en, 'user_profile' ), array( 'add-new-user' ) ) );
+		$html = self::output( array( $wpdr_en, 'user_profile' ), array( 'add-new-user' ) );
+		$this->assertStringContainsString( 'name="wpdr_en_user_attachment"', $html );
+		$this->assertStringNotContainsString( 'checked', $html );
+		$this->assertSame( '', self::output( array( $wpdr_en, 'user_profile' ), array( 'add-existing-user' ) ) );
 
 		$roles                             = WPDR_Email_Notice::$internal_roles;
 		WPDR_Email_Notice::$internal_roles = array( 'administrator' );
 		$html                              = self::output( array( $wpdr_en, 'user_profile' ), array( $user ) );
 		WPDR_Email_Notice::$internal_roles = $roles;
 		$this->assertSame( '', $html );
+	}
+
+	/**
+	 * A user added on the Add New User screen gets the settings ticked there.
+	 */
+	public function test_add_new_user_saves_settings() {
+		wp_set_current_user( 1 );
+		$_POST = array(
+			'_wpnonce_create-user'      => wp_create_nonce( 'create-user' ),
+			'wpdr_en_user_notification' => '1',
+		);
+
+		$user_id = wp_insert_user(
+			array(
+				'user_login' => 'en_added_user',
+				'user_pass'  => wp_generate_password(),
+				'user_email' => 'added@example.com',
+				'role'       => 'author',
+			)
+		);
+
+		$this->assertSame( '1', get_user_meta( $user_id, 'wpdr_en_user_notification', true ) );
+		$this->assertSame( '0', get_user_meta( $user_id, 'wpdr_en_user_attachment', true ) );
 	}
 
 	/**

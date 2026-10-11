@@ -3,7 +3,7 @@
 Integration tests run inside WordPress (the core test library) with WP Document Revisions loaded,
 so they exercise the real hooks, capabilities and database tables.
 
-**Status:** 147 tests in 15 classes (2 multisite-only); no known-bug tests left. 145 passed, 2 skipped (multisite) in the sandbox 2026-10-11 (all 147 pass as multisite); phpcs clean. Line coverage 83% (pcov). Previous round (120 tests) confirmed on 62wp.
+**Status:** 154 tests in 17 classes (3 multisite-only); no known-bug tests left. 151 passed, 3 skipped (multisite) in the sandbox 2026-10-11 (all 154 pass as multisite); phpcs clean. Line coverage 84% (pcov), now including `uninstall.php`. The 147-test round is confirmed on 62wp and in CI.
 
 ## Running
 
@@ -49,7 +49,7 @@ Multisite locally: `WP_MULTISITE=1 composer test`.
   reports WP Document Revisions as active (via the plugin's own `active_plugins` filter check),
   then loads WP Document Revisions and this plugin.
 - After WordPress loads it does what activation and `admin_init` do on a real site:
-  WPDR `add_caps()`, `db_version_check()` as user 1 (tables + `edit_doc_ext_lists` /
+  WPDR `add_caps()`, `db_version_check()` (tables + `read_doc_ext_lists` / `edit_doc_ext_lists` /
   `delete_doc_ext_lists` caps), then `wp_roles()->for_site()` — `WP_Roles::add_cap()` doesn't update
   the role objects already loaded, so without this the test users have none of the new caps —
   then `admin_init()` (settings, templates, AJAX hooks).
@@ -83,28 +83,31 @@ WP_Ajax_UnitTestCase defines `DOING_AJAX` for the rest of the run.
 | `class-test-wpdr-en-address-table.php` | 3 | Security fix #3: Edit button values in escaped `data-*` attributes, Delete post ID forced to int, cells escaped |
 | `class-test-wpdr-en-admin-pages.php` | 24 | Smoke tests (no PHP notices, output escaped): each settings field with a hostile stored value, settings/sections/fields registered; both log pages render (table, search, script); log column style only on log pages; Document metabox states (send, re-send, disabled for drafts, no extra-text box without `%extra%`) and its PublishPress Revisions exclusion; List metaboxes added and rendered (notes escaped, saved terms kept), refused without `edit_doc_ext_lists`; help tabs per screen and filter; List update messages; List error notice (draft warning, hidden when complete); log rows removed when a document or user is deleted |
 | `class-test-wpdr-en-assets.php` | 6 | Stage 2: every `src/` file has a `build/` copy (JS, CSS); built JS keeps the global functions called from HTML; debug mode loads `src/` with file-time versions; document and List screens enqueue their script and style (nothing on other screens) |
-| `class-test-wpdr-en-bug-fixes.php` | 16 | Bugs fixed in 4.0.0: Internal Notice mode saved (Auto/Manual) and shown, old 0 shown as Manual; "notify about" saved (known keys only), shown (all ticked until saved) and applied; Auto mode sends once on publish, notice for the publisher only; internal log status; internal extra text stored; internal and external %repeat%; `user_register` from code doesn't die; profile save (nonce, edit_user, roles without the choice), profile fields, Users column |
+| `class-test-wpdr-en-bug-fixes.php` | 17 | Bugs fixed in 4.0.0: Internal Notice mode saved (Auto/Manual) and shown, old 0 shown as Manual; "notify about" saved (known keys only), shown (all ticked until saved) and applied; Auto mode sends once on publish, notice for the publisher only; internal log status; internal extra text stored; internal and external %repeat%; `user_register` from code doesn't die; profile save (nonce, edit_user, roles without the choice), profile fields (Add New User shows them unticked), Add New User saves them, Users column |
 | `class-test-wpdr-en-bulk-action.php` | 6 | Bulk subscribe/unsubscribe: menu actions, subscribe, unsubscribe (attachment off), other actions and empty selection ignored, roles without the choice refused and cleared |
-| `class-test-wpdr-en-capabilities.php` | 12 | 4.0.0 `read_doc_ext_lists`: default roles; install adds it when no role has it; upgrade from 3.x gives it to roles and users with `edit_doc_ext_lists` (whoever loads the page), keeps an explicit denial, runs once; CPT read cap; log pages and menu items; metabox list section hidden / shown / fixed for read-only users |
+| `class-test-wpdr-en-capabilities.php` | 13 | 4.0.0 `read_doc_ext_lists`: default roles; install adds it when no role has it (whoever loads the page); tables checked only when the version changes; upgrade from 3.x gives it to roles and users with `edit_doc_ext_lists` (whoever loads the page), keeps an explicit denial, runs once; CPT read cap; log pages and menu items; metabox list section hidden / shown / fixed for read-only users |
 | `class-test-wpdr-en-internal.php` | 5 | Internal recipients: opted-in only, private needs read access, drafts not sent, log row, HTML mail |
 | `class-test-wpdr-en-list-edit.php` | 8 | External List settings: list columns and cell values (attach falls back to the site setting), Quick/Bulk Edit fields; saving from the edit form (a ticked box is on), Quick Edit, Bulk Edit (translated button, No Change, bad nonce, only 0/1), from code (no change, no die), without edit rights |
 | `class-test-wpdr-en-matching.php` | 9 | External Lists: any/all rule, parent term matches child (not the reverse), paused/draft lists and paused addresses skipped, selected lists only, public documents only, log row + sent flag |
-| `class-test-wpdr-en-multisite.php` | 2 | Security #6 (multisite only, skipped otherwise; run with `WP_MULTISITE=1`): internal mail only to the site's members; only the site's own Lists used |
+| `class-test-wpdr-en-multisite.php` | 3 | Multisite only, skipped otherwise (run with `WP_MULTISITE=1`): security #6 — internal mail only to the site's members, only the site's own Lists used; a site is set up by its own (non-network) administrator |
+| `class-test-wpdr-en-plugin.php` | 3 | `wpdr-email-notice.php`: WP Document Revisions active on the site or network; missing-plugin notice; translations folder |
 | `class-test-wpdr-en-security.php` | 15 | Security #4 (term IDs cast, error message escaped, revert script safe and defined, code saves not redirected), #7 (Lists not public / not found by search), #8 (log search with quotes), #9 (recipient string, comma in name), #10 (attachment copy in private folder, removed), #11 (log tables, settings textarea, From address), #12 (bulk subscribe needs edit_user) |
 | `class-test-wpdr-en-tags.php` | 9 | Default subject, trailing-number full stop and its filter, subject/content tags, `%words_n%`, `%extra%`, `%excerpt%` only for editors, external template |
 | `class-test-wpdr-en-user-log.php` | 9 | Internal log table: rows newest first with titles and names, search by title or name, `%` searched as text, sorting by each column, unknown sort ignored, 20 per page, columns and empty message, links by capability, extra text from sending |
 | `class-test-wpdr-en-zz-ajax-address.php` | 9 | Security fix #1: add/update/delete by an editor; contributor refused even when sending an admin `userid`; non-list refused; invalid email (F-17). Address search returns the filtered table; bad nonce (F-21), no post ID (F-22) |
 | `class-test-wpdr-en-zz-ajax-send.php` | 14 | Security fix #2 (internal and external): editor can send; contributor and non-owning author get F-08; non-document F-07; bad nonce F-02. 4.0.0: author can send internal for own document; external needs `read_doc_ext_lists` (F-09); list choice honoured only for list editors |
+| `class-test-wpdr-en-zzz-uninstall.php` | 1 | `uninstall.php` removes settings, Lists, sent flags, user settings, role and user capabilities, and drops the tables (rolled back afterwards) |
 Tests for bugs not yet fixed go in the relevant class with `@group known-bug` (excluded by default); remove the tag when fixed.
 
 ## Planned
 
-- Plugin loading paths in `wpdr-email-notice.php` (runs before coverage starts) and `init()`.
+- The loading code at the end of `wpdr-email-notice.php` runs in the bootstrap, before coverage starts, so it shows as not covered.
 - Attachments (internal preference, list setting, size filter, temp file cleanup).
 - Uninstall.
 
 ## Change log
 
+- 2026-10-11: Bugs and tech debt: new `class-test-wpdr-en-plugin.php` (3) and `class-test-wpdr-en-zzz-uninstall.php` (1, runs last as `uninstall.php` can only be loaded once); per-version table check (capabilities), site set-up by its own administrator (multisite), Add New User (2). `uninstall.php` added to coverage. 154 tests.
 - 2026-10-11: Smoke tests: new `class-test-wpdr-en-admin-pages.php` (24); List screen assets (1); address search AJAX (2). 147 tests; line coverage 69% → 83%.
 - 2026-10-11: Coverage round: known bugs fixed and their tests moved to `class-test-wpdr-en-bug-fixes.php` (`class-test-wpdr-en-known-bugs.php` removed); new `class-test-wpdr-en-user-log.php` (9), `class-test-wpdr-en-bulk-action.php` (6), `class-test-wpdr-en-list-edit.php` (8). Bootstrap no longer unhooks `save_user_profile`. 120 tests; line coverage 55% → 69%.
 - 2026-10-11: First CI multisite run: 3 test-setup fixes — the second site is created in `wpSetUpBeforeClass()` (tables made during a test are temporary and can't be used twice in one query); the install and bulk-subscribe tests use user 1, as on multisite only a network administrator can activate plugins or edit other users.

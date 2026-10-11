@@ -79,11 +79,9 @@ function wpdr_en_tests_setup() {
 	// WP Document Revisions role capabilities.
 	$wpdr->add_caps();
 
-	// Tables and the doc_ext_list capabilities (installed only for a user who can activate plugins).
-	wp_set_current_user( 1 );
+	// Tables and the doc_ext_list capabilities.
 	delete_option( 'wpdr_en_db_version' );
 	$wpdr_en->db_version_check();
-	wp_set_current_user( 0 );
 
 	// WP_Roles::add_cap() updates the stored roles but not the WP_Role objects already loaded
 	// (a real site reloads them on the next request), so reload them before any test user is created.

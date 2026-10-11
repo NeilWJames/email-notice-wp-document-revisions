@@ -1,6 +1,6 @@
 <?php
 /**
- * Email Notice WP Document Revisions List Table Functionality
+ * Email Notice WP Document Revisions Internal Log Table Functionality
  *
  * @author  Neil W. James <neil@familyjames.com>
  * @package Email Notice WP Document Revisions
@@ -19,7 +19,7 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 }
 
 /**
- * Main WP_Document_Revisions_Email_Notice_List_Table class.
+ * Internal notification log table.
  */
 class WPDR_EN_User_Log_Table extends WP_List_Table {
 

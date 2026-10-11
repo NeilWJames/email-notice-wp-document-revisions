@@ -108,8 +108,8 @@ class Test_WPDR_EN_Capabilities extends WPDR_EN_UnitTestCase {
 	}
 
 	/**
-	 * When an administrator triggers the install check and no role has read_doc_ext_lists
-	 * (e.g. the version option was lost), the defaults add it to administrator and editor.
+	 * When no role has read_doc_ext_lists (e.g. the version option was lost), the install check adds
+	 * the defaults to administrator and editor, whoever loads the page.
 	 */
 	public function test_install_adds_missing_read_to_defaults() {
 		global $wpdr_en;
@@ -117,14 +117,41 @@ class Test_WPDR_EN_Capabilities extends WPDR_EN_UnitTestCase {
 		get_role( 'editor' )->remove_cap( 'read_doc_ext_lists' );
 		delete_option( 'wpdr_en_db_version' );
 
-		// User 1: on multisite only a network administrator can activate plugins.
-		wp_set_current_user( 1 );
+		wp_set_current_user( self::$users['subscriber'] );
 		$wpdr_en->db_version_check();
 		wp_roles()->for_site();
 
 		$this->assertTrue( get_role( 'administrator' )->has_cap( 'read_doc_ext_lists' ), 'administrator' );
 		$this->assertTrue( get_role( 'editor' )->has_cap( 'read_doc_ext_lists' ), 'editor' );
 		$this->assertFalse( get_role( 'author' )->has_cap( 'read_doc_ext_lists' ), 'author' );
+	}
+
+	/**
+	 * The tables are only checked when the site's version option is missing or different
+	 * (on a network this ran on every page load).
+	 */
+	public function test_table_check_only_when_version_changes() {
+		global $wpdr_en;
+		$checks = 0;
+		add_filter(
+			'dbdelta_queries',
+			static function ( $queries ) use ( &$checks ) {
+				++$checks;
+				return $queries;
+			}
+		);
+
+		update_option( 'wpdr_en_db_version', WPDR_Email_Notice::$version );
+		$wpdr_en->db_version_check();
+		$this->assertSame( 0, $checks, 'current version' );
+
+		delete_option( 'wpdr_en_db_version' );
+		$wpdr_en->db_version_check();
+		$this->assertSame( 1, $checks, 'missing version' );
+		$this->assertSame( WPDR_Email_Notice::$version, get_option( 'wpdr_en_db_version' ) );
+
+		$wpdr_en->db_version_check();
+		$this->assertSame( 1, $checks, 'once' );
 	}
 
 	/**

@@ -55,8 +55,26 @@ function wpdr_en_del_options() {
 		wp_delete_post( $del->ID, true );
 	}
 
-	// delete wpdr_en_notification_sent flags.
+	// delete the sent flags on documents.
 	delete_post_meta_by_key( 'wpdr_en_notification_sent' );
+	delete_post_meta_by_key( 'wpdr_en_ext_notice_sent' );
+
+	// Remove the capabilities from this site's roles and users (the 4.0 upgrade can give them to users).
+	$caps = array( 'read_doc_ext_lists', 'edit_doc_ext_lists', 'delete_doc_ext_lists' );
+	foreach ( wp_roles()->role_objects as $role ) {
+		foreach ( $caps as $cap ) {
+			if ( array_key_exists( $cap, $role->capabilities ) ) {
+				$role->remove_cap( $cap );
+			}
+		}
+	}
+	foreach ( get_users( array( 'blog_id' => get_current_blog_id() ) ) as $user ) {
+		foreach ( $caps as $cap ) {
+			if ( array_key_exists( $cap, $user->caps ) ) {
+				$user->remove_cap( $cap );
+			}
+		}
+	}
 
 	// drop notifications logs.
 	$table_name = $wpdb->prefix . 'wpdr_notification_log';
@@ -102,49 +120,8 @@ if ( ! is_multisite() ) {
 	}
 }
 
-// Delete notification settings for users.
-// phpcs:disable WordPress.DB.SlowDBQuery
-$all_user_ids = get_users(
-	array(
-		'meta_key' => 'wpdr_en_user_notification',
-		'fields'   => 'ID',
-	)
-);
-foreach ( $all_user_ids as $user ) {
-	delete_user_option( $user, 'wpdr_en_user_notification', true );
-}
-
-
-// Delete notification settings for users.
-$all_user_ids = get_users(
-	array(
-		'meta_key' => 'wpdr_en_user_attachment',
-		'fields'   => 'ID',
-	)
-);
-foreach ( $all_user_ids as $user ) {
-	delete_user_option( $user, 'wpdr_en_user_attachment', true );
-}
-// phpcs:enable WordPress.DB.SlowDBQuery
-
-global $wp_roles;
-if ( ! is_object( $wp_roles ) ) {
-	// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-	$wp_roles = new WP_Roles();
-}
-
-// $wrole is each role.
-foreach ( $wp_roles->role_names as $wrole => $label ) {
-	$role_caps = $wp_roles->roles[ $wrole ]['capabilities'];
-	if ( array_key_exists( 'edit_doc_ext_lists', $role_caps ) ) {
-		$wp_roles->remove_cap( $wrole, 'edit_doc_ext_lists' );
-	}
-	if ( array_key_exists( 'delete_doc_ext_lists', $role_caps ) ) {
-		$wp_roles->remove_cap( $wrole, 'delete_doc_ext_lists' );
-	}
-	if ( array_key_exists( 'read_doc_ext_lists', $role_caps ) ) {
-		$wp_roles->remove_cap( $wrole, 'read_doc_ext_lists' );
-	}
-}
+// Delete every user's notification settings (users are shared by all sites of a network).
+delete_metadata( 'user', 0, 'wpdr_en_user_notification', '', true );
+delete_metadata( 'user', 0, 'wpdr_en_user_attachment', '', true );
 
 // phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
