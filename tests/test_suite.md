@@ -105,6 +105,7 @@ When a known bug is fixed, remove `@group known-bug` from that test (move it to 
 
 ## Change log
 
+- 2026-10-11: First CI multisite run: 3 test-setup fixes — the second site is created in `wpSetUpBeforeClass()` (tables made during a test are temporary and can't be used twice in one query); the install and bulk-subscribe tests use user 1, as on multisite only a network administrator can activate plugins or edit other users.
 - 2026-10-11: Stage 1 + Stage 2 run on 62wp: 81 tests, 2 skipped (multisite), all others pass; phpcs clean.
 - 2026-10-11: Built files keep the source names (`build/js/x.js`, no `.min`); asset and security tests updated.
 - 2026-10-11: Stage 1 security tests: `class-test-wpdr-en-security.php` (15), `class-test-wpdr-en-multisite.php` (2, multisite only). Tags test: To is now `Name <email>` (with a space).

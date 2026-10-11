@@ -97,6 +97,9 @@ jobs:
           php-version: ${{ matrix.php_version }}
           extensions: mysqli
           coverage: ${{ matrix.coverage && 'pcov' || 'none' }}
+          # PCOV only records files under pcov.directory. Left unset it picks ./src when that exists,
+          # and our src/ holds only JS and CSS, so point it at the whole plugin.
+          ini-values: ${{ matrix.coverage && format('pcov.directory={0}', github.workspace) || '' }}
 
       - name: Cache Composer packages
         uses: actions/cache@v6

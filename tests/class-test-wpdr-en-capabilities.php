@@ -117,7 +117,8 @@ class Test_WPDR_EN_Capabilities extends WPDR_EN_UnitTestCase {
 		get_role( 'editor' )->remove_cap( 'read_doc_ext_lists' );
 		delete_option( 'wpdr_en_db_version' );
 
-		wp_set_current_user( self::$users['administrator'] );
+		// User 1: on multisite only a network administrator can activate plugins.
+		wp_set_current_user( 1 );
 		$wpdr_en->db_version_check();
 		wp_roles()->for_site();
 

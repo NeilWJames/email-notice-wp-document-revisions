@@ -456,7 +456,8 @@ class Test_WPDR_EN_Security extends WPDR_EN_UnitTestCase {
 		$bulk->custom_bulk_action_handler( 'users.php', 'wpdr_subscribe', array( $target ) );
 		$this->assertSame( '', get_user_meta( $target, 'wpdr_en_user_notification', true ), 'lister cannot subscribe others' );
 
-		wp_set_current_user( self::$users['administrator'] );
+		// User 1: on multisite only a network administrator can edit other users.
+		wp_set_current_user( 1 );
 		$bulk->custom_bulk_action_handler( 'users.php', 'wpdr_subscribe', array( $target ) );
 		$this->assertSame( '1', get_user_meta( $target, 'wpdr_en_user_notification', true ), 'administrator can' );
 

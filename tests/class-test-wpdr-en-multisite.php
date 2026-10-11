@@ -12,17 +12,46 @@
  */
 class Test_WPDR_EN_Multisite extends WPDR_EN_UnitTestCase {
 
+	/**
+	 * Second site.
+	 *
+	 * Created here rather than in a test: tables created during a test are MySQL temporary tables,
+	 * which cannot be used twice in one query (the List matching query does).
+	 *
+	 * @var int
+	 */
+	private static $blog = 0;
+
 	// phpcs:disable
 	/**
-	 * Users on the main site.
+	 * Users on the main site and a second site with the plugin's tables.
 	 *
 	 * @param WP_UnitTest_Factory $factory Test factory.
 	 * @return void
 	 */
 	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
 		// phpcs:enable
-		if ( is_multisite() ) {
-			self::create_users( $factory );
+		if ( ! is_multisite() ) {
+			return;
+		}
+		global $wpdr_en;
+		self::create_users( $factory );
+		self::$blog = $factory->blog->create();
+		switch_to_blog( self::$blog );
+		$wpdr_en->db_version_check();
+		restore_current_blog();
+	}
+
+	// phpcs:disable
+	/**
+	 * Remove the second site.
+	 *
+	 * @return void
+	 */
+	public static function wpTearDownAfterClass() {
+		// phpcs:enable
+		if ( self::$blog ) {
+			wp_delete_site( self::$blog );
 		}
 	}
 
@@ -39,25 +68,11 @@ class Test_WPDR_EN_Multisite extends WPDR_EN_UnitTestCase {
 	}
 
 	/**
-	 * A second site with the plugin's tables.
-	 *
-	 * @return int Blog ID.
-	 */
-	private function second_site() {
-		global $wpdr_en;
-		$blog = self::factory()->blog->create();
-		switch_to_blog( $blog );
-		$wpdr_en->db_version_check();
-		restore_current_blog();
-		return $blog;
-	}
-
-	/**
 	 * Internal notifications go only to members of the document's site.
 	 */
 	public function test_internal_mail_only_to_site_members() {
 		global $wpdr_en;
-		$blog   = $this->second_site();
+		$blog   = self::$blog;
 		$member = self::factory()->user->create( array( 'user_email' => 'member@example.com' ) );
 		add_user_to_blog( $blog, $member, 'subscriber' );
 		self::subscribe( $member );
@@ -88,7 +103,7 @@ class Test_WPDR_EN_Multisite extends WPDR_EN_UnitTestCase {
 				),
 			)
 		);
-		$blog = $this->second_site();
+		$blog = self::$blog;
 
 		switch_to_blog( $blog );
 		$tag = self::factory()->tag->create( array( 'name' => 'Shared' ) );
