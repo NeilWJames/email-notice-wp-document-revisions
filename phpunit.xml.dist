@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<phpunit
+	bootstrap="tests/bootstrap.php"
+	backupGlobals="false"
+	colors="true"
+	convertErrorsToExceptions="true"
+	convertNoticesToExceptions="true"
+	convertWarningsToExceptions="true"
+	convertDeprecationsToExceptions="true"
+	>
+	<testsuites>
+		<testsuite name="Email Notice Tests">
+			<directory prefix="class-test-" suffix=".php">./tests</directory>
+		</testsuite>
+	</testsuites>
+	<groups>
+		<exclude>
+			<!-- Tests that describe bugs not yet fixed. Run with: phpunit -group known-bug -->
+			<group>known-bug</group>
+		</exclude>
+	</groups>
+	<coverage includeUncoveredFiles="true">
+		<include>
+			<directory suffix=".php">./includes</directory>
+			<file>./wpdr-email-notice.php</file>
+		</include>
+	</coverage>
+</phpunit>
