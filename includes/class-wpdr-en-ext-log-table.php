@@ -91,24 +91,26 @@ class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
 			case 'post_title':
+				$title = esc_html( $item[ $column_name ] );
 				if ( current_user_can( 'edit_document', $item['post_id'] ) ) {
-					return '<a href="' . get_edit_post_link( $item['post_id'] ) . '">' . $item[ $column_name ] . '</a>';
-				} else {
-					return '<a href="' . get_permalink( $item['post_id'] ) . '">' . $item[ $column_name ] . '</a>';
+					return '<a href="' . esc_url( get_edit_post_link( $item['post_id'] ) ) . '">' . $title . '</a>';
 				}
+				return '<a href="' . esc_url( get_permalink( $item['post_id'] ) ) . '">' . $title . '</a>';
 			case 'list_title':
-				if ( current_user_can( 'edit_document', $item['list_id'] ) ) {
-					return '<a href="' . get_edit_post_link( $item['list_id'] ) . '">' . $item[ $column_name ] . '</a>';
-				} else {
-					return '<a href="' . get_permalink( $item['list_id'] ) . '">' . $item[ $column_name ] . '</a>';
+				// Lists are not public, so only link for those who can edit them.
+				$title = esc_html( $item[ $column_name ] );
+				if ( current_user_can( 'edit_post', $item['list_id'] ) ) {
+					return '<a href="' . esc_url( get_edit_post_link( $item['list_id'] ) ) . '">' . $title . '</a>';
 				}
+				return $title;
 			case 'user_name':
-				return ucwords( $item[ $column_name ] );
+				return esc_html( ucwords( $item[ $column_name ] ) );
 			case 'time_mail_sent':
 			case 'user_email':
 			case 'status':
-				return $item[ $column_name ];
+				return esc_html( $item[ $column_name ] );
 		}
+		return '';
 	}
 
 	/**
@@ -116,18 +118,19 @@ class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 	 *
 	 * @since 3.1
 	 * @param mixed[] $item row in List Table.
-	 * @return string[]
+	 * @return string
 	 */
 	public function column_id( $item ) {
+		$id = (int) $item['id'];
 		if ( empty( $item['extra_text'] ) ) {
-			return $item['id'];
+			return (string) $id;
 		}
 		$actions = array(
-			'view' => '<button onclick="wpdr_en_extra( ' . $item['id'] . ' )">' . __( 'Extra Text', 'email-notice-wp-document-revisions' ) . '</button>&nbsp;&nbsp;' .
-					'<textarea id="extra_' . $item['id'] . '" onclick="wpdr_en_extra( ' . $item['id'] . ' )" rows="3" cols="40" style="display: none">' .
-					$item['extra_text'] . '</textarea>',
+			'view' => '<button onclick="wpdr_en_extra( ' . $id . ' )">' . esc_html__( 'Extra Text', 'email-notice-wp-document-revisions' ) . '</button>&nbsp;&nbsp;' .
+					'<textarea id="extra_' . $id . '" onclick="wpdr_en_extra( ' . $id . ' )" rows="3" cols="40" style="display: none">' .
+					esc_textarea( $item['extra_text'] ) . '</textarea>',
 		);
-		return sprintf( '%1$s %2$s', $item['id'], $this->row_actions( $actions, true ) );
+		return sprintf( '%1$d %2$s', $id, $this->row_actions( $actions, true ) );
 	}
 
 	/**
@@ -153,8 +156,8 @@ class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$search = '';
 		if ( ! empty( $_GET['s'] ) ) {
-			$s      = esc_attr( sanitize_text_field( wp_unslash( $_GET['s'] ) ) );
-			$search = "AND (p.post_title LIKE '%{$s}%' OR l.user_name LIKE '%{$s}%' OR l.user_email LIKE '%{$s}%' )";
+			$like   = '%' . $wpdb->esc_like( sanitize_text_field( wp_unslash( $_GET['s'] ) ) ) . '%';
+			$search = $wpdb->prepare( 'AND ( p.post_title LIKE %s OR l.user_name LIKE %s OR l.user_email LIKE %s )', $like, $like, $like );
 		}
 
 		$orderby = 'time_mail_sent';
@@ -162,6 +165,7 @@ class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 			$orderby = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
 			switch ( $orderby ) {
 				case 'post_title':
+				case 'list_title':
 				case 'user_name':
 				case 'user_email':
 				case 'status':
@@ -197,9 +201,9 @@ class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 				(SELECT e.extra_text FROM {$wpdb->prefix}wpdr_en_extra_text e
 				 WHERE e.id = l.extra_text_id) as extra_text
 				FROM {$wpdb->prefix}wpdr_ext_notice_log l
-				INNER JOIN {$wpdb->prefix}posts p
+				INNER JOIN {$wpdb->posts} p
 				ON l.post_id = p.ID
-				INNER JOIN {$wpdb->prefix}posts t
+				INNER JOIN {$wpdb->posts} t
 				ON l.doc_ext_list_id = t.ID
 				WHERE 1=1
 				{$search}

@@ -1,0 +1,19 @@
+{
+  "name": "email-notice-wp-document-revisions",
+  "private": true,
+  "description": "Build tools for Email Notice for WP Document Revisions: minifies src/ into build/.",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node script/build-assets.mjs",
+    "build:force": "node script/build-assets.mjs --force",
+    "build:check": "node script/build-assets.mjs --check"
+  },
+  "devDependencies": {
+    "clean-css": "^5.3.3",
+    "terser": "^5.36.0"
+  }
+}

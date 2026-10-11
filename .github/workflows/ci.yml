@@ -12,7 +12,7 @@ on:
     paths-ignore:
       - 'languages/**'
 
-# Every job only reads the repository.
+# Every job only reads the repository (Codecov uses its own token secret).
 permissions:
   contents: read
 
@@ -22,8 +22,10 @@ jobs:
     env:
       TRAVIS_BUILD_DIR: ${{ github.workspace }}
     strategy:
+      fail-fast: false
       matrix:
-        php_version: [8.3, 8.4]
+        # Lowest supported, 62wp's, and the newest.
+        php_version: [ '8.0', '8.3', '8.4', '8.5' ]
     steps:
       - uses: actions/checkout@v7
 
@@ -32,10 +34,10 @@ jobs:
         with:
           php-version: ${{ matrix.php_version }}
           extensions: mysqli
+          coverage: none
 
       # No composer.lock (gitignored), so key the cache on composer.json.
       - name: Cache Composer packages
-        id: composer-cache
         uses: actions/cache@v6
         with:
           path: vendor
@@ -50,6 +52,7 @@ jobs:
         run: script/cibuild-phpcs
 
   phpunit:
+    name: phpunit (PHP ${{ matrix.php_version }}${{ matrix.multisite && ', multisite' || '' }}${{ matrix.coverage && ', coverage' || '' }})
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -60,13 +63,31 @@ jobs:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
     strategy:
+      fail-fast: false
       matrix:
-        php_version: [8.3, 8.4]
+        php_version: [ '8.0', '8.3', '8.4', '8.5' ]
+        multisite: [ false ]
+        coverage: [ false ]
+        include:
+          # One multisite run (class-test-wpdr-en-multisite.php is skipped on single site).
+          - php_version: '8.4'
+            multisite: true
+            coverage: false
+          # Coverage for Codecov from one single-site run.
+          - php_version: '8.4'
+            multisite: false
+            coverage: true
+        exclude:
+          # The coverage run above replaces the plain 8.4 run.
+          - php_version: '8.4'
+            multisite: false
+            coverage: false
     env:
       WP_TESTS_DIR: /tmp/wordpress-tests-lib
       WP_CORE_DIR: /tmp/wordpress
       # The required parent plugin; tests/bootstrap.php loads it from here.
       WPDR_PLUGIN_DIR: /tmp/wp-document-revisions
+      WP_MULTISITE: ${{ matrix.multisite && '1' || '0' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -75,7 +96,7 @@ jobs:
         with:
           php-version: ${{ matrix.php_version }}
           extensions: mysqli
-          coverage: none
+          coverage: ${{ matrix.coverage && 'pcov' || 'none' }}
 
       - name: Cache Composer packages
         uses: actions/cache@v6
@@ -97,4 +118,17 @@ jobs:
         run: bash script/install-wp-tests wordpress_test root root 127.0.0.1:3306 latest
 
       - name: phpunit
+        if: ${{ ! matrix.coverage }}
         run: sh script/cibuild-phpunit
+
+      - name: phpunit with coverage
+        if: ${{ matrix.coverage }}
+        run: sh script/cibuild-phpunit --coverage-clover coverage.xml
+
+      - name: Upload coverage to Codecov
+        if: ${{ matrix.coverage }}
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false

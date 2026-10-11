@@ -103,6 +103,22 @@ document.getElementById("clear_address").style.display     = "none";
 	event.preventDefault();
 }
 
+/**
+ * Re-applies a hierarchical term (un)selection that was lost when publishing the List was refused.
+ *
+ * Called from the inline script added by check_error_state(); the checkbox ids are WordPress's own.
+ *
+ * @param {string}  tax     Taxonomy name.
+ * @param {number}  term    Term ID.
+ * @param {boolean} checked Whether the term should be ticked.
+ */
+function revert_unsaved_hier( tax, term, checked ) {
+	const box = document.getElementById( 'in-' + tax + '-' + term );
+	if ( box ) {
+		box.checked = checked;
+	}
+}
+
 function check_address() {
 	var user  = document.getElementById("wpdr-en-user-name").value.trim().length == 0;
 	var email = document.getElementById("wpdr-en-email").value.trim().length == 0;

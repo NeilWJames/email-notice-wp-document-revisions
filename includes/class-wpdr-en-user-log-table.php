@@ -89,22 +89,23 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
 			case 'post_title':
+				$title = esc_html( $item[ $column_name ] );
 				if ( current_user_can( 'edit_document', $item['post_id'] ) ) {
-					return '<a href="' . get_edit_post_link( $item['post_id'] ) . '">' . $item[ $column_name ] . '</a>';
-				} else {
-					return '<a href="' . get_permalink( $item['post_id'] ) . '">' . $item[ $column_name ] . '</a>';
+					return '<a href="' . esc_url( get_edit_post_link( $item['post_id'] ) ) . '">' . $title . '</a>';
 				}
+				return '<a href="' . esc_url( get_permalink( $item['post_id'] ) ) . '">' . $title . '</a>';
 			case 'user_display_name':
-				if ( current_user_can( 'list_users' ) ) {
-					return '<a href="' . get_edit_user_link( $item['user_id'] ) . '">' . ucwords( $item[ $column_name ] ) . '</a>';
-				} else {
-					return ucwords( $item[ $column_name ] );
+				$name = esc_html( ucwords( $item[ $column_name ] ) );
+				if ( current_user_can( 'edit_user', $item['user_id'] ) ) {
+					return '<a href="' . esc_url( get_edit_user_link( $item['user_id'] ) ) . '">' . $name . '</a>';
 				}
+				return $name;
 			case 'time_mail_sent':
 			case 'user_email':
 			case 'status':
-				return $item[ $column_name ];
+				return esc_html( $item[ $column_name ] );
 		}
+		return '';
 	}
 
 	/**
@@ -112,18 +113,19 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	 *
 	 * @since 3.1
 	 * @param mixed[] $item row in List Table.
-	 * @return string[]
+	 * @return string
 	 */
 	public function column_id( $item ) {
+		$id = (int) $item['id'];
 		if ( empty( $item['extra_text'] ) ) {
-			return $item['id'];
+			return (string) $id;
 		}
 		$actions = array(
-			'view' => '<button onclick="wpdr_en_extra( ' . $item['id'] . ' )">' . __( 'Extra Text', 'email-notice-wp-document-revisions' ) . '</button>&nbsp;&nbsp;' .
-					'<textarea id="extra_' . $item['id'] . '" onclick="wpdr_en_extra( ' . $item['id'] . ' )" rows="3" cols="40" style="display: none">' .
-					$item['extra_text'] . '</textarea>',
+			'view' => '<button onclick="wpdr_en_extra( ' . $id . ' )">' . esc_html__( 'Extra Text', 'email-notice-wp-document-revisions' ) . '</button>&nbsp;&nbsp;' .
+					'<textarea id="extra_' . $id . '" onclick="wpdr_en_extra( ' . $id . ' )" rows="3" cols="40" style="display: none">' .
+					esc_textarea( $item['extra_text'] ) . '</textarea>',
 		);
-		return sprintf( '%1$s %2$s', $item['id'], $this->row_actions( $actions, true ) );
+		return sprintf( '%1$d %2$s', $id, $this->row_actions( $actions, true ) );
 	}
 
 	/**
@@ -201,9 +203,9 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 				 (SELECT e.extra_text FROM {$wpdb->prefix}wpdr_en_extra_text e
 				  WHERE e.id = l.extra_text_id) as extra_text
 				 FROM {$wpdb->prefix}wpdr_notification_log l
-				 INNER JOIN {$wpdb->prefix}posts p
+				 INNER JOIN {$wpdb->posts} p
 				 ON l.post_id = p.ID
-				 INNER JOIN {$wpdb->base_prefix}users u
+				 INNER JOIN {$wpdb->users} u
 				 ON l.user_id = u.id
 				 WHERE ( p.post_title LIKE %s OR u.display_name LIKE %s )
 				 ",

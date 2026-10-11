@@ -1,0 +1,48 @@
+name: Build assets
+
+# Rebuilds build/ (minified JS and CSS) from src/ and opens a PR when anything changed.
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'script/build-assets.mjs'
+      - 'package.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build:
+    # workflow_dispatch can't be limited to a branch, so skip runs started from any other branch.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No lockfile (deliberate), so this takes the current compatible versions.
+      - name: Install build tools
+        run: npm install --no-audit --no-fund
+
+      - name: Build
+        run: npm run build:force
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: "Rebuild minified assets"
+          title: "Rebuild minified assets"
+          body: "build/ regenerated from src/ by the Build assets workflow."
+          branch: automated/build-assets
+          delete-branch: true
+          add-paths: build/**

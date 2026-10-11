@@ -6,3 +6,5 @@ wpcs
 build/logs/clover.xml
 composer.lock
 .phpunit.result.cache
+node_modules
+package-lock.json

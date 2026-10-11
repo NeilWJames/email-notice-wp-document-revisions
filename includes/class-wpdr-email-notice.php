@@ -352,12 +352,15 @@ class WPDR_Email_Notice {
 
 		$args = array(
 			'labels'               => $labels,
+			// Lists hold personal data: admin only, never on the front end, in search or in menus.
 			'publicly_queryable'   => false,
-			'public'               => true,
+			'public'               => false,
+			'exclude_from_search'  => true,
 			'show_ui'              => true,
 			'show_in_menu'         => true,
 			'show_in_admin_bar'    => false,
-			'show_in_nav_menus'    => true,
+			'show_in_nav_menus'    => false,
+			'show_in_rest'         => false,
 			'query_var'            => false,
 			'rewrite'              => false,
 			'has_archive'          => false,
@@ -677,14 +680,12 @@ class WPDR_Email_Notice {
 		}
 
 		// process script.
-		$suffix = ( WP_DEBUG ) ? '' : '.min';
-		$path   = 'js/' . $script . $suffix . '.js';
-		$versn  = ( WP_DEBUG ) ? filemtime( plugin_dir_path( __DIR__ ) . $path ) : self::$version;
+		$asset = self::asset( 'js', $script );
 		wp_register_script(
 			'wpdr_en_script',
-			plugin_dir_url( __DIR__ ) . $path,
+			$asset['url'],
 			array( 'jquery' ),
-			$versn,
+			$asset['version'],
 			array(
 				'in_footer' => true,
 				'strategy'  => 'defer',
@@ -695,16 +696,54 @@ class WPDR_Email_Notice {
 		wp_enqueue_script( 'wpdr_en_script' );
 
 		// load css as well.
-		$suffix = ( WP_DEBUG ) ? '' : '.min';
-		$path   = 'css/' . $css . $suffix . '.css';
+		$asset = self::asset( 'css', $css );
 		wp_enqueue_style(
 			'wpdr_en_css',
-			plugin_dir_url( __DIR__ ) . $path,
+			$asset['url'],
 			array(),
-			WP_DEBUG ? filemtime( plugin_dir_path( __DIR__ ) . $path ) : self::$version,
+			$asset['version'],
 		);
 		// note loaded.
 		self::$js_loaded = true;
+	}
+
+	/**
+	 * URL and version of a script or style.
+	 *
+	 * Sources are in src/js and src/css; minified copies with the same names (built by `npm run build`)
+	 * in build/js and build/css. The source is used when SCRIPT_DEBUG or WP_DEBUG is on. The version is the file's
+	 * modification time, so browsers fetch a rebuilt file straight away.
+	 *
+	 * @since 4.0.0
+	 * @param string $type 'js' or 'css'.
+	 * @param string $name File name without extension, e.g. 'wpdr-en-log'.
+	 * @return array{url: string, version: string|false}
+	 */
+	public static function asset( $type, $name ) {
+		$debug = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) || ( defined( 'WP_DEBUG' ) && WP_DEBUG );
+		$path  = ( $debug ? 'src/' : 'build/' ) . $type . '/' . $name . '.' . $type;
+		$file  = plugin_dir_path( __DIR__ ) . $path;
+		return array(
+			'url'     => plugin_dir_url( __DIR__ ) . $path,
+			'version' => file_exists( $file ) ? (string) filemtime( $file ) : false,
+		);
+	}
+
+	/**
+	 * The domain WordPress uses for its default From address (wordpress@<domain>).
+	 *
+	 * Same rule as wp_mail(): the network home URL's host without "www.". (Previously the server
+	 * name was passed through sanitize_url(), which adds "http://", so the default was never matched.)
+	 *
+	 * @since 4.0.0
+	 * @return string
+	 */
+	private static function default_from_domain() {
+		$sitename = strtolower( (string) wp_parse_url( network_home_url(), PHP_URL_HOST ) );
+		if ( str_starts_with( $sitename, 'www.' ) ) {
+			$sitename = substr( $sitename, 4 );
+		}
+		return $sitename;
 	}
 
 	/* Settings->General */
@@ -716,13 +755,8 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function general_settings() {
-		// Get the site domain and get rid of www.
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput, WordPress.WP.DeprecatedFunctions
-		$sitename = strtolower( sanitize_url( $_SERVER['SERVER_NAME'] ) );
-		if ( substr( $sitename, 0, 4 ) === 'www.' ) {
-			$sitename = substr( $sitename, 4 );
-		}
-		echo esc_html__( 'By default all notification emails received from "WordPress" < wordpress@', 'email-notice-wp-document-revisions' ) . esc_url( $sitename ) . ' >. ' . esc_html__( 'You can change these below.', 'email-notice-wp-document-revisions' );
+		$sitename = self::default_from_domain();
+		echo esc_html__( 'By default all notification emails received from "WordPress" < wordpress@', 'email-notice-wp-document-revisions' ) . esc_html( $sitename ) . ' >. ' . esc_html__( 'You can change these below.', 'email-notice-wp-document-revisions' );
 	}
 
 	/**
@@ -732,7 +766,7 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function set_email_from() {
-		echo '<input class="regular-text ltr" type="text" id="wpdr_en_set_email_from" name="wpdr_en_set_email_from" placeholder="Wordpress" value="' . esc_html( get_option( 'wpdr_en_set_email_from' ) ) . '"></input>';
+		echo '<input class="regular-text ltr" type="text" id="wpdr_en_set_email_from" name="wpdr_en_set_email_from" placeholder="Wordpress" value="' . esc_attr( get_option( 'wpdr_en_set_email_from' ) ) . '"></input>';
 	}
 
 	/**
@@ -742,13 +776,8 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function set_email_from_address() {
-		// Get the site domain and get rid of www.
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput, WordPress.WP.DeprecatedFunctions
-		$sitename = strtolower( sanitize_url( $_SERVER['SERVER_NAME'] ) );
-		if ( 'www.' === substr( $sitename, 0, 4 ) ) {
-			$sitename = substr( $sitename, 4 );
-		}
-		echo '<input class="regular-text ltr" type="email" id="wpdr_en_set_email_from_address" name="wpdr_en_set_email_from_address" placeholder="wordpress@' . esc_url( $sitename ) . '" value="' . esc_html( get_option( 'wpdr_en_set_email_from_address' ) ) . '"></input>';
+		$sitename = self::default_from_domain();
+		echo '<input class="regular-text ltr" type="email" id="wpdr_en_set_email_from_address" name="wpdr_en_set_email_from_address" placeholder="wordpress@' . esc_attr( $sitename ) . '" value="' . esc_attr( get_option( 'wpdr_en_set_email_from_address' ) ) . '"></input>';
 	}
 
 	/* Settings->Writing */
@@ -831,7 +860,7 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function set_subject() {
-		echo '<input class="regular-text ltr" type="text" id="wpdr_en_set_subject" name="wpdr_en_set_subject" placeholder="New document: %title%" value="' . esc_html( get_option( 'wpdr_en_set_subject' ) ) . '"></input>';
+		echo '<input class="regular-text ltr" type="text" id="wpdr_en_set_subject" name="wpdr_en_set_subject" placeholder="New document: %title%" value="' . esc_attr( get_option( 'wpdr_en_set_subject' ) ) . '"></input>';
 		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are not allowed here, e.g.: %title_with_permalink% will revert to %title%.', 'email-notice-wp-document-revisions' );
 	}
 
@@ -842,15 +871,8 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function set_content() {
-		$text  = wp_kses_post( get_option( 'wpdr_en_set_content' ) );
-		$place = str_replace( '"', '&quot;', self::$default_content );
-		if ( $text === self::$default_content ) {
-			$text = $place;
-		}
-		// phpcs:disable WordPress.Security.EscapeOutput
-		echo '<textarea id="wpdr_en_set_content" name="wpdr_en_set_content" cols="80" rows="8" 
-		placeholder = "' . $place . '">' . $text . '</textarea>';
-		// phpcs:enable WordPress.Security.EscapeOutput
+		// The template is HTML, so it is shown as text in the textarea (and in the placeholder).
+		echo '<textarea id="wpdr_en_set_content" name="wpdr_en_set_content" cols="80" rows="8" placeholder="' . esc_attr( self::$default_content ) . '">' . esc_textarea( wp_kses_post( (string) get_option( 'wpdr_en_set_content' ) ) ) . '</textarea>';
 		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'email-notice-wp-document-revisions' );
 	}
 
@@ -861,15 +883,7 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function set_exttext() {
-		$text  = wp_kses_post( get_option( 'wpdr_en_set_exttext' ) );
-		$place = str_replace( '"', '&quot;', self::$default_exttext );
-		if ( $text === self::$default_exttext ) {
-			$text = $place;
-		}
-		// phpcs:disable WordPress.Security.EscapeOutput
-		echo '<textarea id="wpdr_en_set_content" name="wpdr_en_set_exttext" cols="80" rows="7" 
-		placeholder = "' . $place . '">' . $text . '</textarea>';
-		// phpcs:enable WordPress.Security.EscapeOutput
+		echo '<textarea id="wpdr_en_set_exttext" name="wpdr_en_set_exttext" cols="80" rows="7" placeholder="' . esc_attr( self::$default_exttext ) . '">' . esc_textarea( wp_kses_post( (string) get_option( 'wpdr_en_set_exttext' ) ) ) . '</textarea>';
 		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'email-notice-wp-document-revisions' );
 	}
 
@@ -895,10 +909,7 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function set_repeat() {
-		// phpcs:disable WordPress.Security.EscapeOutput
-		echo '<textarea id="wpdr_en_set_repeat" name="wpdr_en_set_repeat" cols="80" rows="5" 
-		placeholder = "' . self::$default_repeat . '">' . wp_kses_post( get_option( 'wpdr_en_set_repeat' ) ) . '</textarea>';
-		// phpcs:enable WordPress.Security.EscapeOutput
+		echo '<textarea id="wpdr_en_set_repeat" name="wpdr_en_set_repeat" cols="80" rows="5" placeholder="' . esc_attr( self::$default_repeat ) . '">' . esc_textarea( wp_kses_post( (string) get_option( 'wpdr_en_set_repeat' ) ) ) . '</textarea>';
 		echo '<br/><br/>' . esc_html__( 'Hint: HTML tags are welcome here to make your notification emails more personalized.', 'email-notice-wp-document-revisions' );
 	}
 
@@ -911,7 +922,7 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function purge_notification_log() {
-		echo 'Purge log every <input type="number" id="wpdr_en_set_notification_log" name="wpdr_en_set_notification_log" value="' . esc_html( get_option( 'wpdr_en_set_notification_log' ) ) . '" min="0" max="999" size="3"></input> day(s). Zero or empty value means no purge needed.<br>';
+		echo 'Purge log every <input type="number" id="wpdr_en_set_notification_log" name="wpdr_en_set_notification_log" value="' . esc_attr( get_option( 'wpdr_en_set_notification_log' ) ) . '" min="0" max="999" size="3"></input> day(s). Zero or empty value means no purge needed.<br>';
 	}
 
 	/**
@@ -1118,13 +1129,13 @@ class WPDR_Email_Notice {
 			$hasrecipient      = ! empty( $recipients );
 			echo '<div class="wpdr-en-add-text"><div>';
 			if ( ( ! empty( $notification_sent ) || '1' === $notification_sent ) && in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) && $hasrecipient ) {
-				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Re-send notification email(s)', 'email-notice-wp-document-revisions' ) . '" />';
+				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_attr__( 'Re-send notification email(s)', 'email-notice-wp-document-revisions' ) . '" />';
 			} elseif ( in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) && ( empty( $notification_sent ) || '0' === $notification_sent ) && $hasrecipient ) {
-				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Send notification email(s)', 'email-notice-wp-document-revisions' ) . '"/>';
+				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_attr__( 'Send notification email(s)', 'email-notice-wp-document-revisions' ) . '"/>';
 			} elseif ( empty( $notification_sent ) || '0' === $notification_sent ) {
-				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Send notification email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
+				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_attr__( 'Send notification email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
 			} elseif ( ! empty( $notification_sent ) || '1' === $notification_sent ) {
-				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_html__( 'Re-send notification email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
+				echo '<input type="button" id="wpdr-en-notify" class="button-secondary" value="' . esc_attr__( 'Re-send notification email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
 			}
 			echo '</div>';
 			if ( $extra ) {
@@ -1178,7 +1189,7 @@ class WPDR_Email_Notice {
 			$read = ( current_user_can( 'edit_doc_ext_lists' ) ? '' : ' disabled' );
 			if ( ( ! empty( $ext_notice_sent ) || '1' === $ext_notice_sent ) && 'Public' === $pstatus && $hasextrecipient ) {
 				echo '<div class="wpdr-en-add-text"><div>';
-				echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'email-notice-wp-document-revisions' ) . '" />';
+				echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_attr__( 'Re-send external list email(s)', 'email-notice-wp-document-revisions' ) . '" />';
 				echo '</div>';
 				// Is extra text available for external.
 				if ( $extra ) {
@@ -1199,7 +1210,7 @@ class WPDR_Email_Notice {
 				}
 			} elseif ( 'Public' === $pstatus && ( empty( $ext_notice_sent ) || '0' === $ext_notice_sent ) && $hasextrecipient ) {
 				echo '<div class="wpdr-en-add-text"><div>';
-				echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Send external list email(s)', 'email-notice-wp-document-revisions' ) . '"/>';
+				echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_attr__( 'Send external list email(s)', 'email-notice-wp-document-revisions' ) . '"/>';
 				// Is extra text available for external.
 				echo '</div><div style=" 5px; margin-right: 5px;"><label>';
 				if ( str_contains( $this->get_content( 0 ), '%extra%' ) ) {
@@ -1216,9 +1227,9 @@ class WPDR_Email_Notice {
 					echo '</label>';
 				}
 			} elseif ( empty( $ext_notice_sent ) || '0' === $ext_notice_sent ) {
-				echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Send external list email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
+				echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_attr__( 'Send external list email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
 			} elseif ( ! empty( $ext_notice_sent ) || '1' === $ext_notice_sent ) {
-				echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_html__( 'Re-send external list email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
+				echo '<input type="button" id="wpdr-en-ext-note" class="button-secondary" value="' . esc_attr__( 'Re-send external list email(s)', 'email-notice-wp-document-revisions' ) . '" disabled/>';
 			}
 		}
 		echo '</div>';
@@ -1564,14 +1575,12 @@ class WPDR_Email_Notice {
 	 */
 	private function enqueue_log_js() {
 		// process log script.
-		$suffix = ( WP_DEBUG ) ? '' : '.min';
-		$path   = 'js/wpdr-en-log' . $suffix . '.js';
-		$versn  = ( WP_DEBUG ) ? filemtime( plugin_dir_path( __DIR__ ) . $path ) : self::$version;
+		$asset = self::asset( 'js', 'wpdr-en-log' );
 		wp_register_script(
 			'wpdr_en_log',
-			plugin_dir_url( __DIR__ ) . $path,
+			$asset['url'],
 			array( 'jquery' ),
-			$versn,
+			$asset['version'],
 			array(
 				'in_footer' => true,
 				'strategy'  => 'defer',
@@ -1833,7 +1842,7 @@ class WPDR_Email_Notice {
 		</fieldset>
 		<h3 id="note_label" class="hndle" style="padding-left: 0;"><?php esc_html_e( 'Document List Notes', 'email-notice-wp-document-revisions' ); ?></h3>
 		<fieldset>
-		<textarea rows="4" cols="40" name="excerpt" id="excerpt"><?php echo $post->post_excerpt; // phpcs:ignore. ?></textarea>
+		<textarea rows="4" cols="40" name="excerpt" id="excerpt"><?php echo esc_textarea( $post->post_excerpt ); ?></textarea>
 		<label class="screen-reader-text" for="excerpt"><?php esc_html_e( 'Document List Notes', 'email-notice-wp-document-revisions' ); ?></label>
 		<?php esc_html_e( 'You can use this to hold any notes for this list entry.', 'email-notice-wp-document-revisions' ); ?>
 		</fieldset>
@@ -1860,12 +1869,7 @@ class WPDR_Email_Notice {
 	 * @return string
 	 */
 	public function wp_mail_from( $email ) {
-		// Get the site domain and get rid of www.
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput, WordPress.WP.DeprecatedFunctions
-		$sitename = strtolower( sanitize_url( $_SERVER['SERVER_NAME'] ) );
-		if ( 'www.' === substr( $sitename, 0, 4 ) ) {
-			$sitename = substr( $sitename, 4 );
-		}
+		$sitename = self::default_from_domain();
 		// Override only default email address - provides compatibility with other plugins.
 		if ( 'wordpress@' . $sitename === $email ) {
 			return get_option( 'wpdr_en_set_email_from_address' );
@@ -2030,45 +2034,36 @@ class WPDR_Email_Notice {
 		global $wpdb;
 		$pstatus = $this->post_status( $post_id );
 
-		if ( in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) ) {
-			// Public & Password protected post users.
-			if ( in_array( $pstatus, array( 'Public', 'Password protected' ), true ) ) {
-				// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$result = $wpdb->get_results(
-					"SELECT u.id AS user_id,
-						u.display_name,
-						u.user_email as user_email
-					 FROM {$wpdb->base_prefix}users u, 
-						{$wpdb->base_prefix}usermeta um
-					 WHERE u.id=um.user_id
-					 AND um.meta_key='wpdr_en_user_notification'
-					 AND um.meta_value=1"
-				);
-				// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			}
-			// Private post users.
-			if ( in_array( $pstatus, array( 'Private' ), true ) ) {
-				// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$all_users_who_want_notifications = $wpdb->get_results(
-					"SELECT u.id AS user_id, 
-						u.display_name,
-						u.user_email as user_email
-					 FROM {$wpdb->base_prefix}users u, 
-						{$wpdb->base_prefix}usermeta um
-					 WHERE u.id=um.user_id
-					 AND um.meta_key='wpdr_en_user_notification'
-					 AND um.meta_value=1"
-				);
-				// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				foreach ( $all_users_who_want_notifications as $value ) {
-					if ( user_can( $value->user_id, 'read_document', $post_id ) ) {
-						$user_data               = new StdClass();
-						$user_data->user_id      = $value->user_id;
-						$user_data->display_name = $value->display_name;
-						$user_data->user_email   = $value->user_email;
-						$result[]                = $user_data;
-					}
-				}
+		if ( ! in_array( $pstatus, array( 'Public', 'Password protected', 'Private' ), true ) ) {
+			return $result;
+		}
+
+		// Users who asked for notifications and belong to this site (users are shared across a network;
+		// a site's members have its capabilities key).
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wanted = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT u.ID AS user_id,
+					u.display_name,
+					u.user_email AS user_email
+				 FROM {$wpdb->users} u
+				 INNER JOIN {$wpdb->usermeta} um
+				 ON u.ID = um.user_id
+				 WHERE um.meta_key = 'wpdr_en_user_notification'
+				 AND um.meta_value = '1'
+				 AND EXISTS ( SELECT 1 FROM {$wpdb->usermeta} c WHERE c.user_id = u.ID AND c.meta_key = %s )",
+				$wpdb->get_blog_prefix() . 'capabilities'
+			)
+		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+
+		// Public & Password protected posts go to all of them; private ones only to those who can read them.
+		if ( 'Private' !== $pstatus ) {
+			return $wanted;
+		}
+		foreach ( $wanted as $value ) {
+			if ( user_can( $value->user_id, 'read_document', $post_id ) ) {
+				$result[] = $value;
 			}
 		}
 		return $result;
@@ -2100,7 +2095,7 @@ class WPDR_Email_Notice {
 		$tt_ids = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT term_taxonomy_id
-				 FROM {$wpdb->base_prefix}term_relationships tt
+				 FROM {$wpdb->term_relationships} tt
 				 WHERE tt.object_id = %d",
 				$post_id
 			),
@@ -2116,13 +2111,13 @@ class WPDR_Email_Notice {
 		$tot_ids = $tt_ids;
 		do {
 			// get the parents.
-			$list = implode( ',', wp_list_pluck( $tt_ids, 'term_taxonomy_id' ) );
+			$list = implode( ',', array_map( 'intval', wp_list_pluck( $tt_ids, 'term_taxonomy_id' ) ) );
 			// Don't Use placeholders as prepare can get confused by comma-separated list.
 			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 			$pp_ids = $wpdb->get_results(
 				"SELECT p.term_taxonomy_id
-				 FROM {$wpdb->base_prefix}term_taxonomy t
-				 INNER JOIN {$wpdb->base_prefix}term_taxonomy p
+				 FROM {$wpdb->term_taxonomy} t
+				 INNER JOIN {$wpdb->term_taxonomy} p
 				 ON  p.term_id = t.parent
 				 AND p.taxonomy = t.taxonomy
 				 WHERE t.term_taxonomy_id IN ( " . $list . ' )
@@ -2139,38 +2134,38 @@ class WPDR_Email_Notice {
 		} while ( ! empty( $pp_ids ) );
 
 		// find the matching lists.
-		$tlist = implode( ',', wp_list_pluck( $tot_ids, 'term_taxonomy_id' ) );
+		$tlist = implode( ',', array_map( 'intval', wp_list_pluck( $tot_ids, 'term_taxonomy_id' ) ) );
 		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$olists = $wpdb->get_results(
 			"SELECT up.ID AS list_id,
 					up.post_title as list_title,
 					(SELECT meta_value
-					 FROM {$wpdb->base_prefix}postmeta
+					 FROM {$wpdb->postmeta}
 					 WHERE post_id = up.ID
 					 AND meta_key = 'wpdr_en_addressees') as users_rec,
 					(SELECT meta_value
-					 FROM {$wpdb->base_prefix}postmeta
+					 FROM {$wpdb->postmeta}
 					 WHERE post_id = up.ID
 					 AND meta_key = 'wpdr_en_tm') as tm_rule,
 					 COALESCE( (SELECT meta_value
-					 FROM {$wpdb->base_prefix}postmeta
+					 FROM {$wpdb->postmeta}
 					 WHERE post_id = up.ID
 					 AND meta_key = 'wpdr_en_attach'),
 					 (SELECT option_value
-					 FROM {$wpdb->base_prefix}options
+					 FROM {$wpdb->options}
 					 WHERE option_name = 'wpdr_en_set_ext_attach'),
 					 0 ) as attach,
 					 COALESCE( (SELECT meta_value
-					 FROM {$wpdb->base_prefix}postmeta
+					 FROM {$wpdb->postmeta}
 					 WHERE post_id = up.ID
 					 AND meta_key = 'wpdr_en_pause'),
 					 0 ) as pause,
 					COUNT(1) as matches,
 					(SELECT COUNT(1)
-					 FROM {$wpdb->base_prefix}term_relationships tr
+					 FROM {$wpdb->term_relationships} tr
 					 WHERE object_id = up.ID) as tot_terms
-			 FROM {$wpdb->base_prefix}posts up
-			 INNER JOIN {$wpdb->base_prefix}term_relationships ut
+			 FROM {$wpdb->posts} up
+			 INNER JOIN {$wpdb->term_relationships} ut
 			 ON ut.object_id = up.ID
 			 WHERE up.post_type = 'doc_ext_list'
 			 AND up.post_status = 'publish'
@@ -2373,7 +2368,7 @@ class WPDR_Email_Notice {
 					$headers = array( 'Content-type: text/html' );
 
 					// Send mail.
-					$mail_status = wp_mail( $value->display_name . '<' . $value->user_email . '>', $mail_subject, $mail_content, $headers, $attachments );
+					$mail_status = wp_mail( self::recipient( $value->display_name, $value->user_email ), $mail_subject, $mail_content, $headers, $attachments );
 
 					// set status message.
 					if ( $mail_status ) {
@@ -2392,10 +2387,7 @@ class WPDR_Email_Notice {
 			}
 		}
 		// did we create a temporary attachment.
-		if ( ! empty( self::$attach_file ) ) {
-			wp_delete_file( self::$attach_file[0] );
-			self::$attach_file = '';
-		}
+		self::remove_attachment();
 
 		$result = array(
 			'logged_count'        => $logged_count,
@@ -2489,7 +2481,7 @@ class WPDR_Email_Notice {
 					);
 
 					// Send mail.
-					$mail_status = wp_mail( $value->user_name . '<' . $value->user_email . '>', $mail_subject, $mail_content, $headers, $attachments );
+					$mail_status = wp_mail( self::recipient( $value->user_name, $value->user_email ), $mail_subject, $mail_content, $headers, $attachments );
 
 					// set status message.
 					if ( $mail_status ) {
@@ -2509,10 +2501,7 @@ class WPDR_Email_Notice {
 		}
 
 		// did we create a temporary attachment.
-		if ( ! empty( self::$attach_file ) ) {
-			wp_delete_file( self::$attach_file[0] );
-			self::$attach_file = '';
-		}
+		self::remove_attachment();
 
 		$result = array(
 			'logged_count'        => $logged_count,
@@ -2520,6 +2509,22 @@ class WPDR_Email_Notice {
 			'sending_error_count' => $sending_error_count,
 		);
 		return $result;
+	}
+
+	/**
+	 * The "To" value for one recipient: "Name <email>".
+	 *
+	 * The wp_mail() function splits the To string on commas, so characters that would add a recipient or break
+	 * the address part are removed from the name.
+	 *
+	 * @since 4.0.0
+	 * @param string $name  Display name.
+	 * @param string $email Email address.
+	 * @return string
+	 */
+	public static function recipient( $name, $email ) {
+		$name = trim( preg_replace( '/\s+/', ' ', str_replace( array( ',', ';', '<', '>', '"', "\r", "\n" ), ' ', (string) $name ) ) );
+		return ( '' === $name ? $email : $name . ' <' . $email . '>' );
 	}
 
 	/**
@@ -2761,11 +2766,7 @@ class WPDR_Email_Notice {
 		}
 
 		// if a temporary file was created then delete it.
-		if ( ! empty( self::$attach_file ) ) {
-			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-			wp_delete_file( self::$attach_file[0] );
-			self::$attach_file = null;
-		}
+		self::remove_attachment();
 
 		return $result;
 	}
@@ -2848,11 +2849,7 @@ class WPDR_Email_Notice {
 		}
 
 		// if a temporary file was created then delete it.
-		if ( ! empty( self::$attach_file ) ) {
-			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-			wp_delete_file( self::$attach_file[0] );
-			self::$attach_file = null;
-		}
+		self::remove_attachment();
 
 		return $result;
 	}
@@ -2958,10 +2955,7 @@ class WPDR_Email_Notice {
 		}
 
 		// remove attachment file if set.
-		if ( ! empty( self::$attach_file ) ) {
-			wp_delete_file( self::$attach_file[0] );
-			self::$attach_file = '';
-		}
+		self::remove_attachment();
 
 		if ( empty( $post_id ) ) {
 			return;
@@ -2999,10 +2993,7 @@ class WPDR_Email_Notice {
 			remove_action( 'transition_post_status', array( $this, 'send_notification_auto' ) );
 
 			// remove attachment file if set.
-			if ( ! empty( self::$attach_file ) ) {
-				wp_delete_file( self::$attach_file[0] );
-				self::$attach_file = '';
-			}
+			self::remove_attachment();
 		} else {
 			delete_transient( 'auto_notification_message' );
 			delete_transient( 'auto_notification_result' );
@@ -3027,6 +3018,25 @@ class WPDR_Email_Notice {
 	}
 
 	/**
+	 * Delete the temporary copy of the document made for attaching, and its folder.
+	 *
+	 * @since 4.0.0
+	 * @return void
+	 */
+	public static function remove_attachment() {
+		if ( ! empty( self::$attach_file ) && is_array( self::$attach_file ) ) {
+			$file = self::$attach_file[0];
+			wp_delete_file( $file );
+			$dir = dirname( $file );
+			if ( str_starts_with( basename( $dir ), 'wpdr-en-' ) && is_dir( $dir ) ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir, WordPress.PHP.NoSilencedErrors.Discouraged
+				@rmdir( $dir );
+			}
+		}
+		self::$attach_file = null;
+	}
+
+	/**
 	 * Find the attachment details (and hold in cache).
 	 *
 	 * @since 1.0
@@ -3046,7 +3056,8 @@ class WPDR_Email_Notice {
 				$wpdr = new WP_Document_Revisions();
 			}
 			$attach_id = $wpdr->extract_document_id( $content );
-			if ( ! is_null( $attach_id ) ) {
+			// extract_document_id() returns false when there is no document file.
+			if ( $attach_id ) {
 				$afile = get_attached_file( $attach_id );
 
 				// flip slashes for WAMP settups to prevent 404ing on the next line.
@@ -3057,15 +3068,24 @@ class WPDR_Email_Notice {
 				 */
 				$afile = apply_filters( 'document_path', $afile ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
-				// We need to change the file name back to a readable one, so copy it.
-				$file_name = get_post_field( 'post_name', $post_id );
+				// Copy to a readable name in a private folder of its own: unpredictable, not readable by
+				// other users of the server, and removed after sending (or at the end of the request).
+				$file_name = sanitize_file_name( get_post_field( 'post_name', $post_id ) );
 				$file_ext  = pathinfo( $afile, PATHINFO_EXTENSION );
-				$nfile     = get_temp_dir() . $file_name . '.' . $file_ext;
-				// phpcs:disable WordPress.PHP.NoSilencedErrors.Discouraged
-				if ( @copy( $afile, $nfile ) ) {
-					$file[] = $nfile;
+				$dir       = trailingslashit( get_temp_dir() ) . 'wpdr-en-' . wp_generate_password( 16, false );
+				if ( is_readable( $afile ) && wp_mkdir_p( $dir ) ) {
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod
+					chmod( $dir, 0700 );
+					$nfile = $dir . '/' . ( '' === $file_name ? 'document' : $file_name ) . ( '' === $file_ext ? '' : '.' . $file_ext );
+					// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+					if ( @copy( $afile, $nfile ) ) {
+						$file[] = $nfile;
+						add_action( 'shutdown', array( __CLASS__, 'remove_attachment' ) );
+					} else {
+						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
+						rmdir( $dir );
+					}
 				}
-				// phpcs:enable WordPress.PHP.NoSilencedErrors.Discouraged
 			}
 			self::$attach_file = $file;
 		}
@@ -3085,10 +3105,7 @@ class WPDR_Email_Notice {
 			return;
 		}
 
-		if ( ! empty( self::$attach_file ) ) {
-			wp_delete_file( self::$attach_file[0] );
-			self::$attach_file = '';
-		}
+		self::remove_attachment();
 	}
 
 	/**
@@ -3334,30 +3351,24 @@ class WPDR_Email_Notice {
 	 */
 	private function unsaved_taxonomy_values( $posttax, $savetax ) {
 		$unsaved = array();
-		foreach ( $posttax as $tax => $terms ) {
-			$tsave = ( isset( $savetax[ $tax ] ) ? $savetax[ $tax ] : array() );
-			$test  = array();
-			if ( is_array( $terms ) && ! empty( $terms ) ) {
-				// remove the saved terms.
-				$test = array_diff( $terms, $tsave );
-				if ( 0 === $test[0] ) {
-					unset( $test[0] );
-				}
+		foreach ( (array) $posttax as $tax => $terms ) {
+			// Only hierarchical taxonomies send term IDs (others send names), and only those can be reverted.
+			$tax_o = is_string( $tax ) ? get_taxonomy( $tax ) : false;
+			if ( ! $tax_o || ! $tax_o->hierarchical || ! is_array( $terms ) ) {
+				continue;
 			}
-			// if $tsave is not empty, then there were terms. The diff tells us which are being removed.
-			if ( ! empty( $tsave ) ) {
-				$tsave = array_diff( $tsave, $terms );
-				foreach ( $tsave as $no_term ) {
-					if ( 0 !== $no_term ) {
-						$test[] = -$no_term;
-					}
-				}
+			// Term IDs come from the form: keep positive integers only.
+			$terms = array_filter( array_map( 'intval', $terms ) );
+			$tsave = ( isset( $savetax[ $tax ] ) && is_array( $savetax[ $tax ] ) ? array_filter( array_map( 'intval', $savetax[ $tax ] ) ) : array() );
+			// Added terms are positive, removed terms negative.
+			$test = array_values( array_diff( $terms, $tsave ) );
+			foreach ( array_diff( $tsave, $terms ) as $no_term ) {
+				$test[] = -$no_term;
 			}
 			if ( ! empty( $test ) ) {
 				$unsaved[ $tax ] = $test;
 			}
 		}
-		// does not deal with the case that there is no entry for the taxonomy being removed.
 
 		return $unsaved;
 	}
@@ -3380,57 +3391,62 @@ class WPDR_Email_Notice {
 			return $maybe_empty;
 		}
 
+		// Only the edit form (which sends the referer) is checked; saves from code are left alone.
+		if ( ! isset( $postarr['_wp_http_referer'] ) ) {
+			return $maybe_empty;
+		}
 		// Sanitize the value of the $_POST collection for the Coding Standards.
 		$url = sanitize_text_field( wp_unslash( $postarr['_wp_http_referer'] ) );
 		if ( '//' !== $url && isset( $postarr['tax_input'] ) && is_array( $postarr['tax_input'] ) ) {
 			// make sure parent-child terms are not entered.
 			foreach ( $postarr['tax_input'] as $tax => $terms ) {
-				if ( is_array( $terms ) && ! empty( $terms ) ) {
-					if ( get_taxonomy( $tax )->hierarchical ) {
-						foreach ( $terms as $id => $term ) {
-							if ( 0 !== (int) $term ) {
-								$children = get_term_children( $term, $tax );
-								if ( is_array( $children ) && ! empty( $children ) ) {
-									foreach ( $children as $key => $child ) {
-										if ( in_array( $child, $terms, true ) ) {
-											// find unsaved terms from post.
-											$tsave = ( isset( $postarr['tax_save'] ) ? $postarr['tax_save'] : array() );
-											$trans = array(
-												$tax,
-												$term,
-												$child,
-												$this->unsaved_taxonomy_values( $postarr['tax_input'], $tsave ),
-											);
-											set_transient(
-												'del_' . $postarr['ID'],
-												$trans,
-												120
-											);
-											wp_safe_redirect( urldecode( $url ) );
-											exit;
-										}
-									}
+				$tax_o = is_string( $tax ) ? get_taxonomy( $tax ) : false;
+				if ( $tax_o && $tax_o->hierarchical && is_array( $terms ) && ! empty( $terms ) ) {
+					// Term IDs arrive as strings.
+					$terms = array_filter( array_map( 'intval', $terms ) );
+					foreach ( $terms as $term ) {
+						$children = get_term_children( $term, $tax );
+						if ( is_array( $children ) && ! empty( $children ) ) {
+							foreach ( $children as $child ) {
+								if ( in_array( (int) $child, $terms, true ) ) {
+									// find unsaved terms from post.
+									$tsave = ( isset( $postarr['tax_save'] ) ? $postarr['tax_save'] : array() );
+									$trans = array(
+										$tax,
+										$term,
+										(int) $child,
+										$this->unsaved_taxonomy_values( $postarr['tax_input'], $tsave ),
+									);
+									set_transient(
+										'del_' . (int) $postarr['ID'],
+										$trans,
+										120
+									);
+									wp_safe_redirect( urldecode( $url ) );
+									exit;
 								}
 							}
 						}
 					}
 				}
 			}
-			// check that there is at least one set.
+			// check that there is at least one set (hierarchical: term IDs; others: comma-separated names).
 			foreach ( $postarr['tax_input'] as $tax => $terms ) {
-				if ( is_array( $terms ) && ! empty( $terms ) ) {
-					foreach ( $terms as $id => $term ) {
-						if ( 0 !== (int) $term ) {
+				if ( is_array( $terms ) ) {
+					foreach ( $terms as $term ) {
+						if ( 0 !== (int) $term || ( ! is_numeric( $term ) && '' !== trim( (string) $term ) ) ) {
 							return $maybe_empty;
 						}
 					}
+				} elseif ( is_string( $terms ) && '' !== trim( $terms, " ,\t\n\r" ) ) {
+					return $maybe_empty;
 				}
 			}
 		}
 
 		// no taxonomies set.
 		set_transient(
-			'del_' . $postarr['ID'],
+			'del_' . (int) $postarr['ID'],
 			array( 0 ),
 			120
 		);
@@ -3651,18 +3667,19 @@ class WPDR_Email_Notice {
 
 		// was an error found in transient.
 		$err = get_transient( 'del_' . $post->ID );
-		if ( $err ) {
+		if ( is_array( $err ) && ! empty( $err ) ) {
 			delete_transient( 'del_' . $post->ID );
 			$err_exists = true;
 			$oclass     = 'notice-error';
 			if ( 0 === $err[0] ) {
 				$messages .= '<p>' . esc_html__( 'There are no terms defined for matching with this list. Please add at least one.', 'email-notice-wp-document-revisions' ) . '</p>';
 			} else {
-				$tax_l  = get_taxonomy( $err[0] )->label;
-				$parent = esc_attr( get_term( $err[1], $err[0] )->name );
-				$child  = esc_attr( get_term( $err[2], $err[0] )->name );
-				// translators: %1$s is the taxonomy name, %2$s is the parent term, %2$s is the child term.
-				$messages .= '<p>' . sprintf( __( 'Taxonomy: %1$s. Cannot have both parent (%2$s) and child terms (%3$s). Remove child term as parent term will match.', 'email-notice-wp-document-revisions' ), $tax_l, $parent, $child ) . '</p>';
+				$tax_o  = get_taxonomy( (string) $err[0] );
+				$tax_l  = $tax_o ? $tax_o->label : '';
+				$parent = get_term( (int) $err[1], (string) $err[0] );
+				$child  = get_term( (int) $err[2], (string) $err[0] );
+				// translators: %1$s is the taxonomy name, %2$s is the parent term, %3$s is the child term.
+				$messages .= '<p>' . esc_html( sprintf( __( 'Taxonomy: %1$s. Cannot have both parent (%2$s) and child terms (%3$s). Remove child term as parent term will match.', 'email-notice-wp-document-revisions' ), $tax_l, ( $parent instanceof WP_Term ? $parent->name : '' ), ( $child instanceof WP_Term ? $child->name : '' ) ) ) . '</p>';
 				// make sure js methods have been loaded in case we add something after.
 				if ( ! self::$js_loaded ) {
 					self::load_js_methods();
@@ -3670,31 +3687,34 @@ class WPDR_Email_Notice {
 				// create update script to act on load.
 				$add_script = false;
 				$script     = 'document.addEventListener("DOMContentLoaded", function(evt) {' . "\n";
-				foreach ( $err[3] as $tax => $terms ) {
-					$tax_o = get_taxonomy( $tax );
+				$unsaved    = ( isset( $err[3] ) && is_array( $err[3] ) ? $err[3] : array() );
+				foreach ( $unsaved as $tax => $terms ) {
+					$tax_o = get_taxonomy( (string) $tax );
+					if ( ! $tax_o || ! is_array( $terms ) ) {
+						continue;
+					}
 					if ( $tax_o->hierarchical ) {
 						$add_script = true;
 						foreach ( $terms as $term ) {
-							if ( $term > 0 ) {
-								// term added, must be checked.
-								$script .= " revert_unsaved_hier('" . $tax . "', " . $term . ', true );' . "\n";
-							} else {
-								// term removed, must be unchecked.
-								$script .= " revert_unsaved_hier('" . $tax . "', " . $term . ', false );' . "\n";
-							}
+							// positive: term added, must be checked; negative: term removed, must be unchecked.
+							$term    = (int) $term;
+							$script .= sprintf( ' revert_unsaved_hier( %1$s, %2$d, %3$s );', wp_json_encode( $tax_o->name ), abs( $term ), ( $term > 0 ? 'true' : 'false' ) ) . "\n";
 						}
 					} else {
 						// translators: %s is the taxonomy name.
-						$messages .= '<p>' . sprintf( __( 'Taxonomy: %s. You must redo your non-hierarchical changes manually.', 'email-notice-wp-document-revisions' ), $tax_o->label );
+						$messages .= '<p>' . esc_html( sprintf( __( 'Taxonomy: %s. You must redo your non-hierarchical changes manually.', 'email-notice-wp-document-revisions' ), $tax_o->label ) );
 						foreach ( $terms as $term ) {
+							$term     = (int) $term;
+							$term_obj = get_term( abs( $term ), $tax_o->name );
+							$name     = ( $term_obj instanceof WP_Term ? $term_obj->name : '' );
 							if ( $term > 0 ) {
 								// term added, must be checked.
 								// translators: %1$s is the taxonomy term name.
-								$messages .= '<br />&nbsp;' . sprintf( __( 'Add Term: %1$s ', 'email-notice-wp-document-revisions' ), get_term( $term, $tax )->name );
+								$messages .= '<br />&nbsp;' . esc_html( sprintf( __( 'Add Term: %1$s ', 'email-notice-wp-document-revisions' ), $name ) );
 							} else {
 								// term removed, must be unchecked.
 								// translators: %1$s is the taxonomy term name.
-								$messages .= '<br />&nbsp;' . sprintf( __( 'Remove Term: %1$s ', 'email-notice-wp-document-revisions' ), get_term( -$term, $tax )->name );
+								$messages .= '<br />&nbsp;' . esc_html( sprintf( __( 'Remove Term: %1$s ', 'email-notice-wp-document-revisions' ), $name ) );
 							}
 						}
 						$messages .= '</p>';
@@ -3709,7 +3729,7 @@ class WPDR_Email_Notice {
 		}
 		?>
 		<div id="wpdr_en_message" class="notice <?php echo esc_attr( $oclass ); ?>" <?php echo ( $err_exists ? '' : 'style="display:none"' ); ?>>
-		<?php echo $messages; // phpcs:ignore WordPress.Security.EscapeOutput ?>
+		<?php echo $messages; // phpcs:ignore WordPress.Security.EscapeOutput -- built above from escaped parts. ?>
 		</div>
 		<?php
 	}

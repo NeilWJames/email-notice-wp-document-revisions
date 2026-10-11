@@ -188,6 +188,6 @@ class Test_WPDR_EN_Tags extends WPDR_EN_UnitTestCase {
 
 		$this->assertCount( 1, $this->mails );
 		$this->assertStringContainsString( 'Hello Jo Smith (Agenda)', $this->mails[0]['message'] );
-		$this->assertSame( 'jo smith<jo@example.org>', $this->mails[0]['to'] );
+		$this->assertSame( 'jo smith <jo@example.org>', $this->mails[0]['to'] );
 	}
 }

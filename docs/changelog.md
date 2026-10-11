@@ -16,7 +16,19 @@ Release date: (in development)
 * FIX: Security: Sending notifications now checks that the user can edit the Document being mailed.
 * FIX: Security: Adding or deleting External List addresses now checks that the user can edit the List, instead of trusting a user ID sent by the browser. Email addresses are validated.
 * FIX: Security: External List address table escapes names and email addresses.
+* FIX: Security: The parent/child term error on the External List screen reduces term values to IDs and escapes its messages; the missing revert_unsaved_hier() script function is added, so unsaved term changes are ticked again.
+* FIX: The parent/child term check works (form term IDs were compared as text), and a List with only flat-taxonomy terms (e.g. tags) can be published.
+* FIX: External Lists saved from code rather than the edit screen are no longer checked and redirected.
+* FIX: Security: Multisite: each site uses only its own External Lists and mails only its own members.
+* FIX: Security: Document External Lists are no longer public: not in site search, menus or the REST API.
+* FIX: Security: The External log search uses a prepared query (and finds names with quotes).
+* FIX: Security: Commas and angle brackets in a name can no longer add recipients.
+* FIX: Security: The copy of a document made for attaching is put in a private, randomly named folder and always removed.
+* FIX: Security: Log pages, settings fields and List notes escape their output.
+* FIX: Security: Bulk subscribe/unsubscribe only changes users the current user may edit.
+* FIX: The Email Address setting replaces WordPress's default From address (the site domain was worked out wrongly, so it never matched).
 * FIX: The plugin tables' indexes are named, so the table check on update no longer logs "Incorrect index name" database errors.
+* DEV: Script and style sources moved to src/js and src/css; minified copies are in build/js and build/css, made with `npm run build` (terser, clean-css) or the Build assets workflow. Asset versions are the file times, so browsers pick up rebuilt files.
 * DEV: PHPUnit test suite in tests/ (see tests/test_suite.md); runs locally with script/install-wp-tests and in CI.
 * DEV: AJAX handlers reply with wp_send_json() instead of echo and die, so they can be tested.
 * DEV: Plugin header version set to match the readme Stable tag.

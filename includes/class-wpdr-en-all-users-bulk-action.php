@@ -61,6 +61,14 @@ class WPDR_EN_All_Users_Bulk_Action {
 			return $redirect_to;
 		}
 
+		// Only change users the current user may edit (the Users screen only needs list_users).
+		$user_ids = array_filter(
+			array_map( 'intval', (array) $user_ids ),
+			static function ( $user_id ) {
+				return current_user_can( 'edit_user', $user_id );
+			}
+		);
+
 		switch ( $doaction ) {
 			case 'wpdr_subscribe':
 				$subscribed = 0;
