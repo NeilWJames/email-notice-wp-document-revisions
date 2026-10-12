@@ -628,6 +628,9 @@ class WPDR_Email_Notice {
 		add_action( 'wp_ajax_wpdr_en_del_address', array( $this, 'delete_address' ) );
 		add_action( 'wp_ajax_wpdr_en_search_list', array( $this, 'search_list' ) );
 
+		// Log export (CSV).
+		add_action( 'admin_post_wpdr_en_export_log', array( $this, 'export_log' ) );
+
 		// search box needs post id added (Mis-use of filter to process in correct place).
 		add_action( 'use_block_editor_for_post', array( $this, 'ensure_post_id' ), 10, 2 );
 
@@ -1724,6 +1727,7 @@ class WPDR_Email_Notice {
 		// #TODO: add filter/search.
 		echo '<div class="wrap">';
 		echo '<h1 class="wp-heading-inline">' . esc_html__( 'Document Email Notification Log', 'email-notice-wp-document-revisions' ) . '</h1>';
+		echo ' <a href="' . esc_url( self::export_url( 'internal' ) ) . '" class="page-title-action">' . esc_html__( 'Export CSV', 'email-notice-wp-document-revisions' ) . '</a>';
 		$wpdr_en_notification_log_table         = new WPDR_EN_User_Log_Table();
 		$wpdr_en_notification_log_table->screen = convert_to_screen( null );
 		$wpdr_en_notification_log_table->prepare_items();
@@ -1755,6 +1759,7 @@ class WPDR_Email_Notice {
 		// #TODO: add filter/search.
 		echo '<div class="wrap">';
 		echo '<h1 class="wp-heading-inline">' . esc_html__( 'Document Email External Notice Log', 'email-notice-wp-document-revisions' ) . '</h1>';
+		echo ' <a href="' . esc_url( self::export_url( 'external' ) ) . '" class="page-title-action">' . esc_html__( 'Export CSV', 'email-notice-wp-document-revisions' ) . '</a>';
 		$wpdr_en_ext_notice_log_table         = new WPDR_EN_Ext_Log_Table();
 		$wpdr_en_ext_notice_log_table->screen = convert_to_screen( null );
 		$wpdr_en_ext_notice_log_table->prepare_items();
@@ -1767,6 +1772,134 @@ class WPDR_Email_Notice {
 		echo '<p>' . esc_html__( 'Note: Success denotes that the mail was successfully received by your email system.', 'email-notice-wp-document-revisions' ) . '</p>';
 		echo '<p>' . esc_html__( 'The delivery process to the recipient is managed within your email system.', 'email-notice-wp-document-revisions' ) . '</p>';
 		echo '</div>';
+	}
+
+	/**
+	 * Link to export a log as CSV, keeping the page's search and sort.
+	 *
+	 * @since 4.0.0
+	 * @param string $log 'internal' or 'external'.
+	 * @return string URL.
+	 */
+	public static function export_url( $log ) {
+		$args = array(
+			'action' => 'wpdr_en_export_log',
+			'log'    => $log,
+		);
+		foreach ( array( 's', 'orderby', 'order' ) as $key ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! empty( $_GET[ $key ] ) ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$args[ $key ] = sanitize_text_field( wp_unslash( $_GET[ $key ] ) );
+			}
+		}
+		return wp_nonce_url( add_query_arg( rawurlencode_deep( $args ), admin_url( 'admin-post.php' ) ), 'wpdr_en_export_log' );
+	}
+
+	/**
+	 * The rows of a log export: a header row, then every log row matching the search, in the log's order.
+	 *
+	 * @since 4.0.0
+	 * @param string $log 'internal' or 'external'.
+	 * @return array[] Rows of cell values.
+	 */
+	public static function export_rows( $log ) {
+		if ( 'external' === $log ) {
+			require_once __DIR__ . '/class-wpdr-en-ext-log-table.php';
+			$fields = array(
+				'id'             => __( 'ID', 'email-notice-wp-document-revisions' ),
+				'post_id'        => __( 'Document ID', 'email-notice-wp-document-revisions' ),
+				'post_title'     => __( 'Document', 'email-notice-wp-document-revisions' ),
+				'list_id'        => __( 'List ID', 'email-notice-wp-document-revisions' ),
+				'list_title'     => __( 'List', 'email-notice-wp-document-revisions' ),
+				'time_mail_sent' => __( 'Email sent', 'email-notice-wp-document-revisions' ),
+				'user_name'      => __( 'Name', 'email-notice-wp-document-revisions' ),
+				'user_email'     => __( 'Email', 'email-notice-wp-document-revisions' ),
+				'status'         => __( 'Status', 'email-notice-wp-document-revisions' ),
+				'extra_text'     => __( 'Extra Text', 'email-notice-wp-document-revisions' ),
+			);
+			$items  = WPDR_EN_Ext_Log_Table::get_log_items();
+		} else {
+			require_once __DIR__ . '/class-wpdr-en-user-log-table.php';
+			$fields = array(
+				'id'                => __( 'ID', 'email-notice-wp-document-revisions' ),
+				'post_id'           => __( 'Document ID', 'email-notice-wp-document-revisions' ),
+				'post_title'        => __( 'Document', 'email-notice-wp-document-revisions' ),
+				'time_mail_sent'    => __( 'Email sent', 'email-notice-wp-document-revisions' ),
+				'user_id'           => __( 'User ID', 'email-notice-wp-document-revisions' ),
+				'user_display_name' => __( 'User Name', 'email-notice-wp-document-revisions' ),
+				'user_email'        => __( 'User Email', 'email-notice-wp-document-revisions' ),
+				'status'            => __( 'Status', 'email-notice-wp-document-revisions' ),
+				'extra_text'        => __( 'Extra Text', 'email-notice-wp-document-revisions' ),
+			);
+			$items  = WPDR_EN_User_Log_Table::get_log_items();
+		}
+
+		$rows = array( array_values( $fields ) );
+		foreach ( (array) $items as $item ) {
+			$row = array();
+			foreach ( array_keys( $fields ) as $key ) {
+				$row[] = isset( $item[ $key ] ) ? (string) $item[ $key ] : '';
+			}
+			$rows[] = $row;
+		}
+		return $rows;
+	}
+
+	/**
+	 * CSV text for rows: UTF-8 with a byte order mark (so Excel reads accents), comma separated.
+	 *
+	 * A cell starting with =, +, -, @, tab or carriage return gets a leading apostrophe so a
+	 * spreadsheet shows it as text rather than running it as a formula.
+	 *
+	 * @since 4.0.0
+	 * @param array[] $rows Rows of cell values.
+	 * @return string
+	 */
+	public static function csv( $rows ) {
+		// phpcs:disable WordPress.WP.AlternativeFunctions
+		$handle = fopen( 'php://temp', 'r+' );
+		foreach ( $rows as $row ) {
+			foreach ( $row as $i => $cell ) {
+				$cell = (string) $cell;
+				if ( '' !== $cell && false !== strpos( "=+-@\t\r", $cell[0] ) ) {
+					$cell = "'" . $cell;
+				}
+				$row[ $i ] = $cell;
+			}
+			fputcsv( $handle, $row, ',', '"', '' );
+		}
+		rewind( $handle );
+		$csv = stream_get_contents( $handle );
+		fclose( $handle );
+		// phpcs:enable WordPress.WP.AlternativeFunctions
+		return "\xEF\xBB\xBF" . $csv;
+	}
+
+	/**
+	 * Send a log as a CSV download (admin-post.php?action=wpdr_en_export_log).
+	 *
+	 * Needs the same capability as viewing the logs, and the nonce from the page's Export link.
+	 *
+	 * @since 4.0.0
+	 * @return void
+	 */
+	public function export_log() {
+		check_admin_referer( 'wpdr_en_export_log' );
+		if ( ! current_user_can( 'read_doc_ext_lists' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'email-notice-wp-document-revisions' ), 403 );
+		}
+		$log = ( isset( $_GET['log'] ) && 'external' === $_GET['log'] ? 'external' : 'internal' );
+
+		$csv  = self::csv( self::export_rows( $log ) );
+		$name = sanitize_file_name( ( 'external' === $log ? 'external-email-log-' : 'internal-email-log-' ) . wp_date( 'Y-m-d' ) . '.csv' );
+
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="' . $name . '"' );
+		header( 'Content-Length: ' . strlen( $csv ) );
+		echo $csv; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV file, not HTML.
+		exit;
 	}
 
 	/**
@@ -3890,4 +4023,3 @@ class WPDR_Email_Notice {
 	}
 }
 
-// #TODO: add export log functionality

@@ -147,12 +147,30 @@ class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 		$sortable              = $this->get_sortable_columns();
 		$this->_column_headers = array( $columns, $hidden, $sortable );
 
-		global $wpdb;
-		$log_items = null;
-		// sorting.
-		$orderby = 'time_mail_sent';
-		$order   = 'desc';
+		$log_items    = self::get_log_items();
+		$current_page = $this->get_pagenum();
+		$total_items  = count( $log_items );
+		$log_items    = array_slice( $log_items, ( ( $current_page - 1 ) * $per_page ), $per_page );
 
+		$this->items = $log_items;
+		$this->set_pagination_args(
+			array(
+				'total_items' => $total_items,                      // WE have to calculate the total number of items.
+				'per_page'    => $per_page,                         // WE have to determine how many items to show on a page.
+				'total_pages' => ceil( $total_items / $per_page ),  // WE have to calculate the total number of pages.
+			)
+		);
+	}
+
+	/**
+	 * All log rows matching the request's search, in the request's order (the page shows 20 of them; the export all).
+	 *
+	 * @since 4.0.0
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 * @return array[] Rows: id, post_id, post_title, list_id, list_title, user_name, time_mail_sent, user_email, status, extra_text.
+	 */
+	public static function get_log_items() {
+		global $wpdb;
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$search = '';
 		if ( ! empty( $_GET['s'] ) ) {
@@ -209,19 +227,7 @@ class WPDR_EN_Ext_Log_Table extends WP_List_Table {
 				{$search}
 				ORDER BY {$orderby} {$order}, l.id {$order}";
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
-		$log_items    = $wpdb->get_results( $sql, ARRAY_A ); // ARRAY_A will ensure that we get associated array instead of stdClass.
-		$current_page = $this->get_pagenum();
-		$total_items  = count( $log_items );
-		$log_items    = array_slice( $log_items, ( ( $current_page - 1 ) * $per_page ), $per_page );
-
-		$this->items = $log_items;
-		$this->set_pagination_args(
-			array(
-				'total_items' => $total_items,                      // WE have to calculate the total number of items.
-				'per_page'    => $per_page,                         // WE have to determine how many items to show on a page.
-				'total_pages' => ceil( $total_items / $per_page ),  // WE have to calculate the total number of pages.
-			)
-		);
+		return $wpdb->get_results( $sql, ARRAY_A ); // ARRAY_A will ensure that we get associated array instead of stdClass.
 	}
 
 	/**

@@ -11,6 +11,7 @@ Release date: (in development)
 * Users without edit_doc_ext_lists always send to every matched List.
 * If you chose Auto for "Internal Notice mode" (Settings > Writing), choose it again and save: since 3.2 it was stored as Manual.
 
+* NEW: Export CSV on both email log pages: downloads every entry matching the page's search, in its order, for anyone who can see the logs. UTF-8 for Excel; cells that a spreadsheet would run as formulas are made text.
 * NEW: Old log entries are deleted daily for Documents not modified for a set number of days: internal entries by a Settings > Writing value, external entries by a value on each Document External List (changed only by users who can delete Lists). Empty or 0 keeps them.
 * NEW: Capability read_doc_ext_lists controls who sees Document External Lists: the email logs (Document Emails menu) and the External List part of the Document metabox. Given on upgrade to every role and user with edit_doc_ext_lists.
 * FIX: Security: Sending to External Lists needs read_doc_ext_lists; only users with edit_doc_ext_lists can choose which matched Lists to send to (the unticking was not enforced before).

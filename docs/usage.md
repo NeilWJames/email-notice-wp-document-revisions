@@ -20,6 +20,10 @@ Writing contains:
 - Notification email repeat - template to generate a message to be included if a mail has previously for the document.
 - Internal email log - delete internal log entries for Documents not modified for this many days (empty or 0 keeps them).
 
+## Exporting the logs
+
+Each log page (Document Emails > Internal User Email Log, External User Email Log) has an **Export CSV** button. It downloads every entry matching the page's search, in the page's sort order (all of them, not just the page shown), with the extra text sent. The file is UTF-8 with a byte order mark so Excel shows accented characters; any cell starting with =, +, - or @ gets a leading apostrophe so a spreadsheet treats it as text. Anyone who can see the logs (*read_doc_ext_lists*) can export them.
+
 ## Deleting old log entries
 
 Once a day, log entries are deleted for Documents that have not been modified for a set number of days:

@@ -5,7 +5,7 @@ PHPUnit (PHP, below) and Jest (JavaScript, see [JavaScript tests](#javascript-te
 Integration tests run inside WordPress (the core test library) with WP Document Revisions loaded,
 so they exercise the real hooks, capabilities and database tables.
 
-**Status:** 163 tests in 18 classes (3 multisite-only); no known-bug tests left. 160 passed, 3 skipped (multisite) in the sandbox 2026-10-12 (all 163 pass as multisite); phpcs clean. Line coverage 84% (pcov), now including `uninstall.php`. The 147-test round is confirmed on 62wp and in CI.
+**Status:** 169 tests in 19 classes (3 multisite-only); no known-bug tests left. 166 passed, 3 skipped (multisite) in the sandbox 2026-10-12 (all 169 pass as multisite); phpcs clean. Line coverage 84% (pcov), now including `uninstall.php`. The 147-test round is confirmed on 62wp and in CI.
 
 ## Running
 
@@ -89,6 +89,7 @@ WP_Ajax_UnitTestCase defines `DOING_AJAX` for the rest of the run.
 | `class-test-wpdr-en-bulk-action.php` | 6 | Bulk subscribe/unsubscribe: menu actions, subscribe, unsubscribe (attachment off), other actions and empty selection ignored, roles without the choice refused and cleared |
 | `class-test-wpdr-en-capabilities.php` | 13 | 4.0.0 `read_doc_ext_lists`: default roles; install adds it when no role has it (whoever loads the page); tables checked only when the version changes; upgrade from 3.x gives it to roles and users with `edit_doc_ext_lists` (whoever loads the page), keeps an explicit denial, runs once; CPT read cap; log pages and menu items; metabox list section hidden / shown / fixed for read-only users |
 | `class-test-wpdr-en-internal.php` | 5 | Internal recipients: opted-in only, private needs read access, drafts not sent, log row, HTML mail |
+| `class-test-wpdr-en-log-export.php` | 6 | CSV export: link keeps search and sort, with nonce; internal rows (header, more than one page, search, extra text); external rows with the List; CSV text (BOM, quoting, formula cells made text); needs nonce and `read_doc_ext_lists`; both log pages link to it |
 | `class-test-wpdr-en-log-purge.php` | 7 | Deleting old log entries: internal by the Writing setting (none, recent kept, old deleted); external by each List's days (90 deletes after 90 days, 0 or none keeps); unused extra text deleted; daily job scheduled on `admin_init`, run by the hook, cleared on deactivation; List days saved only with `delete_doc_ext_lists`, whole positive number; field read-only for others; setting sanitized |
 | `class-test-wpdr-en-list-edit.php` | 8 | External List settings: list columns and cell values (attach falls back to the site setting), Quick/Bulk Edit fields; saving from the edit form (a ticked box is on), Quick Edit, Bulk Edit (translated button, No Change, bad nonce, only 0/1), from code (no change, no die), without edit rights |
 | `class-test-wpdr-en-matching.php` | 9 | External Lists: any/all rule, parent term matches child (not the reverse), paused/draft lists and paused addresses skipped, selected lists only, public documents only, log row + sent flag |
@@ -134,6 +135,7 @@ How it works:
 
 ## Change log
 
+- 2026-10-12: Log export: new `class-test-wpdr-en-log-export.php` (6). 169 tests.
 - 2026-10-12: Log deletion: new `class-test-wpdr-en-log-purge.php` (7); settings field for the internal log days (admin pages, 1); uninstall checks the option and the daily job. 163 tests.
 - 2026-10-12: Profile labels test (bug-fixes, 1). 155 tests.
 - 2026-10-12: JavaScript tests: Jest + jsdom, 29 tests in `tests/js`, 100% of `src/js`; CI `js` job with Codecov flag `js`. Scripts fixed (see changelog 4.0.0).
