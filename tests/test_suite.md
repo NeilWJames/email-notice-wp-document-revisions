@@ -1,11 +1,11 @@
 # Test suites
 
-PHPUnit (PHP, below) and Jest (JavaScript, see [JavaScript tests](#javascript-tests)).
+PHPUnit (PHP, below), Jest (JavaScript, see [JavaScript tests](#javascript-tests)) and Playwright (the screens in a browser, see [End-to-end tests](#end-to-end-tests-playwright)).
 
 Integration tests run inside WordPress (the core test library) with WP Document Revisions loaded,
 so they exercise the real hooks, capabilities and database tables.
 
-**Status:** 171 tests in 20 classes (3 multisite-only); no known-bug tests left. 168 passed, 3 skipped (multisite) in the sandbox 2026-10-12 (all 171 pass as multisite); phpcs clean. Line coverage 84% (pcov), now including `uninstall.php`. The 147-test round is confirmed on 62wp and in CI.
+**Status:** 178 tests in 21 classes (3 multisite-only); no known-bug tests left. 175 passed, 3 skipped (multisite) in the sandbox 2026-10-12; phpcs clean. Line coverage 84% (pcov), now including `uninstall.php`. The 147-test round is confirmed on 62wp and in CI.
 
 ## Running
 
@@ -87,6 +87,7 @@ WP_Ajax_UnitTestCase defines `DOING_AJAX` for the rest of the run.
 | `class-test-wpdr-en-assets.php` | 6 | Stage 2: every `src/` file has a `build/` copy (JS, CSS); built JS keeps the global functions called from HTML; debug mode loads `src/` with file-time versions; document and List screens enqueue their script and style (nothing on other screens) |
 | `class-test-wpdr-en-bug-fixes.php` | 18 | Bugs fixed in 4.0.0: Internal Notice mode saved (Auto/Manual) and shown, old 0 shown as Manual; "notify about" saved (known keys only), shown (all ticked until saved) and applied; Auto mode sends once on publish, notice for the publisher only; internal log status; internal extra text stored; internal and external %repeat%; `user_register` from code doesn't die; profile save (nonce, edit_user, roles without the choice), profile fields (Add New User shows them unticked), labels ("me" on one's own profile, "this user" otherwise), Add New User saves them, Users column |
 | `class-test-wpdr-en-bulk-action.php` | 6 | Bulk subscribe/unsubscribe: menu actions, subscribe, unsubscribe (attachment off), other actions and empty selection ignored, roles without the choice refused and cleared |
+| `class-test-wpdr-en-form-labels.php` | 7 | Markup fixed after the end-to-end tests: Notification mode radios, "notify about", profile and Quick Edit boxes inside their labels (Quick Edit without the `id` WordPress copies into every row), text settings labelled by their row heading (`label_for`), Users column boxes named (`aria-label`), Bulk Edit match rule text, one "Show more details" button per address row |
 | `class-test-wpdr-en-capabilities.php` | 13 | 4.0.0 `read_doc_ext_lists`: default roles; install adds it when no role has it (whoever loads the page); tables checked only when the version changes; upgrade from 3.x gives it to roles and users with `edit_doc_ext_lists` (whoever loads the page), keeps an explicit denial, runs once; CPT read cap; log pages and menu items; metabox list section hidden / shown / fixed for read-only users |
 | `class-test-wpdr-en-internal.php` | 5 | Internal recipients: opted-in only, private needs read access, drafts not sent, log row, HTML mail |
 | `class-test-wpdr-en-log-export.php` | 6 | CSV export: link keeps search and sort, with nonce; internal rows (header, more than one page, search, extra text); external rows with the List; CSV text (BOM, quoting, formula cells made text); needs nonce and `read_doc_ext_lists`; both log pages link to it |
@@ -127,15 +128,77 @@ How it works:
 | `wpdr-en-address.test.js` | 13 | List edit screen: Add (request, form submit stopped, no global variables), result table shown and entry reset, error shown as text, Delete, Edit/Clear, Add enabled only with name and email, no event; search keeps the edit action; "updated" message removed when the save was refused; unsaved terms restored; Quick Edit copies the row settings (not into Bulk Edit), ticking updates the value, other clicks ignored |
 | `wpdr-en-log.test.js` | 2 | Extra Text shown and hidden; a row without extra text ignored |
 
+## End-to-end tests (Playwright)
+
+**Status:** 21 tests in 5 specs, all passing on the PC (Playground, 2.7 min) and in the sandbox 2026-10-12. CI (`e2e.yml`, wp-env, MySQL) not yet run. The "403 (Forbidden)" console line in a run is expected: the logs spec checks that an author is refused.
+
+Browser tests of the admin screens, with `@playwright/test` and `@wordpress/e2e-test-utils-playwright`, set up as for Simple Taxonomy Refreshed:
+
+| Where | WordPress runtime | Database |
+|---|---|---|
+| Locally (Windows, Node only) | **WordPress Playground** (`npm run env:start`, blueprint `tests/e2e/blueprint.json`): WebAssembly, no Docker, a new site at every start | SQLite |
+| CI (`e2e.yml`) | wp-env **Docker** runtime (`.wp-env.json`) | MySQL |
+
+Both install WP Document Revisions from wordpress.org (latest stable) and use this plugin folder. The site is `http://127.0.0.1:8888` locally (Playground listens on IPv4 only and uses that as its site URL) and `http://localhost:8888` in CI; log in as `admin` / `password`. Port 8888, so the demo playground (8889) can run at the same time. PHP 8.2, latest WordPress, `WP_DEBUG` on: a PHP error, warning, notice or deprecation on a visited admin page fails the test. Time limits are raised (test 5 min, action 30 s, navigation 60 s, `expect` 20 s) for the network share. One worker: the tests share one site.
+
+Unlike STR, `@wordpress/scripts` is not used (this plugin does not otherwise need it): `playwright.config.js` copies its Playwright defaults and `tests/e2e/global-setup.js` does its login step.
+
+The tests use `build/` as committed (what is released), not `src/`: run `npm run build` first after changing `src/`.
+
+### Running
+
+```bash
+npm install                      # on 62wp (Linux), once and after package.json changes
+npm run e2e:browser              # on the PC, once: downloads Chromium for Playwright (into the user profile)
+
+npm run env:start                # start WordPress and leave it running (separate window; Ctrl+C to stop)
+npm run test:e2e                 # runs all specs; starts WordPress for the run if it is not running
+npm run test:e2e:ui              # Playwright's UI mode: pick tests, watch them, time-travel
+npm run test:e2e -- logs         # one spec
+```
+
+Run these from PowerShell on the PC (as for `npm run playground`): Playground's server is only reachable on the machine running it. `node_modules` is shared through the network folder and installed on 62wp: Jest needs Linux-only native files there, so don't run `npm install` from Windows. Windows gets no `.cmd` launchers in `node_modules/.bin`, so `test:e2e` and `e2e:browser` call Playwright's JavaScript with `node`, which works on both systems (Playwright has no native parts). The Playground CLI does have a native part, so `env:start`, like `playground`, runs it with `npx @wp-playground/cli@latest` (downloaded into the npm cache on the PC). It must not be in `node_modules` at all, or npx tries the local copy and fails on Windows: so neither it nor `@wordpress/env` (which depends on it) is a dev dependency, and CI starts wp-env with `npx @wordpress/env start`; for other Playwright commands use `node node_modules/@playwright/test/cli.js …` instead of `npx playwright …`. For repeated runs keep `env:start` running in its own window; otherwise each `test:e2e` starts and stops WordPress. The tests reset the site themselves. Failures leave a trace, screenshot and video in `artifacts/test-results/`; open a trace with `node node_modules/@playwright/test/cli.js show-trace <file>`.
+
+A full run takes about 3 minutes on the PC (the reset loads the demo content before most tests).
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `tests/e2e/blueprint.json` | Local Playground site: installs and activates WP Document Revisions, activates this plugin (mounted by `env:start`), deletes WP Document Revisions' false capability warning (as the demo does), `WP_DEBUG`. No `login` step, and `env:start` passes `--no-login`: Playwright logs in itself |
+| `.wp-env.json` | The same site for wp-env (CI): WP Document Revisions zip from wordpress.org, this plugin, the helper as a must-use plugin, PHP 8.2, `WP_DEBUG`, no separate tests site |
+| `playwright.config.js` | Specs in `tests/e2e/specs`, output in `artifacts/`, site on port 8888; starts `npm run env:start` locally or `npx @wordpress/env start` when `CI` is set, and waits up to 15 minutes for the site to answer |
+| `tests/e2e/global-setup.js` | Logs in as the administrator once and saves the login (`artifacts/storage-states/admin.json`) |
+| `tests/e2e/mu-plugins/wpdr-en-e2e-helper.php` | Loads `playground/demo-mu-plugin.php` (Departments taxonomy, no mail server, no pause between emails) and records each email (`pre_wp_mail`, before the demo filter treats it as sent). Test-only REST routes (`wpdr-en-e2e/v1`, administrators only): `POST /reset` deletes Documents, Lists, log entries, demo users (and users whose login starts `e2e-`), Departments and the plugin settings, then with `{ "demo": true }` loads `playground/demo-content.php` and returns the post ID of each Document and List by title; `GET /mails` the emails recorded since; `POST /option` sets a `wpdr_en_set_*` setting. The plugin loads only in the admin, so requests for these routes define `WP_ADMIN` (as the playground blueprint's `runPHP` step does). Not shipped |
+| `tests/e2e/helpers.js` | `resetSite()`, `getMails()` (adds `address`, the To address alone), `setOption()`, `editPost()`, `loginAs()` (another demo user in this test's browser context), `collectPageErrors()`, `expectNoPhpErrors()`, `notifyBox()` (Document metabox locators), `addressForm()` / `enterAddress()` (List address entry), admin URLs |
+| `tests/e2e/specs/*.spec.js` | The tests |
+| `artifacts/` | Output (login state, traces); gitignored |
+
+Test data comes from the playground demo (see `docs/playground.md`) through the helper routes, not WP-CLI, because the Playground runtime has no `wp-env run`. So the demo, the PHPUnit demo test and these tests all use the same content.
+
+Playground's SQLite is not MySQL: SQL details (sorting collation, for example) stay covered by PHPUnit; the tests avoid depending on them.
+
+### Specs
+
+| Spec | Tests |
+|---|---|
+| `document-notify.spec.js` | Document metabox, manual mode (4): sending to subscribed users (the four demo subscribers, the subscriber who asked for it gets the attachment; message with the count, button becomes Re-send, log link opens the internal log with the rows); extra text sent only when its box is ticked; Lists matched on Purchasing policy ticked, the paused List not offered, unticking all disables the button, only the ticked List mailed with its extra text, shown in the external log; a List that attaches sends the document (paused address skipped). No script errors |
+| `list-edit.spec.js` | List edit screen (5): add (enabled only with name and email), edit (email address read-only, name and pause changed) and delete an address, all without reloading the page; an invalid address refused with a message, a valid one kept after a reload; match rule, attach, pause and log days saved and unticked again; an administrator can change the log days; an editor sees them read-only with the explanation, and saving the List keeps them |
+| `lists-table.spec.js` | Lists table (3): settings columns; Quick Edit shows the row's settings and saves new ones (checked on the edit screen); Bulk Edit changes the chosen settings on the selected Lists only ("No Change" kept) |
+| `logs.spec.js` | Email logs (4), demo loaded once: internal log rows, Export CSV (BOM, header, a row per email), search then export only the rows found; sorting by email both ways (first letters only: MySQL and SQLite order `subscriber2@` differently) kept in the export, extra text in the export; external log rows (paused address absent) and export with the Lists; an editor sees the logs, an author has no menu and gets 403 |
+| `settings-users.spec.js` | Settings and users (5): Writing settings saved (mode, notify about, subject, log days); Auto mode: publishing a draft with Quick Edit sends, the count is shown once on the next page, a later save sends nothing; profile boxes ("me" on one's own, "this user" on another's) saved; Add New User subscribes the new user (Users column); Users bulk actions subscribe and unsubscribe |
+
+Found by these tests and fixed (PHPUnit `class-test-wpdr-en-form-labels.php`): Quick Edit and settings checkboxes and radios had no usable label (the Quick Edit labels pointed at the hidden template row); Users column boxes had no name and a stray `</>`; Bulk Edit offered "All taxonomy elements-"; each address row had two "Show more details" buttons.
+
 ## Planned
 
-- JS: end-to-end tests in a browser (e.g. Playwright) for the screens as a whole.
 - The loading code at the end of `wpdr-email-notice.php` runs in the bootstrap, before coverage starts, so it shows as not covered.
 - Attachments (internal preference, list setting, size filter, temp file cleanup).
-- Uninstall.
+- End-to-end: first CI run (wp-env, MySQL); then perhaps the Document's own edit screen with a file upload (WP Document Revisions' uploader).
 
 ## Change log
 
+- 2026-10-12: End-to-end tests: Playwright, 21 tests in 5 specs (`tests/e2e`), Playground locally and wp-env in CI (`e2e.yml`), as for STR. Markup they found fixed, with `class-test-wpdr-en-form-labels.php` (7). 178 tests.
 - 2026-10-12: Playground demo test (`class-test-wpdr-en-playground-demo.php`, 2). The demo was also run in WordPress Playground (CLI, SQLite) in the sandbox: that found the List matching and log deletion SQL that SQLite treated differently; both now pass there. 171 tests.
 - 2026-10-12: Log export: new `class-test-wpdr-en-log-export.php` (6). 169 tests.
 - 2026-10-12: Log deletion: new `class-test-wpdr-en-log-purge.php` (7); settings field for the internal log days (admin pages, 1); uninstall checks the option and the daily job. 163 tests.

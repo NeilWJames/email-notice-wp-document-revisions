@@ -461,8 +461,8 @@ class WPDR_Email_Notice {
 			),
 		);
 		add_settings_section( 'wpdr_en_general_settings', __( 'Document Email Settings', 'email-notice-wp-document-revisions' ), array( $this, 'general_settings' ), 'general' );
-		add_settings_field( 'wpdr_en_set_email_from', __( 'Email From', 'email-notice-wp-document-revisions' ), array( $this, 'set_email_from' ), 'general', 'wpdr_en_general_settings' );
-		add_settings_field( 'wpdr_en_set_email_from_address', __( 'Email Address', 'email-notice-wp-document-revisions' ), array( $this, 'set_email_from_address' ), 'general', 'wpdr_en_general_settings' );
+		add_settings_field( 'wpdr_en_set_email_from', __( 'Email From', 'email-notice-wp-document-revisions' ), array( $this, 'set_email_from' ), 'general', 'wpdr_en_general_settings', array( 'label_for' => 'wpdr_en_set_email_from' ) );
+		add_settings_field( 'wpdr_en_set_email_from_address', __( 'Email Address', 'email-notice-wp-document-revisions' ), array( $this, 'set_email_from_address' ), 'general', 'wpdr_en_general_settings', array( 'label_for' => 'wpdr_en_set_email_from_address' ) );
 
 		// Adding settings to Settings->Writing.
 		register_setting(
@@ -524,11 +524,11 @@ class WPDR_Email_Notice {
 		add_settings_section( 'wpdr_en_writing_settings', __( 'Document Email Settings - ', 'email-notice-wp-document-revisions' ) . __( 'Notifications', 'email-notice-wp-document-revisions' ), array( $this, 'writing_settings' ), 'writing' );
 		add_settings_field( 'wpdr_en_set_notification_mode', __( 'Internal Notice mode', 'email-notice-wp-document-revisions' ), array( $this, 'set_notification_mode' ), 'writing', 'wpdr_en_writing_settings' );
 		add_settings_field( 'wpdr_en_set_notification_about', __( 'Notify internal users about', 'email-notice-wp-document-revisions' ), array( $this, 'set_notification_about' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_subject', __( 'Notification email subject', 'email-notice-wp-document-revisions' ), array( $this, 'set_subject' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_content', __( 'Internal Notice email content', 'email-notice-wp-document-revisions' ), array( $this, 'set_content' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_exttext', __( 'External Notice email content', 'email-notice-wp-document-revisions' ), array( $this, 'set_exttext' ), 'writing', 'wpdr_en_writing_settings' );
+		add_settings_field( 'wpdr_en_set_subject', __( 'Notification email subject', 'email-notice-wp-document-revisions' ), array( $this, 'set_subject' ), 'writing', 'wpdr_en_writing_settings', array( 'label_for' => 'wpdr_en_set_subject' ) );
+		add_settings_field( 'wpdr_en_set_content', __( 'Internal Notice email content', 'email-notice-wp-document-revisions' ), array( $this, 'set_content' ), 'writing', 'wpdr_en_writing_settings', array( 'label_for' => 'wpdr_en_set_content' ) );
+		add_settings_field( 'wpdr_en_set_exttext', __( 'External Notice email content', 'email-notice-wp-document-revisions' ), array( $this, 'set_exttext' ), 'writing', 'wpdr_en_writing_settings', array( 'label_for' => 'wpdr_en_set_exttext' ) );
 		add_settings_field( 'wpdr_en_set_ext_attach', '', array( $this, 'set_ext_attach' ), 'writing', 'wpdr_en_writing_settings' );
-		add_settings_field( 'wpdr_en_set_repeat', __( 'Notification email repeat', 'email-notice-wp-document-revisions' ), array( $this, 'set_repeat' ), 'writing', 'wpdr_en_writing_settings' );
+		add_settings_field( 'wpdr_en_set_repeat', __( 'Notification email repeat', 'email-notice-wp-document-revisions' ), array( $this, 'set_repeat' ), 'writing', 'wpdr_en_writing_settings', array( 'label_for' => 'wpdr_en_set_repeat' ) );
 		register_setting(
 			'writing',
 			'wpdr_en_set_log_days',
@@ -833,8 +833,8 @@ class WPDR_Email_Notice {
 	public function set_notification_mode() {
 		// Anything but Auto is Manual (before 4.0.0 the setting was saved as 0).
 		$opt = ( 'Auto' === get_option( 'wpdr_en_set_notification_mode' ) ? 'Auto' : 'Manual' );
-		echo '<input type="radio" name="wpdr_en_set_notification_mode" value="Auto" ' . checked( 'Auto', $opt, false ) . '>' . esc_html__( 'Auto', 'email-notice-wp-document-revisions' ) . '</input> ' . esc_html__( '(send emails automatically when you publish a post)', 'email-notice-wp-document-revisions' ) . '<br/>';
-		echo '<input type="radio" name="wpdr_en_set_notification_mode" value="Manual" ' . checked( 'Manual', $opt, false ) . '>' . esc_html__( 'Manual', 'email-notice-wp-document-revisions' ) . '</input> ' . esc_html__( '(you need to press a button to send notification)', 'email-notice-wp-document-revisions' );
+		echo '<label><input type="radio" name="wpdr_en_set_notification_mode" value="Auto" ' . checked( 'Auto', $opt, false ) . '>' . esc_html__( 'Auto', 'email-notice-wp-document-revisions' ) . ' ' . esc_html__( '(send emails automatically when you publish a post)', 'email-notice-wp-document-revisions' ) . '</label><br/>';
+		echo '<label><input type="radio" name="wpdr_en_set_notification_mode" value="Manual" ' . checked( 'Manual', $opt, false ) . '>' . esc_html__( 'Manual', 'email-notice-wp-document-revisions' ) . ' ' . esc_html__( '(you need to press a button to send notification)', 'email-notice-wp-document-revisions' ) . '</label>';
 	}
 
 	/**
@@ -844,9 +844,9 @@ class WPDR_Email_Notice {
 	 * @return void
 	 */
 	public function set_notification_about() {
-		echo '<input type="checkbox" id="Chkbx_Public" name="wpdr_en_set_notification_about[Chkbx_Public]" value="Public"' . checked( self::notify_about( 'Public' ), true, false ) . '>' . esc_html__( 'Public posts', 'email-notice-wp-document-revisions' ) . '</input><br/>';
-		echo '<input type="checkbox" id="Chkbx_Password" name="wpdr_en_set_notification_about[Chkbx_Password]" value="Password"' . checked( self::notify_about( 'Password protected' ), true, false ) . '>' . esc_html__( 'Password', 'email-notice-wp-document-revisions' ) . '</input> ' . esc_html__( 'protected posts (password will', 'email-notice-wp-document-revisions' ) . ' <strong>' . esc_html__( 'NOT', 'email-notice-wp-document-revisions' ) . '</strong> ' . esc_html__( 'be included in notification email)', 'email-notice-wp-document-revisions' ) . '<br/>';
-		echo '<input type="checkbox" id="Chkbx_Private" name="wpdr_en_set_notification_about[Chkbx_Private]" value="Private"' . checked( self::notify_about( 'Private' ), true, false ) . '>' . esc_html__( 'Private posts', 'email-notice-wp-document-revisions' ) . '</input> ';
+		echo '<label><input type="checkbox" id="Chkbx_Public" name="wpdr_en_set_notification_about[Chkbx_Public]" value="Public"' . checked( self::notify_about( 'Public' ), true, false ) . '>' . esc_html__( 'Public posts', 'email-notice-wp-document-revisions' ) . '</label><br/>';
+		echo '<label><input type="checkbox" id="Chkbx_Password" name="wpdr_en_set_notification_about[Chkbx_Password]" value="Password"' . checked( self::notify_about( 'Password protected' ), true, false ) . '>' . esc_html__( 'Password', 'email-notice-wp-document-revisions' ) . ' ' . esc_html__( 'protected posts (password will', 'email-notice-wp-document-revisions' ) . ' <strong>' . esc_html__( 'NOT', 'email-notice-wp-document-revisions' ) . '</strong> ' . esc_html__( 'be included in notification email)', 'email-notice-wp-document-revisions' ) . '</label><br/>';
+		echo '<label><input type="checkbox" id="Chkbx_Private" name="wpdr_en_set_notification_about[Chkbx_Private]" value="Private"' . checked( self::notify_about( 'Private' ), true, false ) . '>' . esc_html__( 'Private posts', 'email-notice-wp-document-revisions' ) . '</label>';
 		echo '<br />' . esc_html__( 'Notifications are sent only to those Internal users who can read the document', 'email-notice-wp-document-revisions' );
 		echo '<br />' . esc_html__( 'Notifications can only be sent to External users for Public documents.', 'email-notice-wp-document-revisions' );
 	}
@@ -994,37 +994,45 @@ class WPDR_Email_Notice {
 			'extra_text' => 0,
 		);
 
+		// Plain SQL with the cut-off dates worked out here, so it also runs on WordPress Playground's SQLite.
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$days = absint( get_option( 'wpdr_en_set_log_days' ) );
 		if ( $days > 0 ) {
 			$result['internal'] = (int) $wpdb->query(
 				$wpdb->prepare(
-					"DELETE l FROM {$wpdb->prefix}wpdr_notification_log l
-					 INNER JOIN {$wpdb->posts} p ON p.ID = l.post_id
-					 WHERE p.post_modified_gmt < DATE_SUB( %s, INTERVAL %d DAY )",
-					$now,
-					$days
+					"DELETE FROM {$wpdb->prefix}wpdr_notification_log
+					 WHERE post_id IN ( SELECT ID FROM {$wpdb->posts} WHERE post_modified_gmt < %s )",
+					gmdate( 'Y-m-d H:i:s', strtotime( $now ) - $days * DAY_IN_SECONDS )
 				)
 			);
 		}
 
 		// Each List's days are in its wpdr_en_log_days meta (none or 0: keep).
-		$result['external'] = (int) $wpdb->query(
-			$wpdb->prepare(
-				"DELETE e FROM {$wpdb->prefix}wpdr_ext_notice_log e
-				 INNER JOIN {$wpdb->posts} p ON p.ID = e.post_id
-				 INNER JOIN {$wpdb->postmeta} m ON m.post_id = e.doc_ext_list_id AND m.meta_key = 'wpdr_en_log_days'
-				 WHERE CAST( m.meta_value AS UNSIGNED ) > 0
-				 AND p.post_modified_gmt < DATE_SUB( %s, INTERVAL CAST( m.meta_value AS UNSIGNED ) DAY )",
-				$now
-			)
+		$list_days = $wpdb->get_results(
+			"SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE meta_key = 'wpdr_en_log_days'",
+			ARRAY_A
 		);
+		foreach ( (array) $list_days as $list ) {
+			$days = absint( $list['meta_value'] );
+			if ( 0 === $days ) {
+				continue;
+			}
+			$result['external'] += (int) $wpdb->query(
+				$wpdb->prepare(
+					"DELETE FROM {$wpdb->prefix}wpdr_ext_notice_log
+					 WHERE doc_ext_list_id = %d
+					 AND post_id IN ( SELECT ID FROM {$wpdb->posts} WHERE post_modified_gmt < %s )",
+					$list['post_id'],
+					gmdate( 'Y-m-d H:i:s', strtotime( $now ) - $days * DAY_IN_SECONDS )
+				)
+			);
+		}
 
 		if ( $result['internal'] || $result['external'] ) {
 			$result['extra_text'] = (int) $wpdb->query(
-				"DELETE x FROM {$wpdb->prefix}wpdr_en_extra_text x
-				 WHERE NOT EXISTS ( SELECT 1 FROM {$wpdb->prefix}wpdr_notification_log l WHERE l.extra_text_id = x.id )
-				 AND NOT EXISTS ( SELECT 1 FROM {$wpdb->prefix}wpdr_ext_notice_log e WHERE e.extra_text_id = x.id )"
+				"DELETE FROM {$wpdb->prefix}wpdr_en_extra_text
+				 WHERE id NOT IN ( SELECT extra_text_id FROM {$wpdb->prefix}wpdr_notification_log WHERE extra_text_id IS NOT NULL )
+				 AND id NOT IN ( SELECT extra_text_id FROM {$wpdb->prefix}wpdr_ext_notice_log WHERE extra_text_id IS NOT NULL )"
 			);
 		}
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -1094,9 +1102,9 @@ class WPDR_Email_Notice {
 			$notify_label = __( 'Notify this user by email when a new document is published', 'email-notice-wp-document-revisions' );
 			$attach_label = __( 'Also send this user the document as an attachment by email when a new document is published', 'email-notice-wp-document-revisions' );
 		}
-		echo '<input type="checkbox" name="wpdr_en_user_notification" value="1"' . checked( 1, $notify, false ) . '>' . esc_html( $notify_label ) . '</input><br/>';
+		echo '<label><input type="checkbox" name="wpdr_en_user_notification" value="1"' . checked( 1, $notify, false ) . '>' . esc_html( $notify_label ) . '</label><br/>';
 
-		echo '<input type="checkbox" name="wpdr_en_user_attachment" value="1"' . checked( 1, $attach, false ) . '>' . esc_html( $attach_label ) . '</input><br/>';
+		echo '<label><input type="checkbox" name="wpdr_en_user_attachment" value="1"' . checked( 1, $attach, false ) . '>' . esc_html( $attach_label ) . '</label><br/>';
 		echo '</div>'; // wpdr_en-content end.
 		echo '</div>'; // wpdr_en-wrapper end.
 	}
@@ -1181,20 +1189,13 @@ class WPDR_Email_Notice {
 			return $content;
 		}
 
-		$oput                   = '';
-		$wpdr_user_notification = (bool) get_user_meta( $user_id, 'wpdr_en_user_notification', true );
-		if ( empty( $wpdr_user_notification ) || ! $wpdr_user_notification ) {
-			$oput = '<input type="checkbox" disabled></>&nbsp;';
-		} else {
-			$oput = '<input type="checkbox" checked="checked" disabled></>&nbsp;';
-		}
-		$oput                .= '&nbsp;';
-		$wpdr_user_attachment = (bool) get_user_meta( $user_id, 'wpdr_en_user_attachment', true );
-		if ( empty( $wpdr_user_attachment ) || ! $wpdr_user_attachment ) {
-			return $oput . '<input type="checkbox" disabled></>';
-		} else {
-			return $oput . '<input type="checkbox" checked="checked" disabled></>';
-		}
+		// Read-only boxes, each named for screen readers (the column heading covers both).
+		$box = static function ( $ticked, $label ) {
+			return '<input type="checkbox"' . ( $ticked ? ' checked="checked"' : '' ) . ' disabled aria-label="' . esc_attr( $label ) . '">';
+		};
+		return $box( (bool) get_user_meta( $user_id, 'wpdr_en_user_notification', true ), __( 'Notified by email', 'email-notice-wp-document-revisions' ) )
+			. '&nbsp;&nbsp;'
+			. $box( (bool) get_user_meta( $user_id, 'wpdr_en_user_attachment', true ), __( 'Document sent as attachment', 'email-notice-wp-document-revisions' ) );
 	}
 
 	/* Adds a Document Email Notifications box to Edit Post screen */
@@ -2437,9 +2438,19 @@ class WPDR_Email_Notice {
 			 WHERE up.post_type = 'doc_ext_list'
 			 AND up.post_status = 'publish'
 			 AND ut.term_taxonomy_id IN ( " . $tlist . ' )
-			 GROUP BY up.ID
-			 HAVING (tm_rule = 0 OR matches = tot_terms) AND pause = 0',
+			 GROUP BY up.ID',
 			ARRAY_A
+		);
+		// Keep Lists that are not paused and match: any term (rule 0, or not set), or all of their terms.
+		// Done here rather than in SQL, where text meta values compared with numbers differ between
+		// databases (WordPress Playground's SQLite matched no List).
+		$olists = array_values(
+			array_filter(
+				(array) $olists,
+				static function ( $olist ) {
+					return 0 === (int) $olist['pause'] && ( 0 === (int) $olist['tm_rule'] || (int) $olist['matches'] === (int) $olist['tot_terms'] );
+				}
+			)
 		);
 
 		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
@@ -3469,8 +3480,7 @@ class WPDR_Email_Notice {
 			?>
 			<fieldset class="inline-edit-col-left">
 			<div class="inline-edit-group wp-clearfix column-attach">
-			<input type="checkbox" id="wpdr_en_attach" name="wpdr_en_attach" value= "">
-			<label class="alignleft" for="wpdr_en_attach"><?php esc_html_e( 'Document Attach :', 'email-notice-wp-document-revisions' ); ?>&nbsp;</label>
+			<label class="alignleft"><input type="checkbox" name="wpdr_en_attach" value=""><?php esc_html_e( 'Document Attach :', 'email-notice-wp-document-revisions' ); ?></label>
 			</div>
 			</fieldset>
 			<?php
@@ -3479,8 +3489,7 @@ class WPDR_Email_Notice {
 			?>
 			<fieldset class="inline-edit-col-left">
 			<div class="inline-edit-group wp-clearfix column-pause">
-			<input type="checkbox" id="wpdr_en_pause" name="wpdr_en_pause" value= "">
-			<label class="alignleft" for="wpdr_en_pause"><?php esc_html_e( 'Pause Mail :', 'email-notice-wp-document-revisions' ); ?>&nbsp;</label>
+			<label class="alignleft"><input type="checkbox" name="wpdr_en_pause" value=""><?php esc_html_e( 'Pause Mail :', 'email-notice-wp-document-revisions' ); ?></label>
 			</div>
 			</fieldset>
 			<?php
@@ -3511,7 +3520,7 @@ class WPDR_Email_Notice {
 			<select name="tm_ruleb">
 			<option value="-1"><?php esc_html_e( '-- No Change --', 'email-notice-wp-document-revisions' ); ?></option>
 			<option value="0"><?php esc_html_e( 'Any taxonomy element', 'email-notice-wp-document-revisions' ); ?></option>
-			<option value="1"><?php esc_html_e( 'All taxonomy elements-', 'email-notice-wp-document-revisions' ); ?></option>
+			<option value="1"><?php esc_html_e( 'All taxonomy elements', 'email-notice-wp-document-revisions' ); ?></option>
 			</select>
 			</label>
 			</div>	

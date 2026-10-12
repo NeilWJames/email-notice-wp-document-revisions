@@ -169,6 +169,19 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 	}
 
 	/**
+	 * No second "Show more details" button: row_actions() in column_rec_num() already adds one.
+	 *
+	 * @since 4.0.0
+	 * @param mixed[] $item        Row in List Table.
+	 * @param string  $column_name Column name.
+	 * @param string  $primary     Primary column name.
+	 * @return string
+	 */
+	protected function handle_row_actions( $item, $column_name, $primary ) {
+		return '';
+	}
+
+	/**
 	 * Define data to populate table.
 	 *
 	 * @since 2.0

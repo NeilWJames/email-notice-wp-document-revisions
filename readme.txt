@@ -169,10 +169,13 @@ Breaking changes: see Upgrading to 4.0.0 under Migration Notice.
 * FIX: Uninstall removes the capabilities from every site's roles and from users given them directly, the External List sent flags on Documents, and the settings of every user on the network.
 * FIX: Document metabox: the message when only some emails were sent no longer shows "undefined"; the Send button stays disabled and the progress icon shown until sending finishes (both were reset straight away); a failed request shows an error instead of "Sending..." for ever; the script error on every send (from `$`, undefined in WordPress) is gone.
 * FIX: External List addresses: no script error after adding or deleting an address, no stray global variables, and the address error message is shown as text.
+* FIX: Labels for the Internal Notice mode and "Notify internal users about" choices, the profile boxes and the List Quick Edit boxes (clicking the text ticks the box, and screen readers read it; the Quick Edit labels pointed at a hidden copy). The text settings are labelled by their headings, and the boxes in the Users column are named.
+* FIX: List Bulk Edit offered "All taxonomy elements-"; each address row had two "Show more details" buttons on small screens.
 * DEV: Script and style sources moved to src/js and src/css; minified copies are in build/js and build/css, made with `npm run build` (terser, clean-css) or the Build assets workflow. Asset versions are the file times, so browsers pick up rebuilt files.
 * DEV: PHPUnit test suite in tests/ (see tests/test_suite.md); runs locally with script/install-wp-tests and in CI.
 * DEV: WordPress Playground demo (playground/): a site with users, Documents, Document External Lists and notifications sent, from GitHub (link in docs/README.md), from the local folder (`npm run playground`), and a generator for the WordPress.org Live Preview blueprint (`npm run assets-blueprint`).
 * DEV: JavaScript tests with Jest and jsdom in tests/js (`npm test`), run in CI with coverage sent to Codecov (flag js; PHP has flag php).
+* DEV: End-to-end browser tests with Playwright in tests/e2e (`npm run test:e2e`): WordPress Playground locally (`npm run env:start`), wp-env in CI (e2e.yml).
 * DEV: Tests added for the internal log, bulk subscribe/unsubscribe, External List settings, the admin screens, plugin loading, uninstall and the fixed bugs; uninstall.php is included in coverage. Class descriptions and @package tags made consistent. A duplicate loader of the bulk action class with a wrong path is removed.
 * DEV: AJAX handlers reply with wp_send_json() instead of echo and die, so they can be tested.
 * DEV: Plugin header version set to match the readme Stable tag.

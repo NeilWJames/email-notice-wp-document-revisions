@@ -1,7 +1,7 @@
 {
   "name": "email-notice-wp-document-revisions",
   "private": true,
-  "description": "Build, test and demo tools for Email Notice for WP Document Revisions: minifies src/ into build/, runs the JS tests and the WordPress Playground demo.",
+  "description": "Build, test and demo tools for Email Notice for WP Document Revisions: minifies src/ into build/, runs the JS and end-to-end tests and the WordPress Playground demo.",
   "license": "GPL-3.0-or-later",
   "engines": {
     "node": ">=20"
@@ -12,10 +12,17 @@
     "build:check": "node script/build-assets.mjs --check",
     "test": "jest",
     "test:coverage": "jest --coverage",
+    "test:e2e": "node node_modules/@playwright/test/cli.js test",
+    "test:e2e:ui": "node node_modules/@playwright/test/cli.js test --ui",
+    "e2e:browser": "node node_modules/@playwright/test/cli.js install chromium",
+    "env:start": "npx @wp-playground/cli@latest server --port 8888 --php 8.2 --no-login --blueprint tests/e2e/blueprint.json --mount-dir . /wordpress/wp-content/plugins/email-notice-wp-document-revisions --mount-dir tests/e2e/mu-plugins /wordpress/wp-content/mu-plugins",
+    "wp-env": "npx @wordpress/env",
     "playground": "npx @wp-playground/cli@latest server --port 8889 --php 8.2 --blueprint playground/blueprint-local.json --mount-dir . /wordpress/wp-content/plugins/email-notice-wp-document-revisions",
     "assets-blueprint": "node playground/build-assets-blueprint.js"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@wordpress/e2e-test-utils-playwright": "^3.0.0",
     "clean-css": "^5.3.3",
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",

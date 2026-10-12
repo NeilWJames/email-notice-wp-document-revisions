@@ -1,0 +1,15 @@
+{
+	"core": null,
+	"phpVersion": "8.2",
+	"testsEnvironment": false,
+	"plugins": [
+		"https://downloads.wordpress.org/plugin/wp-document-revisions.zip",
+		"."
+	],
+	"mappings": {
+		"wp-content/mu-plugins": "./tests/e2e/mu-plugins"
+	},
+	"config": {
+		"WP_DEBUG": true
+	}
+}
