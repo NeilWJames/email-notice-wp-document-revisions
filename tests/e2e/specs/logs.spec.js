@@ -150,23 +150,24 @@ test( 'the internal log keeps the extra text and sorts by a column', async ( {
 	await admin.visitAdminPage( INT_LOG_URL );
 
 	// The heading link sorts by email address; a second click reverses the order. Only
-	// the first letters are compared: MySQL and SQLite order "subscriber2@" differently.
+	// the first letters are compared: MySQL and SQLite order "subscriber2@" differently, and the
+	// administrator's address differs (admin@localhost.com in Playground, wordpress@example.com
+	// in wp-env).
+	const initials = ( list ) => list.map( ( e ) => e[ 0 ] );
 	const emails = () =>
 		rows( page ).locator( '.column-user_email' ).allInnerTexts();
 	await page.locator( 'thead th#user_email a' ).click();
 	await expect( page ).toHaveURL( /orderby=user_email&order=asc/ );
 	await expect( rows( page ) ).toHaveCount( 14 );
 	const ascending = await emails();
-	expect( ascending[ 0 ] ).toMatch( /^admin/ );
-	expect( ascending[ 13 ] ).toMatch( /^subscriber/ );
-	expect( ascending.map( ( e ) => e[ 0 ] ) ).toEqual(
-		ascending.map( ( e ) => e[ 0 ] ).sort()
-	);
+	expect( initials( ascending ) ).toEqual( initials( ascending ).sort() );
+	expect( ascending[ 0 ][ 0 ] ).not.toBe( ascending[ 13 ][ 0 ] );
 
 	await page.locator( 'thead th#user_email a' ).click();
 	await expect( page ).toHaveURL( /orderby=user_email&order=desc/ );
-	await expect( rows( page ).first() ).toContainText( 'subscriber' );
-	expect( ( await emails() )[ 13 ] ).toMatch( /^admin/ );
+	await expect( rows( page ) ).toHaveCount( 14 );
+	const descending = await emails();
+	expect( initials( descending ) ).toEqual( initials( ascending ).reverse() );
 
 	// The sort is kept in the export.
 	const data = parseCsv( ( await exportCsv( page ) ).text.slice( 1 ) );

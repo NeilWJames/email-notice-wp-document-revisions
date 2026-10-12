@@ -42,7 +42,12 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      # playwright.config.js starts wp-env (Docker runtime, because CI is set) and waits for it.
+      # Start WordPress before the tests: wp-env answers on the site URL before it has
+      # activated the plugins, so a start by Playwright's webServer let the first test run too early.
+      - name: Start WordPress (wp-env)
+        run: npx @wordpress/env start
+
+      # playwright.config.js finds the running site (reuseExistingServer).
       - name: Run e2e tests
         run: npm run test:e2e
 
