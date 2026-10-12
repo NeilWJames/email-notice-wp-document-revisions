@@ -1,7 +1,7 @@
 {
   "name": "email-notice-wp-document-revisions",
   "private": true,
-  "description": "Build and test tools for Email Notice for WP Document Revisions: minifies src/ into build/ and runs the JS tests.",
+  "description": "Build, test and demo tools for Email Notice for WP Document Revisions: minifies src/ into build/, runs the JS tests and the WordPress Playground demo.",
   "license": "GPL-3.0-or-later",
   "engines": {
     "node": ">=20"
@@ -11,7 +11,9 @@
     "build:force": "node script/build-assets.mjs --force",
     "build:check": "node script/build-assets.mjs --check",
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "playground": "npx @wp-playground/cli@latest server --port 8889 --php 8.2 --blueprint playground/blueprint-local.json --mount-dir . /wordpress/wp-content/plugins/email-notice-wp-document-revisions",
+    "assets-blueprint": "node playground/build-assets-blueprint.js"
   },
   "devDependencies": {
     "clean-css": "^5.3.3",

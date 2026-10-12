@@ -1,0 +1,48 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"meta": {
+		"title": "Email Notice for WP Document Revisions demo",
+		"description": "The latest development code from GitHub (main), with WP Document Revisions, users of each role, Documents in several departments, Document External Lists and notifications already sent.",
+		"author": "NeilWJames",
+		"categories": [ "Content" ]
+	},
+	"landingPage": "/wp-admin/edit.php?post_type=document",
+	"preferredVersions": {
+		"php": "8.2",
+		"wp": "latest"
+	},
+	"steps": [
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "wordpress.org/plugins",
+				"slug": "wp-document-revisions"
+			},
+			"options": {
+				"activate": true
+			}
+		},
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "git:directory",
+				"url": "https://github.com/NeilWJames/email-notice-wp-document-revisions",
+				"ref": "main",
+				"refType": "branch"
+			},
+			"options": {
+				"activate": true,
+				"targetFolderName": "email-notice-wp-document-revisions"
+			}
+		},
+		{
+			"step": "runPHP",
+			"code": "<?php define( 'WP_ADMIN', true ); require '/wordpress/wp-load.php'; require WP_PLUGIN_DIR . '/email-notice-wp-document-revisions/playground/demo-content.php'; wpdr_en_demo_load();"
+		},
+		{
+			"step": "login",
+			"username": "admin",
+			"password": "password"
+		}
+	]
+}

@@ -1,5 +1,7 @@
 # Email Notice WP Document Revisions
 
+**[Try it in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/NeilWJames/email-notice-wp-document-revisions/main/playground/blueprint.json)** (the latest development code from GitHub, with demo content: see [the demo](playground.md)).
+
 This plugin is an add-on to WP Document Revisions. This supports sending out email notifications about newly published documents to users who are interested to receive notifications either automatically (on publish) or manually.
 
 It supports two different methods of holding the address lists:

@@ -112,7 +112,24 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
+      # The latest WP Document Revisions release is cached by version, so it is only downloaded
+      # when a new version comes out (the matrix jobs run in parallel, so they can't share one download).
+      - name: WP Document Revisions version
+        id: wpdr
+        run: |
+          version=$(curl -sSL 'https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request[slug]=wp-document-revisions' | jq -r '.version // empty')
+          echo "version=${version:-unknown}" >> "$GITHUB_OUTPUT"
+
+      - name: Cache WP Document Revisions
+        id: wpdr-cache
+        if: ${{ steps.wpdr.outputs.version != 'unknown' }}
+        uses: actions/cache@v6
+        with:
+          path: /tmp/wp-document-revisions
+          key: wpdr-${{ steps.wpdr.outputs.version }}
+
       - name: Get WP Document Revisions (latest release)
+        if: ${{ steps.wpdr-cache.outputs.cache-hit != 'true' }}
         run: |
           curl -sSL -o /tmp/wpdr.zip https://downloads.wordpress.org/plugin/wp-document-revisions.latest-stable.zip
           unzip -q /tmp/wpdr.zip -d /tmp

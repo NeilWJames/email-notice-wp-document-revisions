@@ -5,7 +5,7 @@ PHPUnit (PHP, below) and Jest (JavaScript, see [JavaScript tests](#javascript-te
 Integration tests run inside WordPress (the core test library) with WP Document Revisions loaded,
 so they exercise the real hooks, capabilities and database tables.
 
-**Status:** 169 tests in 19 classes (3 multisite-only); no known-bug tests left. 166 passed, 3 skipped (multisite) in the sandbox 2026-10-12 (all 169 pass as multisite); phpcs clean. Line coverage 84% (pcov), now including `uninstall.php`. The 147-test round is confirmed on 62wp and in CI.
+**Status:** 171 tests in 20 classes (3 multisite-only); no known-bug tests left. 168 passed, 3 skipped (multisite) in the sandbox 2026-10-12 (all 171 pass as multisite); phpcs clean. Line coverage 84% (pcov), now including `uninstall.php`. The 147-test round is confirmed on 62wp and in CI.
 
 ## Running
 
@@ -94,6 +94,7 @@ WP_Ajax_UnitTestCase defines `DOING_AJAX` for the rest of the run.
 | `class-test-wpdr-en-list-edit.php` | 8 | External List settings: list columns and cell values (attach falls back to the site setting), Quick/Bulk Edit fields; saving from the edit form (a ticked box is on), Quick Edit, Bulk Edit (translated button, No Change, bad nonce, only 0/1), from code (no change, no die), without edit rights |
 | `class-test-wpdr-en-matching.php` | 9 | External Lists: any/all rule, parent term matches child (not the reverse), paused/draft lists and paused addresses skipped, selected lists only, public documents only, log row + sent flag |
 | `class-test-wpdr-en-multisite.php` | 3 | Multisite only, skipped otherwise (run with `WP_MULTISITE=1`): security #6 — internal mail only to the site's members, only the site's own Lists used; a site is set up by its own (non-network) administrator |
+| `class-test-wpdr-en-playground-demo.php` | 2 | `playground/demo-content.php` loads against the current code: users (password), Documents, Lists, settings, Departments; notifications sent give the log entries described in `docs/playground.md` (paused List and address skipped, parent term and all-terms matching, attachments, extra text, repeat text) |
 | `class-test-wpdr-en-plugin.php` | 3 | `wpdr-email-notice.php`: WP Document Revisions active on the site or network; missing-plugin notice; translations folder |
 | `class-test-wpdr-en-security.php` | 15 | Security #4 (term IDs cast, error message escaped, revert script safe and defined, code saves not redirected), #7 (Lists not public / not found by search), #8 (log search with quotes), #9 (recipient string, comma in name), #10 (attachment copy in private folder, removed), #11 (log tables, settings textarea, From address), #12 (bulk subscribe needs edit_user) |
 | `class-test-wpdr-en-tags.php` | 9 | Default subject, trailing-number full stop and its filter, subject/content tags, `%words_n%`, `%extra%`, `%excerpt%` only for editors, external template |
@@ -135,6 +136,7 @@ How it works:
 
 ## Change log
 
+- 2026-10-12: Playground demo test (`class-test-wpdr-en-playground-demo.php`, 2). The demo was also run in WordPress Playground (CLI, SQLite) in the sandbox: that found the List matching and log deletion SQL that SQLite treated differently; both now pass there. 171 tests.
 - 2026-10-12: Log export: new `class-test-wpdr-en-log-export.php` (6). 169 tests.
 - 2026-10-12: Log deletion: new `class-test-wpdr-en-log-purge.php` (7); settings field for the internal log days (admin pages, 1); uninstall checks the option and the daily job. 163 tests.
 - 2026-10-12: Profile labels test (bug-fixes, 1). 155 tests.

@@ -11,6 +11,7 @@ Release date: (in development)
 * Users without edit_doc_ext_lists always send to every matched List.
 * If you chose Auto for "Internal Notice mode" (Settings > Writing), choose it again and save: since 3.2 it was stored as Manual.
 
+* FIX: External List matching no longer relies on the database comparing text with numbers (WordPress Playground's SQLite matched no List); a List without a match rule counts as "any", as its screen shows. Old log entries are deleted with plain SQL that also runs there.
 * NEW: Export CSV on both email log pages: downloads every entry matching the page's search, in its order, for anyone who can see the logs. UTF-8 for Excel; cells that a spreadsheet would run as formulas are made text.
 * NEW: Old log entries are deleted daily for Documents not modified for a set number of days: internal entries by a Settings > Writing value, external entries by a value on each Document External List (changed only by users who can delete Lists). Empty or 0 keeps them.
 * NEW: Capability read_doc_ext_lists controls who sees Document External Lists: the email logs (Document Emails menu) and the External List part of the Document metabox. Given on upgrade to every role and user with edit_doc_ext_lists.
@@ -47,6 +48,7 @@ Release date: (in development)
 * FIX: External List addresses: no script error after adding or deleting an address, no stray global variables, and the address error message is shown as text.
 * DEV: Script and style sources moved to src/js and src/css; minified copies are in build/js and build/css, made with `npm run build` (terser, clean-css) or the Build assets workflow. Asset versions are the file times, so browsers pick up rebuilt files.
 * DEV: PHPUnit test suite in tests/ (see tests/test_suite.md); runs locally with script/install-wp-tests and in CI.
+* DEV: WordPress Playground demo (playground/): a site with users, Documents, Document External Lists and notifications sent, from GitHub (link in docs/README.md), from the local folder (`npm run playground`), and a generator for the WordPress.org Live Preview blueprint (`npm run assets-blueprint`).
 * DEV: JavaScript tests with Jest and jsdom in tests/js (`npm test`), run in CI with coverage sent to Codecov (flag js; PHP has flag php).
 * DEV: Tests added for the internal log, bulk subscribe/unsubscribe, External List settings, the admin screens, plugin loading, uninstall and the fixed bugs; uninstall.php is included in coverage. Class descriptions and @package tags made consistent. A duplicate loader of the bulk action class with a wrong path is removed.
 * DEV: AJAX handlers reply with wp_send_json() instead of echo and die, so they can be tested.
