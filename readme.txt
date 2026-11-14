@@ -130,7 +130,7 @@ These are listed and described at [filters.md](../docs/filters.md).
 == Changelog ==
 
 = 4.0.0 =
-Release date: (in development)
+Release date: October 12, 2026
 
 Breaking changes: see Upgrading to 4.0.0 under Migration Notice.
 
