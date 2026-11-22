@@ -1,12 +1,12 @@
-# Copyright (C) 2026 Email Notice WP Document Revisions 4.0.0
-# This file is distributed under the same license as the Email Notice WP Document Revisions 4.0.0 package.
+# Copyright (C) 2026 Email Notice WP Document Revisions 4.0.1
+# This file is distributed under the same license as the Email Notice WP Document Revisions 4.0.1 package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Email Notice WP Document Revisions 4.0.0\n"
+"Project-Id-Version: Email Notice WP Document Revisions 4.0.1\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-12 16:48+0000\n"
+"POT-Creation-Date: 2026-11-22 16:32+0000\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -72,7 +72,7 @@ msgstr ""
 msgid "All Document External Lists"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:463, includes/class-wpdr-email-notice.php:1086
+#: includes/class-wpdr-email-notice.php:463, includes/class-wpdr-email-notice.php:1127
 msgid "Document Email Settings"
 msgstr ""
 
@@ -80,7 +80,7 @@ msgstr ""
 msgid "Email From"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:465, includes/class-wpdr-en-ext-user-table.php:104
+#: includes/class-wpdr-email-notice.php:465, includes/class-wpdr-email-notice.php:2066, includes/class-wpdr-en-ext-user-table.php:104
 msgid "Email Address"
 msgstr ""
 
@@ -92,11 +92,11 @@ msgstr ""
 msgid "Notifications"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:525
+#: includes/class-wpdr-email-notice.php:525, includes/class-wpdr-email-notice.php:862
 msgid "Internal Notice mode"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:526
+#: includes/class-wpdr-email-notice.php:526, includes/class-wpdr-email-notice.php:875
 msgid "Notify internal users about"
 msgstr ""
 
@@ -131,22 +131,22 @@ msgstr ""
 
 #. translators: %s is the link address of the user's profile. Do not translate.
 #: includes/class-wpdr-email-notice.php:643
-msgid "<small>In case you do not want to receive this kind of notification you can turn it off in your <a href=\"%s\">profile</a>."
+msgid "<p>In case you do not want to receive this kind of notification you can turn it off in your <a href=\"%s\">profile</a>."
 msgstr ""
 
 #: includes/class-wpdr-email-notice.php:644
-msgid "<br/>Also go there if you wish to change whether you will receive the document as an attachment.</small>"
+msgid "<br/>Also go there if you wish to change whether you will receive the document as an attachment.</p>"
 msgstr ""
 
 #: includes/class-wpdr-email-notice.php:647
-msgid "<small>In case you do not want to receive this kind of notification you can reply with the message \"Unsubscribe\".</small>"
+msgid "<p>In case you do not want to receive this kind of notification you can reply with the message \"Unsubscribe\".</p>"
 msgstr ""
 
 #: includes/class-wpdr-email-notice.php:648
 msgid "<p>This document has previously been sent to you %num% time(s), with the latest sent on %last_date%.</p>"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:690, includes/class-wpdr-email-notice.php:2041
+#: includes/class-wpdr-email-notice.php:690, includes/class-wpdr-email-notice.php:2077
 msgid "Add Address to List"
 msgstr ""
 
@@ -154,7 +154,23 @@ msgstr ""
 msgid "Edit existing Address"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:674, includes/class-wpdr-email-notice.php:1300
+#: includes/class-wpdr-email-notice.php:693
+msgid "Address added to the List."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:694
+msgid "Address updated."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:695
+msgid "Address deleted from the List."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:696
+msgid "Delete this address from the List? This cannot be undone."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:674
 msgid "Sending email notifications..."
 msgstr ""
 
@@ -162,11 +178,11 @@ msgstr ""
 msgid "Error sending emails."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:676, includes/class-wpdr-email-notice.php:1259, includes/class-wpdr-email-notice.php:1253
+#: includes/class-wpdr-email-notice.php:676, includes/class-wpdr-email-notice.php:1303, includes/class-wpdr-email-notice.php:1297
 msgid "Re-send notification email(s)"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:677, includes/class-wpdr-email-notice.php:3272
+#: includes/class-wpdr-email-notice.php:677, includes/class-wpdr-email-notice.php:3312
 msgid "email(s) out of"
 msgstr ""
 
@@ -174,7 +190,7 @@ msgstr ""
 msgid "notification(s) sent. Check"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:679, includes/class-wpdr-email-notice.php:3272
+#: includes/class-wpdr-email-notice.php:679, includes/class-wpdr-email-notice.php:3312
 msgid "sent with"
 msgstr ""
 
@@ -186,793 +202,825 @@ msgstr ""
 msgid "log"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:682, includes/class-wpdr-email-notice.php:3259
+#: includes/class-wpdr-email-notice.php:682, includes/class-wpdr-email-notice.php:3299
 msgid "for details."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:774
+#: includes/class-wpdr-email-notice.php:779
 msgid "By default all notification emails received from \"WordPress\" < wordpress@"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:774
+#: includes/class-wpdr-email-notice.php:779
 msgid "You can change these below."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:807
-msgid "Tags available to make email subject and/or content dynamic:"
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:809
+#: includes/class-wpdr-email-notice.php:814
 msgid "means title of the post"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:810
+#: includes/class-wpdr-email-notice.php:815
 msgid "means URL of the post"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:811
+#: includes/class-wpdr-email-notice.php:816
 msgid "means URL with title of the post"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:812
+#: includes/class-wpdr-email-notice.php:817
 msgid "means the name of the post author"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:813
+#: includes/class-wpdr-email-notice.php:818
 msgid "means excerpt of the post"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:813
+#: includes/class-wpdr-email-notice.php:818
 msgid "Only available to those who can edit the document"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:814
+#: includes/class-wpdr-email-notice.php:819
 msgid "means the first n (must be an integer number) number of word(s) extracted from the post"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:815
+#: includes/class-wpdr-email-notice.php:820
 msgid "means display name of the user who receives the email"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:816
+#: includes/class-wpdr-email-notice.php:821
 msgid "means output the phrase if the document has been previously emailed."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:818
-msgid "Tags available within the tag"
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:820
+#: includes/class-wpdr-email-notice.php:824
 msgid "means the number of times the document has been previously emailed."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:821
+#: includes/class-wpdr-email-notice.php:825
 msgid "means the last date that the document was emailed."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:822
+#: includes/class-wpdr-email-notice.php:826
 msgid "means the last date incuding time that the document was emailed."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:824
+#: includes/class-wpdr-email-notice.php:829
 msgid "means output an optional extra phrase entered at the time of mailing."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:836
+#: includes/class-wpdr-email-notice.php:831
+msgid "Tags available to make email subject and/or content dynamic:"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:833
+msgid "Tags available within the tag"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:863
 msgid "Auto"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:836
+#: includes/class-wpdr-email-notice.php:863
 msgid "(send emails automatically when you publish a post)"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:837
+#: includes/class-wpdr-email-notice.php:864
 msgid "Manual"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:837
+#: includes/class-wpdr-email-notice.php:864
 msgid "(you need to press a button to send notification)"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:847
+#: includes/class-wpdr-email-notice.php:876
 msgid "Public posts"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:848
+#: includes/class-wpdr-email-notice.php:877
 msgid "Password"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:848
+#: includes/class-wpdr-email-notice.php:877
 msgid "protected posts (password will"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:848
+#: includes/class-wpdr-email-notice.php:877
 msgid "NOT"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:848
+#: includes/class-wpdr-email-notice.php:877
 msgid "be included in notification email)"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:849
+#: includes/class-wpdr-email-notice.php:878
 msgid "Private posts"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:850
+#: includes/class-wpdr-email-notice.php:880
 msgid "Notifications are sent only to those Internal users who can read the document"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:851
+#: includes/class-wpdr-email-notice.php:881
 msgid "Notifications can only be sent to External users for Public documents."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:912
+#: includes/class-wpdr-email-notice.php:942
 msgid "Hint: HTML tags are not allowed here, e.g.: %title_with_permalink% will revert to %title%."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:924, includes/class-wpdr-email-notice.php:935, includes/class-wpdr-email-notice.php:961
+#: includes/class-wpdr-email-notice.php:954, includes/class-wpdr-email-notice.php:965, includes/class-wpdr-email-notice.php:991
 msgid "Hint: HTML tags are welcome here to make your notification emails more personalized."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:948
+#: includes/class-wpdr-email-notice.php:978
 msgid "Attach the Document in emails to external users."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:950
+#: includes/class-wpdr-email-notice.php:980
 msgid "Public documents may not always be accessible to External users, so these may need to be attached."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:972
+#: includes/class-wpdr-email-notice.php:1002
 msgid "Delete entries for Documents not modified for"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:974, includes/class-wpdr-email-notice.php:2102
+#: includes/class-wpdr-email-notice.php:1004, includes/class-wpdr-email-notice.php:2137
 msgid "days"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:975
+#: includes/class-wpdr-email-notice.php:1005
 msgid "Empty or 0 keeps them. Checked once a day. External log entries are kept as set on each Document External List."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1102
+#: includes/class-wpdr-email-notice.php:1141
 msgid "Notify this user by email when a new document is published"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1103
+#: includes/class-wpdr-email-notice.php:1142
 msgid "Also send this user the document as an attachment by email when a new document is published"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1099
+#: includes/class-wpdr-email-notice.php:1138
 msgid "Notify me by email when a new document is published"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1100
+#: includes/class-wpdr-email-notice.php:1139
 msgid "Also send me the document as an attachment by email when a new document is published"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1196
-msgid "Notified by email"
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:1198
-msgid "Document sent as attachment"
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:1214, includes/class-wpdr-email-notice.php:3879
-msgid "Document Email Notifications"
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:1244
-msgid "Optional Extra text not configured in templates"
+#: includes/class-wpdr-email-notice.php:1145
+msgid "Document notifications"
 msgstr ""
 
 #: includes/class-wpdr-email-notice.php:1238
-msgid "Optional Extra text for this specific mailing"
+msgid "Notified by email"
 msgstr ""
 
 #: includes/class-wpdr-email-notice.php:1240
-msgid "Optional Extra text"
+msgid "Document sent as attachment"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1241
+#: includes/class-wpdr-email-notice.php:1256, includes/class-wpdr-email-notice.php:3922
+msgid "Document Email Notifications"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1286
+msgid "Optional Extra text not configured in templates"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1282
+msgid "Optional Extra text for this specific mailing"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1284
 msgid "Enter any extra text and click Add Extra text before (re)sending."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1257, includes/class-wpdr-email-notice.php:1255
+#: includes/class-wpdr-email-notice.php:1301, includes/class-wpdr-email-notice.php:1299
 msgid "Send notification email(s)"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1270, includes/class-wpdr-email-notice.php:1343, includes/class-wpdr-email-notice.php:1323
+#: includes/class-wpdr-email-notice.php:1310, includes/class-wpdr-email-notice.php:1374
 msgid "Add Extra text"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1353, includes/class-wpdr-email-notice.php:1313
+#: includes/class-wpdr-email-notice.php:1317
+msgid "No users are set to receive notifications for this Document."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1318
+msgid "Publish the Document to send notifications."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1367, includes/class-wpdr-email-notice.php:1361
 msgid "Re-send external list email(s)"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1351, includes/class-wpdr-email-notice.php:1334
+#: includes/class-wpdr-email-notice.php:1365, includes/class-wpdr-email-notice.php:1363
 msgid "Send external list email(s)"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1371, includes/class-wpdr-email-notice.php:1371
+#: includes/class-wpdr-email-notice.php:1387
+msgid "No Document External List matches this Document."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1388
+msgid "External list emails are only sent for public Documents."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1379
+msgid "Document External Lists to send to"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:1407, includes/class-wpdr-email-notice.php:1407
 msgid "External User Email Log"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1373, includes/class-wpdr-email-notice.php:1373
+#: includes/class-wpdr-email-notice.php:1409, includes/class-wpdr-email-notice.php:1409
 msgid "Internal User Email Log"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1387, includes/class-wpdr-email-notice.php:1446, includes/class-wpdr-email-notice.php:1477, includes/class-wpdr-email-notice.php:1547, includes/class-wpdr-email-notice.php:1563, includes/class-wpdr-email-notice.php:1574, includes/class-wpdr-email-notice.php:1596, includes/class-wpdr-email-notice.php:1638, includes/class-wpdr-email-notice.php:3020, includes/class-wpdr-email-notice.php:3036, includes/class-wpdr-email-notice.php:3103, includes/class-wpdr-email-notice.php:3119, includes/class-wpdr-email-notice.php:3147, includes/class-wpdr-email-notice.php:3184
+#: includes/class-wpdr-email-notice.php:1423, includes/class-wpdr-email-notice.php:1482, includes/class-wpdr-email-notice.php:1513, includes/class-wpdr-email-notice.php:1583, includes/class-wpdr-email-notice.php:1599, includes/class-wpdr-email-notice.php:1610, includes/class-wpdr-email-notice.php:1632, includes/class-wpdr-email-notice.php:1674, includes/class-wpdr-email-notice.php:3060, includes/class-wpdr-email-notice.php:3076, includes/class-wpdr-email-notice.php:3143, includes/class-wpdr-email-notice.php:3159, includes/class-wpdr-email-notice.php:3187, includes/class-wpdr-email-notice.php:3224
 msgid "Something went wrong"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1411
+#: includes/class-wpdr-email-notice.php:1447
 msgid "You do not have permission to edit this list."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1431
+#: includes/class-wpdr-email-notice.php:1467
 msgid "You do not have permission to send notifications for this document."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1471
+#: includes/class-wpdr-email-notice.php:1507
 msgid "Invalid email address"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1722, includes/class-wpdr-email-notice.php:1754, includes/class-wpdr-email-notice.php:1891, includes/class-wpdr-email-notice.php:1917, includes/class-wpdr-email-notice.php:2017, includes/class-wpdr-email-notice.php:2066
+#: includes/class-wpdr-email-notice.php:1758, includes/class-wpdr-email-notice.php:1789, includes/class-wpdr-email-notice.php:1925, includes/class-wpdr-email-notice.php:1951, includes/class-wpdr-email-notice.php:2052, includes/class-wpdr-email-notice.php:2102
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1730
+#: includes/class-wpdr-email-notice.php:1766
 msgid "Document Email Notification Log"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1731, includes/class-wpdr-email-notice.php:1763
+#: includes/class-wpdr-email-notice.php:1767, includes/class-wpdr-email-notice.php:1798
 msgid "Export CSV"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1738, includes/class-wpdr-email-notice.php:1770, includes/class-wpdr-email-notice.php:1937
+#: includes/class-wpdr-email-notice.php:1773, includes/class-wpdr-email-notice.php:1804, includes/class-wpdr-email-notice.php:1972
 msgid "Search"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1741
+#: includes/class-wpdr-email-notice.php:1776
 msgid "Note: Success denotes that the email was successfully received by your email system."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1742
+#: includes/class-wpdr-email-notice.php:1777
 msgid "The mail delivery process to the recipient is managed within your email system."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1762
+#: includes/class-wpdr-email-notice.php:1797
 msgid "Document Email External Notice Log"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1773
+#: includes/class-wpdr-email-notice.php:1807
 msgid "Note: Success denotes that the mail was successfully received by your email system."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1774
+#: includes/class-wpdr-email-notice.php:1808
 msgid "The delivery process to the recipient is managed within your email system."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1826, includes/class-wpdr-email-notice.php:1811
+#: includes/class-wpdr-email-notice.php:1860, includes/class-wpdr-email-notice.php:1845
 msgid "ID"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1827, includes/class-wpdr-email-notice.php:1812
+#: includes/class-wpdr-email-notice.php:1861, includes/class-wpdr-email-notice.php:1846
 msgid "Document ID"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1828, includes/class-wpdr-email-notice.php:1813
+#: includes/class-wpdr-email-notice.php:1862, includes/class-wpdr-email-notice.php:1847
 msgid "Document"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1829, includes/class-wpdr-email-notice.php:1816, includes/class-wpdr-en-ext-log-table.php:57, includes/class-wpdr-en-user-log-table.php:56
+#: includes/class-wpdr-email-notice.php:1863, includes/class-wpdr-email-notice.php:1850, includes/class-wpdr-en-ext-log-table.php:57, includes/class-wpdr-en-user-log-table.php:56
 msgid "Email sent"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1830
+#: includes/class-wpdr-email-notice.php:1864
 msgid "User ID"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1831, includes/class-wpdr-en-ext-log-table.php:58, includes/class-wpdr-en-ext-user-table.php:103, includes/class-wpdr-en-user-log-table.php:57
+#: includes/class-wpdr-email-notice.php:1865, includes/class-wpdr-email-notice.php:2062, includes/class-wpdr-en-ext-log-table.php:58, includes/class-wpdr-en-ext-user-table.php:103, includes/class-wpdr-en-user-log-table.php:57
 msgid "User Name"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1832, includes/class-wpdr-en-ext-log-table.php:59, includes/class-wpdr-en-user-log-table.php:58
+#: includes/class-wpdr-email-notice.php:1866, includes/class-wpdr-en-ext-log-table.php:59, includes/class-wpdr-en-user-log-table.php:58
 msgid "User Email"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1833, includes/class-wpdr-email-notice.php:1819, includes/class-wpdr-en-ext-log-table.php:60, includes/class-wpdr-en-user-log-table.php:59
+#: includes/class-wpdr-email-notice.php:1867, includes/class-wpdr-email-notice.php:1853, includes/class-wpdr-en-ext-log-table.php:60, includes/class-wpdr-en-user-log-table.php:59
 msgid "Status"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1834, includes/class-wpdr-email-notice.php:1820, includes/class-wpdr-en-ext-log-table.php:129, includes/class-wpdr-en-user-log-table.php:124
+#: includes/class-wpdr-email-notice.php:1868, includes/class-wpdr-email-notice.php:1854, includes/class-wpdr-en-ext-log-table.php:136, includes/class-wpdr-en-user-log-table.php:131
 msgid "Extra Text"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1814
+#: includes/class-wpdr-email-notice.php:1848
 msgid "List ID"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1815
+#: includes/class-wpdr-email-notice.php:1849
 msgid "List"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1817
+#: includes/class-wpdr-email-notice.php:1851
 msgid "Name"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1818
+#: includes/class-wpdr-email-notice.php:1852
 msgid "Email"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:1934
+#: includes/class-wpdr-email-notice.php:1969
 msgid "User Addressee List"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2004, includes/class-wpdr-email-notice.php:3833, includes/class-wpdr-email-notice.php:3836
+#: includes/class-wpdr-email-notice.php:2039, includes/class-wpdr-email-notice.php:3876, includes/class-wpdr-email-notice.php:3879
 msgid "List Attributes"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2006, includes/class-wpdr-email-notice.php:3834, includes/class-wpdr-email-notice.php:3850
+#: includes/class-wpdr-email-notice.php:2041, includes/class-wpdr-email-notice.php:3877, includes/class-wpdr-email-notice.php:3893
 msgid "Document External User List"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2039
-msgid "Clear values"
+#: includes/class-wpdr-email-notice.php:2058
+msgid "Enter a name and an email address to add an address to this List. Add Address to List can be used once both are entered."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2076, includes/class-wpdr-email-notice.php:3417
-msgid "Match Rule"
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:2077
-msgid "Choose whether any or all of this lists taxonomy elements must match those on the document to be considered a match."
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:2080, includes/class-wpdr-email-notice.php:3438, includes/class-wpdr-email-notice.php:3472, includes/class-wpdr-email-notice.php:3522
-msgid "Any taxonomy element"
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:2081, includes/class-wpdr-email-notice.php:3438, includes/class-wpdr-email-notice.php:3473, includes/class-wpdr-email-notice.php:3523
-msgid "All taxonomy elements"
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:2084, includes/class-wpdr-email-notice.php:3418, includes/class-wpdr-email-notice.php:3840
-msgid "Document Attach"
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:2087
-msgid "Attach Document to Notification Emails"
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:2089, includes/class-wpdr-email-notice.php:3560, includes/class-wpdr-email-notice.php:3842, includes/class-wpdr-en-ext-user-table.php:105
+#: includes/class-wpdr-email-notice.php:2070, includes/class-wpdr-email-notice.php:2125, includes/class-wpdr-email-notice.php:3603, includes/class-wpdr-email-notice.php:3885, includes/class-wpdr-en-ext-user-table.php:105
 msgid "Pause Mail"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2092
-msgid "Pause this List"
+#: includes/class-wpdr-email-notice.php:2075
+msgid "Clear values"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2094, includes/class-wpdr-email-notice.php:3845
-msgid "Email Log"
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:2100
-msgid "Delete this List's log entries for Documents not modified for"
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:2104
-msgid "Empty or 0 keeps them. Checked once a day."
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:2107
-msgid "Only users who can delete Lists can change this."
-msgstr ""
-
-#: includes/class-wpdr-email-notice.php:2111, includes/class-wpdr-email-notice.php:2114
-msgid "Document List Notes"
+#: includes/class-wpdr-email-notice.php:2114, includes/class-wpdr-email-notice.php:3457, includes/class-wpdr-email-notice.php:3512
+msgid "Match Rule"
 msgstr ""
 
 #: includes/class-wpdr-email-notice.php:2115
+msgid "Choose whether any or all of this lists taxonomy elements must match those on the document to be considered a match."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:2116, includes/class-wpdr-email-notice.php:3478, includes/class-wpdr-email-notice.php:3515, includes/class-wpdr-email-notice.php:3565
+msgid "Any taxonomy element"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:2117, includes/class-wpdr-email-notice.php:3478, includes/class-wpdr-email-notice.php:3516, includes/class-wpdr-email-notice.php:3566
+msgid "All taxonomy elements"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:2120, includes/class-wpdr-email-notice.php:3458, includes/class-wpdr-email-notice.php:3883
+msgid "Document Attach"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:2122
+msgid "Attach Document to Notification Emails"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:2127
+msgid "Pause this List"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:2130, includes/class-wpdr-email-notice.php:3888
+msgid "Email Log"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:2135
+msgid "Delete this List's log entries for Documents not modified for"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:2140
+msgid "Empty or 0 keeps them. Checked once a day."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:2143
+msgid "Only users who can delete Lists can change this."
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:2149
+msgid "Document List Notes"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:2151
 msgid "You can use this to hold any notes for this list entry."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2501
+#: includes/class-wpdr-email-notice.php:2537
 msgid "New document: "
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2629, includes/class-wpdr-email-notice.php:2738
+#: includes/class-wpdr-email-notice.php:2669, includes/class-wpdr-email-notice.php:2778
 msgid "Document too large to be attached."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2627, includes/class-wpdr-email-notice.php:2736
+#: includes/class-wpdr-email-notice.php:2667, includes/class-wpdr-email-notice.php:2776
 msgid "Document attached."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2618, includes/class-wpdr-email-notice.php:2727
+#: includes/class-wpdr-email-notice.php:2658, includes/class-wpdr-email-notice.php:2767
 msgid "Document not attached."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2656, includes/class-wpdr-email-notice.php:2769
+#: includes/class-wpdr-email-notice.php:2696, includes/class-wpdr-email-notice.php:2809
 msgid "Failed"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2653, includes/class-wpdr-email-notice.php:2642, includes/class-wpdr-email-notice.php:2766, includes/class-wpdr-email-notice.php:2752
+#: includes/class-wpdr-email-notice.php:2693, includes/class-wpdr-email-notice.php:2682, includes/class-wpdr-email-notice.php:2806, includes/class-wpdr-email-notice.php:2792
 msgid "Successful"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2653, includes/class-wpdr-email-notice.php:2642, includes/class-wpdr-email-notice.php:2766, includes/class-wpdr-email-notice.php:2752
+#: includes/class-wpdr-email-notice.php:2693, includes/class-wpdr-email-notice.php:2682, includes/class-wpdr-email-notice.php:2806, includes/class-wpdr-email-notice.php:2792
 msgid "Success Attachment"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:2714
+#: includes/class-wpdr-email-notice.php:2754
 msgid "Empty mail subject and/or content."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3001
+#: includes/class-wpdr-email-notice.php:3041
 msgid "Not logged and/or sent out successfully no mails."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3084
+#: includes/class-wpdr-email-notice.php:3124
 msgid "Not logged and/or sent out successfully any mails."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3200
+#: includes/class-wpdr-email-notice.php:3240
 msgid "You do not have permission to send to Document External Lists."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3259
+#: includes/class-wpdr-email-notice.php:3299
 msgid "Check log"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3272
+#: includes/class-wpdr-email-notice.php:3312
 msgid "log issues."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3268
+#: includes/class-wpdr-email-notice.php:3308
 msgid "Error sending notifications."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3264
+#: includes/class-wpdr-email-notice.php:3304
 msgid "notification(s) sent."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3419
+#: includes/class-wpdr-email-notice.php:3459
 msgid "List Paused"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3471, includes/class-wpdr-email-notice.php:3519
+#: includes/class-wpdr-email-notice.php:3484
+msgid "Document attached to emails"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:3488
+msgid "List paused"
+msgstr ""
+
+#: includes/class-wpdr-email-notice.php:3514, includes/class-wpdr-email-notice.php:3562
 msgid "Match Rule :"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3475
+#: includes/class-wpdr-email-notice.php:3518
 msgid "Choose whether Any or All of these taxonomy elements must match for the list to be used to send emails."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3483, includes/class-wpdr-email-notice.php:3538
+#: includes/class-wpdr-email-notice.php:3526, includes/class-wpdr-email-notice.php:3581
 msgid "Document Attach :"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3492, includes/class-wpdr-email-notice.php:3556
+#: includes/class-wpdr-email-notice.php:3535, includes/class-wpdr-email-notice.php:3599
 msgid "Pause Mail :"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3521, includes/class-wpdr-email-notice.php:3540, includes/class-wpdr-email-notice.php:3558
+#: includes/class-wpdr-email-notice.php:3564, includes/class-wpdr-email-notice.php:3583, includes/class-wpdr-email-notice.php:3601
 msgid "-- No Change --"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3527
+#: includes/class-wpdr-email-notice.php:3570
 msgid "Choose whether Any or All of these taxonomy elements must match for the lists to be used to send emails."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3541
+#: includes/class-wpdr-email-notice.php:3584
 msgid "Do not Attach Document"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3542
+#: includes/class-wpdr-email-notice.php:3585
 msgid "Attach Document"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3559
+#: includes/class-wpdr-email-notice.php:3602
 msgid "Do not Pause Mail"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3765, includes/class-wpdr-email-notice.php:3768
+#: includes/class-wpdr-email-notice.php:3808, includes/class-wpdr-email-notice.php:3811
 msgid "Document External List updated."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3766
+#: includes/class-wpdr-email-notice.php:3809
 msgid "Custom field updated."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3767
+#: includes/class-wpdr-email-notice.php:3810
 msgid "Custom field deleted."
 msgstr ""
 
 #. translators: %s is the revision ID.
-#: includes/class-wpdr-email-notice.php:3771
+#: includes/class-wpdr-email-notice.php:3814
 msgid "Document External List restored to revision from %s"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3773
+#: includes/class-wpdr-email-notice.php:3816
 msgid "Document External List published."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3774
+#: includes/class-wpdr-email-notice.php:3817
 msgid "Document External List saved."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3775
+#: includes/class-wpdr-email-notice.php:3818
 msgid "Document External List submitted."
 msgstr ""
 
 #. translators: %1$s is the date, %2$s is the preview link.
-#: includes/class-wpdr-email-notice.php:3777
+#: includes/class-wpdr-email-notice.php:3820
 msgid "Document External List scheduled for: <strong>%1$s</strong>. <a target=\"_blank\" href=\"%2$s\">Preview document list</a>"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3777
+#: includes/class-wpdr-email-notice.php:3820
 msgctxt "%1$s: date; %2$s: time"
 msgid "%1$s @ %2$s"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3778
+#: includes/class-wpdr-email-notice.php:3821
 msgid "Document External List draft updated."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3828
+#: includes/class-wpdr-email-notice.php:3871
 msgid "Usage"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3829
+#: includes/class-wpdr-email-notice.php:3872
 msgid "This screen allows a user to define a list of email users that will receive an email (generally with the document attached) if any taxonomy value of the list matches that on the document requested."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3830
+#: includes/class-wpdr-email-notice.php:3873
 msgid "The List is available for this processing once the List is published."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3831
+#: includes/class-wpdr-email-notice.php:3874
 msgid "When editing is completed, simply click <code>Update</code> or <code>Publish</code> to save your changes."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3832
+#: includes/class-wpdr-email-notice.php:3875
 msgid "There are three main areas associated with the List:"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3835
+#: includes/class-wpdr-email-notice.php:3878
 msgid "Taxonomies"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3837
+#: includes/class-wpdr-email-notice.php:3880
 msgid "Taxonomy Match Rule"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3838
+#: includes/class-wpdr-email-notice.php:3881
 msgid "See the section <strong>Document Taxonomies</strong> for the process to determine whether an individual External List term matches that on the Document."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3839
+#: includes/class-wpdr-email-notice.php:3882
 msgid "This flag indicates whether all the terms on the External List or at least one must match those on the Document for the External List to be considered matching the Document."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3841
+#: includes/class-wpdr-email-notice.php:3884
 msgid "This is a text area where optional comment or information can be made about the External List."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3843
+#: includes/class-wpdr-email-notice.php:3886
 msgid "This allows the External List to be paused from matching Documents."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3844
+#: includes/class-wpdr-email-notice.php:3887
 msgid "It is provided so that an External List can be withdrawn from processing temporarily without simply changing its status."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3846
+#: includes/class-wpdr-email-notice.php:3889
 msgid "The number of days after a Document was last modified that this List's log entries for it are kept. They are deleted once a day; empty or 0 keeps them. Only users who can delete Lists can change it."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3847
+#: includes/class-wpdr-email-notice.php:3890
 msgid "List Notes"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3848
+#: includes/class-wpdr-email-notice.php:3891
 msgid "This is a text area where optional comment or information can be held about the External List."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3849
+#: includes/class-wpdr-email-notice.php:3892
 msgid "Use is made of the excerpt field as it intended to be a simple aide-memoire to administrators of the External Lists."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3851
+#: includes/class-wpdr-email-notice.php:3894
 msgid "This panel consists of two parts. First are the elements to create or edit an individual user record into the table of email addresses, followed by a searchable list of the email addresses associated with the list."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3852
+#: includes/class-wpdr-email-notice.php:3895
 msgid "Note that changes made to this User List are stored immediately. There is no separate process to update the data permanently or to cancel the edits made so far."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3853
+#: includes/class-wpdr-email-notice.php:3896
 msgid "This holds a list of individual users that will be sent an email when the External List is selected."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3854
+#: includes/class-wpdr-email-notice.php:3897
 msgid "Each user record will contain the user name and email address and an optional pause attribute that pauses the sending of emails to the user."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3855
+#: includes/class-wpdr-email-notice.php:3898
 msgid "This pause attribute allows the user details to be retained in the User List but notification emails will not be sent to the specific user."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3856
+#: includes/class-wpdr-email-notice.php:3899
 msgid "Document Taxonomies"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3857
+#: includes/class-wpdr-email-notice.php:3900
 msgid "These taxonomies are generally shown on the right part of the screen. They are the taxonomies that can be applied to Documents."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3858
+#: includes/class-wpdr-email-notice.php:3901
 msgid "At least one taxonomy term is required to be entered, although several can be."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3859
+#: includes/class-wpdr-email-notice.php:3902
 msgid "If there are multiple terms on the External List then the matching rule will used to determine whether just one term is needed for the External List to be selected or all terms present must match for notification."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3860
+#: includes/class-wpdr-email-notice.php:3903
 msgid "For hierarchical taxonomies, a term on the External List is considered matched if the term on the Document is either the same as that on the External List or is a child of the External List term."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3861
+#: includes/class-wpdr-email-notice.php:3904
 msgid "Because of this, it is not permitted to publish an External List when the terms entered contains a term and its parent since the term matching process means that the child term would be redundant."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3862
+#: includes/class-wpdr-email-notice.php:3905
 msgid "A Document can have additional terms present, i.e. it is not necessary that all Document terms must match."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3863
+#: includes/class-wpdr-email-notice.php:3906
 msgid "Publish"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3864
+#: includes/class-wpdr-email-notice.php:3907
 msgid "By default, Documents are only accessible to logged in users. Documents can be published, thus making them accessible to the world, by toggling their visibility in the \"Publish\" box in the top right corner. Any document marked as published will be accessible to anyone with the proper URL."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3865
+#: includes/class-wpdr-email-notice.php:3908
 msgid "Similarly these user lists need to be published for the list to be eligible to be selected for sending emails to its users."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3866
+#: includes/class-wpdr-email-notice.php:3909
 msgid "Permissions"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3867
+#: includes/class-wpdr-email-notice.php:3910
 msgid "It is expected that the emailing administration process will be centralised with only a handful of External Lists being created. Therefore the full WordPress set of access permissions is not required."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3868
+#: includes/class-wpdr-email-notice.php:3911
 msgid "The permission <strong>edit_doc_ext_lists</strong> is supplied that allows users to create, update, and publish any External List."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3869
+#: includes/class-wpdr-email-notice.php:3912
 msgid "The permission <strong>delete_doc_ext_lists</strong> is supplied that allows users to delete any External List."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3870
+#: includes/class-wpdr-email-notice.php:3913
 msgid "The permission <strong>read_doc_ext_lists</strong> is supplied that allows users to see the External Lists, the email logs and the External List part of the Document screen, and to send External List emails for Documents they can edit."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3873
+#: includes/class-wpdr-email-notice.php:3916
 msgid "Document External Lists"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3874
+#: includes/class-wpdr-email-notice.php:3917
 msgid "Below is a list of all Document External Lists used to send email notifications to external users on an update to a Document. Click the list title to edit the document list."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3875
+#: includes/class-wpdr-email-notice.php:3918
 msgid "To add a new Document External List, click <strong>Add Document External List</strong> at the top of the screen."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3876
+#: includes/class-wpdr-email-notice.php:3919
 msgid "Note that whilst this functionality is primarily intended for people that are not users of this site, any email address can be used."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3880
+#: includes/class-wpdr-email-notice.php:3923
 msgid "Notification emails can be sent (or re-sent) for published Documents by clicking on the button \"Send notification emails\" (to internal users) or \"Send external emails\" (to  external users)."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3881
+#: includes/class-wpdr-email-notice.php:3924
 msgid "Internal users are those with user-ids on the site. They can decide whether they wish to receive these notifications or not and whether a copy of the document should be attached the mail."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3882
+#: includes/class-wpdr-email-notice.php:3925
 msgid "This data can also be updated by Administrators (also using Bulk Editing functions)."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3883
+#: includes/class-wpdr-email-notice.php:3926
 msgid "External users normally do not have a sign-on. Notifications are based on the concept of External Lists. A list will contain one or more taxonomy terms that will be matched again the document terms."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3884
+#: includes/class-wpdr-email-notice.php:3927
 msgid "Every published External List (except those marked as Paused) will be tested to see whether its terms match those on the Document."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3885
+#: includes/class-wpdr-email-notice.php:3928
 msgid "Those that match are listed below the button (only for users with the read_doc_ext_lists permission). If the user can maintain the External List, then they can choose to not send the mail to a List by unchecking the List before sending the Notification."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3886
+#: includes/class-wpdr-email-notice.php:3929
 msgid "A term on the List matches with one on the Document if they are same or, for hierarchical taxonomies, the List term is a parent of the Document term."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3887
+#: includes/class-wpdr-email-notice.php:3930
 msgid "When there are several terms on the List, a rule can be set so that the List is matched if either any term matches or all terms on the List must match."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3888
+#: includes/class-wpdr-email-notice.php:3931
 msgid "Potentially several Lists may match the Document. Emails will be sent to every user (except those individually paused) on each list that is matched."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3889
+#: includes/class-wpdr-email-notice.php:3932
 msgid "Document Email Extra Text"
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3890
+#: includes/class-wpdr-email-notice.php:3933
 msgid "You can include some message-specific additional text with the notification emails."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3892
+#: includes/class-wpdr-email-notice.php:3935
 msgid "The template used (Internal or External) has to contain the tag \"%extra%\" in it to use this capability."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3893
+#: includes/class-wpdr-email-notice.php:3936
 msgid "If neither template contains the tag then the various options are not shown."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3894
+#: includes/class-wpdr-email-notice.php:3937
 msgid "A checkbox which is initially disabled with label \"Add Extra Text\" is placed next to each Send button."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3895
+#: includes/class-wpdr-email-notice.php:3938
 msgid "On entering some text in the text field, the checkboxes will become active if the template allows it."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3896
+#: includes/class-wpdr-email-notice.php:3939
 msgid "The extra text will only be included if the corresponding checkbox is checked when the send button is clicked."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3897
+#: includes/class-wpdr-email-notice.php:3940
 msgid "The Extra text can contains html tags to better format the output."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3941, includes/class-wpdr-email-notice.php:3972
+#: includes/class-wpdr-email-notice.php:3984, includes/class-wpdr-email-notice.php:4015
 msgid "There are no terms defined for matching with this list. Please add at least one."
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:3954
+#: includes/class-wpdr-email-notice.php:3997
 msgid "There are no addressees defined for matching with this list. Please add at least one."
 msgstr ""
 
 #. translators: %1$s is the taxonomy name, %2$s is the parent term, %3$s is the child term.
-#: includes/class-wpdr-email-notice.php:3979
+#: includes/class-wpdr-email-notice.php:4022
 msgid "Taxonomy: %1$s. Cannot have both parent (%2$s) and child terms (%3$s). Remove child term as parent term will match."
 msgstr ""
 
 #. translators: %s is the taxonomy name.
-#: includes/class-wpdr-email-notice.php:4002
+#: includes/class-wpdr-email-notice.php:4045
 msgid "Taxonomy: %s. You must redo your non-hierarchical changes manually."
 msgstr ""
 
 #. translators: %1$s is the taxonomy term name.
-#: includes/class-wpdr-email-notice.php:4014
+#: includes/class-wpdr-email-notice.php:4057
 msgid "Remove Term: %1$s "
 msgstr ""
 
-#: includes/class-wpdr-email-notice.php:4010
+#: includes/class-wpdr-email-notice.php:4053
 msgid "Add Term: %1$s "
 msgstr ""
 
@@ -1008,7 +1056,17 @@ msgstr ""
 msgid "List Title"
 msgstr ""
 
-#: includes/class-wpdr-en-ext-log-table.php:240, includes/class-wpdr-en-user-log-table.php:248
+#. translators: %d: log entry ID.
+#: includes/class-wpdr-en-ext-log-table.php:135, includes/class-wpdr-en-user-log-table.php:130
+msgid "Extra Text for log entry %d"
+msgstr ""
+
+#. translators: %d: log entry ID.
+#: includes/class-wpdr-en-ext-log-table.php:138, includes/class-wpdr-en-user-log-table.php:133
+msgid "Extra text sent with log entry %d"
+msgstr ""
+
+#: includes/class-wpdr-en-ext-log-table.php:249, includes/class-wpdr-en-user-log-table.php:257
 msgid "No emails sent out, yet."
 msgstr ""
 
@@ -1020,19 +1078,23 @@ msgstr ""
 msgid "External User Addresses"
 msgstr ""
 
-#: includes/class-wpdr-en-ext-user-table.php:158
+#: includes/class-wpdr-en-ext-user-table.php:140
+msgid "Mail paused"
+msgstr ""
+
+#: includes/class-wpdr-en-ext-user-table.php:162
 msgid "Edit"
 msgstr ""
 
-#: includes/class-wpdr-en-ext-user-table.php:164
+#: includes/class-wpdr-en-ext-user-table.php:169
 msgid "Delete"
 msgstr ""
 
-#: includes/class-wpdr-en-ext-user-table.php:289
+#: includes/class-wpdr-en-ext-user-table.php:295
 msgid "No matching addressees found."
 msgstr ""
 
-#: includes/class-wpdr-en-ext-user-table.php:287
+#: includes/class-wpdr-en-ext-user-table.php:293
 msgid "No addressees created yet."
 msgstr ""
 
