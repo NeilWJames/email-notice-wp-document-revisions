@@ -1,0 +1,17 @@
+# PHPStan static analysis: `composer analyse`. Details in tests/test_suite.md.
+# Level 5: argument and return types, impossible comparisons, PHPDoc that doesn't match the code.
+# WordPress functions and hooks come from szepeviktor/phpstan-wordpress, included here rather than through
+# phpstan/extension-installer, which depends on Composer running it as a plugin.
+includes:
+	- vendor/szepeviktor/phpstan-wordpress/extension.neon
+	- tests/phpstan/wpdr.php
+
+parameters:
+	level: 5
+	phpVersion:
+		min: 80000
+		max: 80599
+	paths:
+		- wpdr-email-notice.php
+		- uninstall.php
+		- includes
