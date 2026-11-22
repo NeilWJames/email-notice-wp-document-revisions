@@ -13,15 +13,16 @@ function listScreen() {
 		<form id="post">
 		<input type="hidden" id="post_ID" value="12">
 		<input type="hidden" id="hiddenaction" value="editpost">
+		<p id="wpdr-en-entry-help">Enter a name and an email address.</p>
 		<table id="user-entry">
-		<tr><td><input type="text" id="wpdr-en-user-name"></td></tr>
-		<tr><td><input type="text" id="wpdr-en-email"></td></tr>
+		<tr><td><input type="text" id="wpdr-en-user-name" aria-describedby="wpdr-en-entry-help"></td></tr>
+		<tr><td><input type="text" id="wpdr-en-email" aria-describedby="wpdr-en-entry-help"></td></tr>
 		<tr><td><input type="checkbox" id="wpdr_pause"></td></tr>
 		<tr><td><div id="clear_address" style="display:none"></div></td>
 		<td><input type="submit" id="add_address" value="Add Address to List" disabled></td></tr>
-		<tr><td><p id="wpdr-en-message"></p></td></tr>
+		<tr><td><p id="wpdr-en-message" role="status" aria-live="polite"></p></td></tr>
 		</table>
-		<div id="current-list"><table><tr><td>old</td></tr></table></div>
+		<div id="current-list"><h2 id="wpdr-en-list-heading" tabindex="-1">List</h2><table><tr><td>old</td></tr></table></div>
 		<input type="submit" id="search-submit">
 		</form>`;
 }
@@ -64,6 +65,19 @@ describe( 'address entry', () => {
 		expect( document.getElementById( 'current-list' ).textContent ).toBe( 'Ann' );
 		expect( document.getElementById( 'wpdr-en-user-name' ).value ).toBe( '' );
 		expect( document.getElementById( 'add_address' ).disabled ).toBe( true );
+		// Announced in the status region, and ready for the next address.
+		expect( document.getElementById( 'wpdr-en-message' ).textContent ).toBe( 'Address added to the List.' );
+		expect( document.activeElement.id ).toBe( 'wpdr-en-user-name' );
+	} );
+
+	test( 'saving an edited address says it was updated', () => {
+		const ajax = loadScript( 'wpdr-en-address', listScreen() );
+		document.getElementById( 'add_address' ).value = 'Edit existing Address';
+		asOnclick( wpdr_en_insert );
+
+		lastRequest( ajax ).success( { error: false, error_msg: JSON.stringify( '<p>table</p>' ) } );
+
+		expect( document.getElementById( 'wpdr-en-message' ).textContent ).toBe( 'Address updated.' );
 	} );
 
 	test( 'an error is shown as text and the entry kept', () => {
@@ -75,19 +89,63 @@ describe( 'address entry', () => {
 
 		expect( document.getElementById( 'wpdr-en-message' ).textContent ).toBe( 'Invalid <b>email</b> address ( F-17 )' );
 		expect( document.getElementById( 'wpdr-en-email' ).value ).toBe( 'bad' );
-		expect( document.getElementById( 'current-list' ).textContent ).toBe( 'old' );
+		expect( document.getElementById( 'current-list' ).textContent ).toBe( 'Listold' );
 	} );
 
-	test( 'Delete posts the List and record number', () => {
+	test( 'an invalid email address marks the field and takes focus to it', () => {
+		const ajax  = loadScript( 'wpdr-en-address', listScreen() );
+		const email = document.getElementById( 'wpdr-en-email' );
+		email.value = 'bad';
+		asOnclick( wpdr_en_insert );
+
+		lastRequest( ajax ).success( { error: true, error_msg: 'Invalid email address', error_code: 'F-17' } );
+
+		expect( email.getAttribute( 'aria-invalid' ) ).toBe( 'true' );
+		expect( email.getAttribute( 'aria-describedby' ) ).toBe( 'wpdr-en-message wpdr-en-entry-help' );
+		expect( document.activeElement ).toBe( email );
+
+		// Typing again clears the mark; a successful add resets the description.
+		email.value = 'good@example.org';
+		email.dispatchEvent( new Event( 'input' ) );
+		expect( email.hasAttribute( 'aria-invalid' ) ).toBe( false );
+		asOnclick( wpdr_en_insert );
+		lastRequest( ajax ).success( { error: false, error_msg: JSON.stringify( '<p>table</p>' ) } );
+		expect( email.getAttribute( 'aria-describedby' ) ).toBe( 'wpdr-en-entry-help' );
+	} );
+
+	test( 'other errors leave the email field alone', () => {
+		const ajax = loadScript( 'wpdr-en-address', listScreen() );
+		asOnclick( wpdr_en_insert );
+
+		lastRequest( ajax ).success( { error: true, error_msg: 'Something went wrong', error_code: 'F-11' } );
+
+		expect( document.getElementById( 'wpdr-en-email' ).hasAttribute( 'aria-invalid' ) ).toBe( false );
+	} );
+
+	test( 'Delete asks first, then posts the List and record number', () => {
 		const ajax = loadScript( 'wpdr-en-address', listScreen() );
 
 		const event = asOnclick( wpdr_en_delete, 12, 3 );
 
+		expect( window.confirm ).toHaveBeenCalledWith( 'Delete this address from the List? This cannot be undone.' );
 		const req = lastRequest( ajax );
 		expect( req.data ).toEqual( { action: 'wpdr_en_del_address', post_id: 12, del_rec: 3, wpdr_en_nonce: 'nonce123' } );
 		expect( event.defaultPrevented ).toBe( true );
-		req.success( { error: false, error_msg: JSON.stringify( '<p>empty</p>' ) } );
-		expect( document.getElementById( 'current-list' ).innerHTML ).toBe( '<p>empty</p>' );
+		req.success( { error: false, error_msg: JSON.stringify( '<h2 id="wpdr-en-list-heading" tabindex="-1">List</h2><p>empty</p>' ) } );
+		expect( document.getElementById( 'current-list' ).innerHTML ).toBe( '<h2 id="wpdr-en-list-heading" tabindex="-1">List</h2><p>empty</p>' );
+		// Announced, and focus moves to the table heading (the Delete button is gone).
+		expect( document.getElementById( 'wpdr-en-message' ).textContent ).toBe( 'Address deleted from the List.' );
+		expect( document.activeElement.id ).toBe( 'wpdr-en-list-heading' );
+	} );
+
+	test( 'cancelling the Delete question deletes nothing', () => {
+		const ajax = loadScript( 'wpdr-en-address', listScreen() );
+		window.confirm.mockReturnValueOnce( false );
+
+		const event = asOnclick( wpdr_en_delete, 12, 3 );
+
+		expect( ajax ).not.toHaveBeenCalled();
+		expect( event.defaultPrevented ).toBe( true );
 	} );
 
 	test( 'Edit copies the row into the entry; Clear resets it', () => {
@@ -104,7 +162,10 @@ describe( 'address entry', () => {
 		expect( document.getElementById( 'wpdr_pause' ).checked ).toBe( true );
 		expect( document.getElementById( 'add_address' ).value ).toBe( 'Edit existing Address' );
 		expect( document.getElementById( 'clear_address' ).style.display ).toBe( 'block' );
+		// Focus goes to the values being edited.
+		expect( document.activeElement.id ).toBe( 'wpdr-en-user-name' );
 
+		document.getElementById( 'add_address' ).focus();
 		const event = asOnclick( wpdr_en_clear );
 
 		expect( event.defaultPrevented ).toBe( true );
@@ -112,6 +173,7 @@ describe( 'address entry', () => {
 		expect( document.getElementById( 'wpdr-en-email' ).disabled ).toBe( false );
 		expect( document.getElementById( 'add_address' ).value ).toBe( 'Add Address to List' );
 		expect( document.getElementById( 'clear_address' ).style.display ).toBe( 'none' );
+		expect( document.activeElement.id ).toBe( 'wpdr-en-user-name' );
 	} );
 
 	test( 'Add is enabled only with a name and an email', () => {
@@ -129,6 +191,20 @@ describe( 'address entry', () => {
 		document.getElementById( 'wpdr-en-user-name' ).value = '  ';
 		check_address();
 		expect( add.disabled ).toBe( true );
+	} );
+
+	test( 'Add is enabled as the user types, not only on leaving a field', () => {
+		loadScript( 'wpdr-en-address', listScreen() );
+		const type = ( id, value ) => {
+			const field = document.getElementById( id );
+			field.value = value;
+			field.dispatchEvent( new Event( 'input' ) );
+		};
+
+		type( 'wpdr-en-user-name', 'Ann' );
+		expect( document.getElementById( 'add_address' ).disabled ).toBe( true );
+		type( 'wpdr-en-email', 'a' );
+		expect( document.getElementById( 'add_address' ).disabled ).toBe( false );
 	} );
 
 	test( 'functions called without an event (e.g. from code) do not fail', () => {
@@ -188,8 +264,8 @@ describe( 'Quick Edit', () => {
 				<button type="button" class="editinline">Quick Edit</button>
 			</td></tr>
 			<tr id="edit-8" class="inline-edit-row"><td>
-				<input type="radio" id="tm_any" name="tm_rule" value="0">
-				<input type="radio" id="tm_all" name="tm_rule" value="1">
+				<input type="radio" name="tm_rule" value="0">
+				<input type="radio" name="tm_rule" value="1">
 				<input type="checkbox" name="wpdr_en_attach" value="">
 				<input type="checkbox" name="wpdr_en_pause" value="">
 			</td></tr>
@@ -203,21 +279,22 @@ describe( 'Quick Edit', () => {
 		document.querySelector( '.editinline' ).click();
 
 		const row = document.getElementById( 'edit-8' );
-		expect( row.querySelector( '#tm_all' ).checked ).toBe( true );
-		expect( row.querySelector( '#tm_any' ).checked ).toBe( false );
+		expect( row.querySelector( '[name="tm_rule"][value="1"]' ).checked ).toBe( true );
+		expect( row.querySelector( '[name="tm_rule"][value="0"]' ).checked ).toBe( false );
 		expect( row.querySelector( '[name="wpdr_en_attach"]' ).checked ).toBe( true );
 		expect( row.querySelector( '[name="wpdr_en_pause"]' ).checked ).toBe( false );
 	} );
 
 	test( 'ticking a box in Quick Edit updates its value', () => {
 		loadScript( 'wpdr-en-address', listTable( { tm: 0, attach: 0, pause: 0 } ) );
-		document.querySelector( '.editinline' ).dispatchEvent( new KeyboardEvent( 'keypress', { bubbles: true } ) );
+		// Pressing Enter on the Quick Edit button clicks it, so there is no separate key handler.
+		document.querySelector( '.editinline' ).click();
 		const pause = document.querySelector( '#edit-8 [name="wpdr_en_pause"]' );
 
 		pause.click();
 
 		expect( pause.value ).toBe( '1' );
-		expect( document.querySelector( '#edit-8 #tm_any' ).checked ).toBe( true );
+		expect( document.querySelector( '#edit-8 [name="tm_rule"][value="0"]' ).checked ).toBe( true );
 	} );
 
 	test( 'other clicks in the table change nothing', () => {
@@ -225,6 +302,6 @@ describe( 'Quick Edit', () => {
 
 		document.getElementById( 'tm-rule-8' ).click();
 
-		expect( document.querySelector( '#edit-8 #tm_all' ).checked ).toBe( false );
+		expect( document.querySelector( '#edit-8 [name="tm_rule"][value="1"]' ).checked ).toBe( false );
 	} );
 } );

@@ -6,12 +6,17 @@
 /**
  * Show or hide a log row's extra text.
  *
- * @param {number} id Log row ID.
+ * @param {number}            id     Log row ID.
+ * @param {HTMLButtonElement} button The Extra Text button (its aria-expanded follows the text box).
  */
-function wpdr_en_extra( id ) {
+function wpdr_en_extra( id, button ) {
 	const text = document.getElementById( 'extra_' + id );
 	if ( ! text ) {
 		return;
 	}
-	text.style.display = ( 'none' === getComputedStyle( text ).display ? 'block' : 'none' );
+	const show = ( 'none' === getComputedStyle( text ).display );
+	text.style.display = ( show ? 'block' : 'none' );
+	if ( button ) {
+		button.setAttribute( 'aria-expanded', show ? 'true' : 'false' );
+	}
 }

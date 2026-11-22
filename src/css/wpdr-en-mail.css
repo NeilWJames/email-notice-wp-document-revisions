@@ -1,13 +1,33 @@
 /* Squeeze the entry details a little. */
+#user-entry th,
 #user-entry td {
     padding: 5px;
+}
+#user-entry th {
+    width: auto;
 }
 /* Put the list title in bold. */
 #user-list h2 {
     font-weight: bold;
 }
 /* Adjust the user list column widths slightly to allow name/mail to be bigger */
-#rec_num 
+#rec_num,
 #pause {
     width: 15%;
+}
+/* List Attributes: each setting is a fieldset whose legend looks like a heading. */
+.wpdr-en-attr {
+    margin: 0 0 1em;
+}
+.wpdr-en-legend {
+    display: block;
+    margin: 1em 0 0.5em;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+/* Quick Edit: space between the match rule choices. */
+.inline-edit-row .column-tm_rule label,
+.wpdr-en-qe-title {
+    margin-right: 1em;
 }

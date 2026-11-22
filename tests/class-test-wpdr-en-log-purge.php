@@ -168,7 +168,9 @@ class Test_WPDR_EN_Log_Purge extends WPDR_EN_UnitTestCase {
 	}
 
 	/**
-	 * The daily job is scheduled on admin_init and runs purge_logs().
+	 * The daily job is scheduled on admin_init and its callback deletes old entries.
+	 *
+	 * The callback is purge_logs_daily() (an action callback returns nothing); purge_logs() returns the counts.
 	 */
 	public function test_daily_job() {
 		global $wpdr_en;
@@ -178,7 +180,16 @@ class Test_WPDR_EN_Log_Purge extends WPDR_EN_UnitTestCase {
 
 		$this->assertNotFalse( wp_next_scheduled( 'wpdr_en_purge_logs' ) );
 		$this->assertSame( 'daily', wp_get_schedule( 'wpdr_en_purge_logs' ) );
-		$this->assertNotFalse( has_action( 'wpdr_en_purge_logs', array( $wpdr_en, 'purge_logs' ) ) );
+		$this->assertNotFalse( has_action( 'wpdr_en_purge_logs', array( $wpdr_en, 'purge_logs_daily' ) ) );
+
+		// Running the hook deletes as purge_logs() does.
+		self::subscribe( self::$users['subscriber'] );
+		$old = self::create_document();
+		$wpdr_en->notify( $old, '' );
+		self::modified_days_ago( $old, 100 );
+		update_option( 'wpdr_en_set_log_days', 90 );
+		do_action( 'wpdr_en_purge_logs' );
+		$this->assertSame( 0, self::rows( 'wpdr_notification_log', $old ) );
 
 		wpdr_en_deactivate();
 		$this->assertFalse( wp_next_scheduled( 'wpdr_en_purge_logs' ), 'cleared on deactivation' );

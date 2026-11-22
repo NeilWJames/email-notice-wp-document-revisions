@@ -144,6 +144,7 @@ export function addressForm( page ) {
 		add: page.locator( '#add_address' ),
 		clear: page.getByRole( 'button', { name: 'Clear values' } ),
 		message: page.locator( '#wpdr-en-message' ),
+		heading: page.locator( '#wpdr-en-list-heading' ),
 		table: page.locator( '#current-list table.wp-list-table' ),
 		row: ( text ) =>
 			page
@@ -153,7 +154,7 @@ export function addressForm( page ) {
 }
 
 /**
- * Enter a name and email address. The form checks them when a field is left.
+ * Enter a name and email address. The form checks them as they are typed.
  *
  * @param {Object} form  Locators from addressForm().
  * @param {string} name  User name.

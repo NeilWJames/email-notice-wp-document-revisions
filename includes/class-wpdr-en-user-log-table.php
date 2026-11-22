@@ -65,7 +65,7 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	 * Define sortable columns for table.
 	 *
 	 * @since 1.0
-	 * @return string[]
+	 * @return array<string, array{0: string, 1: bool}> Column => [ orderby, initially descending ].
 	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
@@ -84,7 +84,7 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 	 * @since 1.0
 	 * @param mixed[] $item        row in List Table.
 	 * @param string  $column_name column name.
-	 * @return string[]
+	 * @return string Cell HTML.
 	 */
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
@@ -120,10 +120,19 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 		if ( empty( $item['extra_text'] ) ) {
 			return (string) $id;
 		}
+		// A disclosure button: it says whether the text is shown, which entry it belongs to, and controls a read-only, labelled text box.
 		$actions = array(
-			'view' => '<button onclick="wpdr_en_extra( ' . $id . ' )">' . esc_html__( 'Extra Text', 'email-notice-wp-document-revisions' ) . '</button>&nbsp;&nbsp;' .
-					'<textarea id="extra_' . $id . '" onclick="wpdr_en_extra( ' . $id . ' )" rows="3" cols="40" style="display: none">' .
-					esc_textarea( $item['extra_text'] ) . '</textarea>',
+			'view' => sprintf(
+				'<button type="button" aria-expanded="false" aria-controls="extra_%1$d" aria-label="%2$s" onclick="wpdr_en_extra( %1$d, this )">%3$s</button> ' .
+					'<textarea id="extra_%1$d" rows="3" cols="40" readonly aria-label="%4$s" style="display: none">%5$s</textarea>',
+				$id,
+				/* translators: %d: log entry ID. */
+				esc_attr( sprintf( __( 'Extra Text for log entry %d', 'email-notice-wp-document-revisions' ), $id ) ),
+				esc_html__( 'Extra Text', 'email-notice-wp-document-revisions' ),
+				/* translators: %d: log entry ID. */
+				esc_attr( sprintf( __( 'Extra text sent with log entry %d', 'email-notice-wp-document-revisions' ), $id ) ),
+				esc_textarea( $item['extra_text'] )
+			),
 		);
 		return sprintf( '%1$d %2$s', $id, $this->row_actions( $actions, true ) );
 	}
@@ -152,7 +161,7 @@ class WPDR_EN_User_Log_Table extends WP_List_Table {
 			array(
 				'total_items' => $total_items,                      // WE have to calculate the total number of items.
 				'per_page'    => $per_page,                         // WE have to determine how many items to show on a page.
-				'total_pages' => ceil( $total_items / $per_page ),  // WE have to calculate the total number of pages.
+				'total_pages' => (int) ceil( $total_items / $per_page ),  // WE have to calculate the total number of pages.
 			)
 		);
 	}

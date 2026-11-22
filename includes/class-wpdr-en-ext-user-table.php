@@ -111,7 +111,7 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 	 * Define sortable columns for table.
 	 *
 	 * @since 2.0
-	 * @return string[]
+	 * @return array<string, array{0: string, 1: bool}> Column => [ orderby, initially descending ].
 	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
@@ -127,7 +127,7 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 	 * @since 2.0
 	 * @param mixed[] $item        row in List Table.
 	 * @param string  $column_name column name.
-	 * @return string[]
+	 * @return string Cell HTML.
 	 */
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
@@ -136,8 +136,10 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 			case 'email':
 				return esc_html( $item[ $column_name ] );
 			case 'pause':
-				return '<input type="checkbox"' . ( 0 === $item[ $column_name ] ? '' : '  checked="checked"' ) . ' disabled></>&nbsp;';
+				// Read-only box, named for screen readers.
+				return '<input type="checkbox"' . ( 0 === $item[ $column_name ] ? '' : ' checked="checked"' ) . ' disabled aria-label="' . esc_attr__( 'Mail paused', 'email-notice-wp-document-revisions' ) . '">';
 		}
+		return '';
 	}
 
 	/**
@@ -145,23 +147,27 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 	 *
 	 * @since 2.0
 	 * @param mixed[] $item row in List Table.
-	 * @return string[]
+	 * @return string Cell HTML.
 	 */
 	public function column_rec_num( $item ) {
 		// Values go in escaped data attributes, never into the onclick JavaScript itself.
+		// Each button's hidden text names the address, as every row has the same Edit and Delete buttons.
+		$email   = esc_html( $item['email'] );
 		$actions = array(
 			'edit'   => sprintf(
-				'<button onclick="wpdr_en_edit( this )" data-user-name="%1$s" data-email="%2$s" data-pause="%3$d">%4$s</button>',
+				'<button type="button" onclick="wpdr_en_edit( this )" data-user-name="%1$s" data-email="%2$s" data-pause="%3$d">%4$s<span class="screen-reader-text"> %5$s</span></button>',
 				esc_attr( $item['user_name'] ),
 				esc_attr( $item['email'] ),
 				(int) $item['pause'],
-				esc_html__( 'Edit', 'email-notice-wp-document-revisions' )
+				esc_html__( 'Edit', 'email-notice-wp-document-revisions' ),
+				$email
 			),
 			'delete' => sprintf(
-				'<button onclick="wpdr_en_delete( %1$d, %2$d )">%3$s</button>',
+				'<button type="button" onclick="wpdr_en_delete( %1$d, %2$d )">%3$s<span class="screen-reader-text"> %4$s</span></button>',
 				(int) self::$post_id,
 				(int) $item['rec_num'],
-				esc_html__( 'Delete', 'email-notice-wp-document-revisions' )
+				esc_html__( 'Delete', 'email-notice-wp-document-revisions' ),
+				$email
 			),
 		);
 
@@ -271,7 +277,7 @@ class WPDR_EN_Ext_User_Table extends WP_List_Table {
 			array(
 				'total_items' => $total_items,                      // WE have to calculate the total number of items.
 				'per_page'    => $per_page,                         // WE have to determine how many items to show on a page.
-				'total_pages' => ceil( $total_items / $per_page ),  // WE have to calculate the total number of pages.
+				'total_pages' => (int) ceil( $total_items / $per_page ),  // WE have to calculate the total number of pages.
 			)
 		);
 	}

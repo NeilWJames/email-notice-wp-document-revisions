@@ -36,13 +36,16 @@ test( 'adds, edits and deletes an address without reloading the page', async ( {
 	const form = addressForm( page );
 	await expect( form.row( 'Supplies Ltd' ) ).toHaveCount( 1 );
 
-	// Add is enabled only with a name and an email address.
+	// The fields are labelled, and the result area is a status region.
+	await expect( page.getByLabel( 'User Name', { exact: true } ) ).toHaveId( 'wpdr-en-user-name' );
+	await expect( page.getByLabel( 'Email Address', { exact: true } ) ).toHaveId( 'wpdr-en-email' );
+	await expect( form.message ).toHaveAttribute( 'role', 'status' );
+
+	// Add is enabled only with a name and an email address, as they are typed.
 	await expect( form.add ).toBeDisabled();
 	await form.name.fill( 'Zoe Zed' );
-	await form.name.press( 'Tab' );
 	await expect( form.add ).toBeDisabled();
 	await form.email.fill( 'zoe@supplies.example' );
-	await form.email.press( 'Tab' );
 	await expect( form.add ).toBeEnabled();
 
 	// Mark the page: a reload would lose the mark.
@@ -51,14 +54,18 @@ test( 'adds, edits and deletes an address without reloading the page', async ( {
 	await expect( form.row( 'zoe@supplies.example' ) ).toHaveCount( 1 );
 	await expect( form.name ).toHaveValue( '' );
 	await expect( form.add ).toBeDisabled();
+	// Announced, and focus is ready for the next address.
+	await expect( form.message ).toHaveText( 'Address added to the List.' );
+	await expect( form.name ).toBeFocused();
 
 	// Edit: the email address is the key, so it cannot be changed.
-	// The row actions show when the pointer is over the row.
+	// The row actions show when the pointer is over the row; each button names its address.
 	await form.row( 'zoe@supplies.example' ).hover();
 	await form
 		.row( 'zoe@supplies.example' )
-		.getByRole( 'button', { name: 'Edit', exact: true } )
+		.getByRole( 'button', { name: 'Edit zoe@supplies.example', exact: true } )
 		.click();
+	await expect( form.name ).toBeFocused();
 	await expect( form.name ).toHaveValue( 'Zoe Zed' );
 	await expect( form.email ).toBeDisabled();
 	await expect( form.add ).toHaveValue( 'Edit existing Address' );
@@ -67,14 +74,28 @@ test( 'adds, edits and deletes an address without reloading the page', async ( {
 	await form.add.click();
 	const zoe = form.row( 'zoe@supplies.example' );
 	await expect( zoe ).toContainText( 'Zoe Zed-Smith' );
-	await expect( zoe.getByRole( 'checkbox' ) ).toBeChecked();
+	await expect( zoe.getByRole( 'checkbox', { name: 'Mail paused' } ) ).toBeChecked();
 	await expect( form.add ).toHaveValue( 'Add Address to List' );
+	await expect( form.message ).toHaveText( 'Address updated.' );
 
-	// Delete.
+	// Delete asks first: cancelling keeps the address.
+	const deleteZoe = zoe.getByRole( 'button', {
+		name: 'Delete zoe@supplies.example',
+		exact: true,
+	} );
 	await zoe.hover();
-	await zoe.getByRole( 'button', { name: 'Delete', exact: true } ).click();
+	page.once( 'dialog', ( dialog ) => dialog.dismiss() );
+	await deleteZoe.click();
+	await expect( form.row( 'zoe@supplies.example' ) ).toHaveCount( 1 );
+
+	page.once( 'dialog', ( dialog ) => dialog.accept() );
+	await zoe.hover();
+	await deleteZoe.click();
 	await expect( form.row( 'zoe@supplies.example' ) ).toHaveCount( 0 );
 	await expect( form.row( 'Supplies Ltd' ) ).toHaveCount( 1 );
+	// Announced; the button pressed is gone, so focus is on the table heading.
+	await expect( form.message ).toHaveText( 'Address deleted from the List.' );
+	await expect( form.heading ).toBeFocused();
 
 	expect( await page.evaluate( () => window.wpdrEnNoReload ) ).toBe( true );
 	expect( errors ).toEqual( [] );
@@ -91,6 +112,9 @@ test( 'an added address is kept, and an invalid one refused', async ( {
 	await form.add.click();
 	await expect( form.message ).not.toBeEmpty();
 	await expect( form.email ).toHaveValue( 'not-an-email' );
+	// The field is marked invalid and has focus.
+	await expect( form.email ).toHaveAttribute( 'aria-invalid', 'true' );
+	await expect( form.email ).toBeFocused();
 	await expect( form.row( 'not-an-email' ) ).toHaveCount( 0 );
 
 	await enterAddress( form, 'Yves Young', 'yves@supplies.example' );

@@ -1,8 +1,27 @@
 # Changelog
 
+## 4.0.1
+
+Release date: November 23, 2026
+
+### Breaking changes
+
+* Admin screen markup changed for accessibility. Custom CSS or scripts that target the removed ids and classes need updating: the profile section's `wpdr_en-header` and `wpdr_en-content` wrappers (its heading is now an h2), the List Attributes `tm_label` and `tm_ruled` ids, the Quick Edit `tm_any`, `tm_all`, `tm_label`, `tm_descr` and `tm_ruled` ids, and the progress image `spnSendNotifications`.
+
+* FIX: Accessibility: External List address entry: the fields are labelled; adding, updating or deleting an address is announced to screen readers, and focus moves to the name field (or, after a delete, to the address table heading) instead of being lost; an invalid email address is marked and focused. Add Address to List is enabled as you type. Delete asks before deleting.
+* FIX: Accessibility: Document metabox: sending results and errors go to a status region that screen readers announce (errors no longer use an alert box); the extra text box is labelled by its visible text; a disabled Send button says why it can't be used; the progress icon is the WordPress spinner (it was an image without alt text); the Lists to send to are a named group.
+* FIX: Accessibility: Email logs: the Extra Text button says whether the text is shown and which log entry it belongs to; the text box is labelled and read-only, and no longer hides itself when clicked.
+* FIX: Accessibility: Edit and Delete in the address table name their address; the read-only boxes in the Lists table and the address table are named.
+* FIX: Accessibility: Groups of choices are fieldsets with legends (settings, profile, List Attributes, Quick Edit) and hints are linked to their fields. The profile section heading is an h2, like the rest of that screen. The template tags in Settings > Writing are a description list. The List Attributes headings no longer use the metabox drag-handle class.
+* FIX: Accessibility: Notification emails state their language, text direction, character set and title. The closing text of the default templates is no longer in small print.
+* FIX: Repeated ids in Quick Edit and Bulk Edit, unclosed tags and a broken style in the Document metabox, `</input>` tags in the From settings, and the address table column widths (a missing comma in the style sheet).
+* DEV: PHPStan static analysis at level 5 with WordPress's types (szepeviktor/phpstan-wordpress): `composer analyse` (phpstan.neon.dist) and a phpstan job in CI. Fixed what it found: wrong PHPDoc types (list table cells and sortable columns, hook parameters, send results, the repeat text), a save_post_document hook registered with three arguments for a one-argument callback, esc_url_raw() given a URL scheme where it takes a list of protocols, the DOING_AJAX constant (now wp_doing_ajax()), redundant or always-true checks, and a missing return in the address table. The daily clean-up hook now calls purge_logs_daily(), which returns nothing; purge_logs() still returns the counts.
+* DEV: End-to-end test helper works with WordPress 7.1.5, which serves no REST request when WP_ADMIN is defined: its routes now count as admin requests through an admin screen instead, and accept the logged-in cookie.
+* DEV: Accessibility tests: PHPUnit `class-test-wpdr-en-accessibility.php`; Jest tests for the status messages, focus, Delete confirmation and aria-expanded; end-to-end checks of labels, announcements and focus.
+
 ## 4.0.0
 
-Release date: (in development)
+Release date: October 12, 2026
 
 ### Breaking changes
 

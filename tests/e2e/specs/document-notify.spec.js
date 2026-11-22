@@ -39,6 +39,9 @@ test( 'sends to subscribed users, then offers to re-send', async ( {
 	const box = notifyBox( page );
 
 	await expect( box.intButton ).toHaveValue( 'Send notification email(s)' );
+	// The result is written to a status region, so screen readers announce it.
+	await expect( box.message ).toHaveAttribute( 'role', 'status' );
+	await expect( box.extra ).toHaveAccessibleName( 'Optional Extra text for this specific mailing' );
 	await box.intButton.click();
 
 	await expect( box.message ).toContainText( 'notification(s) sent.' );

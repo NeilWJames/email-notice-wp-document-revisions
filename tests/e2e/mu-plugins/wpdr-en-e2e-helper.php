@@ -9,16 +9,39 @@
 defined( 'ABSPATH' ) || exit;
 
 /*
- * The plugin only loads in the admin (and for WP-Cron). The helper routes create Documents, Lists and
- * notifications with the plugin's own code, so a request for them runs as an admin request, as the
- * playground blueprint's runPHP step does.
+ * The plugin only loads in the admin (is_admin(), or WP-Cron). The helper routes create Documents, Lists and
+ * notifications with the plugin's own code, so a request for them must count as an admin request.
+ *
+ * This used to define WP_ADMIN. From WordPress 7.1.5, rest_api_loaded() serves no REST request when WP_ADMIN
+ * is defined (the site's home page came back instead). is_admin() also follows the current screen, so an
+ * admin screen is set instead, as tests/bootstrap.php does for PHPUnit. Must-use plugins load before the
+ * plugin decides whether to load.
  */
 // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- only compared with a fixed string.
 $wpdr_en_e2e_uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-if ( str_contains( rawurldecode( $wpdr_en_e2e_uri ), 'wpdr-en-e2e/v1' ) && ! defined( 'WP_ADMIN' ) ) {
-	define( 'WP_ADMIN', true );
+if ( str_contains( rawurldecode( $wpdr_en_e2e_uri ), 'wpdr-en-e2e/v1' ) && ! is_admin() ) {
+	require_once ABSPATH . 'wp-admin/includes/class-wp-screen.php';
+	require_once ABSPATH . 'wp-admin/includes/screen.php';
+	$GLOBALS['current_screen'] = WP_Screen::get( 'dashboard' ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	// An admin screen makes WordPress use only the /wp-admin/ login cookie, which a /wp-json/ request doesn't
+	// carry, so the request would count as logged out (403). Accept the logged-in cookie, as WordPress does for
+	// any request that isn't an admin screen.
+	add_filter( 'determine_current_user', 'wpdr_en_e2e_logged_in_user', 30 );
 }
 unset( $wpdr_en_e2e_uri );
+
+/**
+ * The user from the logged-in cookie, for the helper routes (see above).
+ *
+ * @param int|false $user_id User ID found so far.
+ * @return int|false
+ */
+function wpdr_en_e2e_logged_in_user( $user_id ) {
+	if ( $user_id ) {
+		return $user_id;
+	}
+	return wp_validate_auth_cookie( '', 'logged_in' );
+}
 
 // The playground's Departments taxonomy, no mail server and no pause between emails.
 $wpdr_en_e2e_demo = WP_PLUGIN_DIR . '/email-notice-wp-document-revisions/playground/demo-mu-plugin.php';

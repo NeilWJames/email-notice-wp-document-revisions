@@ -1,6 +1,8 @@
 /*
 // Scripts for WPDR Custom Email Settings (Document Email Notifications metabox).
 // @version: 4.0
+//
+// #wpdr-en-message is a status region (role="status"): what is written to it is announced by screen readers.
 */
 
 /**
@@ -17,10 +19,9 @@ function wpdr_en_send( button, action, data, use_extra ) {
 	const progress = document.getElementById( 'dProgress' );
 	const message  = document.getElementById( 'wpdr-en-message' );
 
-	button.disabled          = true;
-	progress.style.display   = 'inline-block';
-	message.style.display    = 'inline-block';
-	message.textContent      = wpdr_en_obj.sending_mails;
+	button.disabled        = true;
+	progress.style.display = 'inline-block';
+	message.textContent    = wpdr_en_obj.sending_mails;
 
 	// Extra text is only sent when its checkbox is ticked.
 	const extra_box = document.getElementById( 'wpdr-en-extra' );
@@ -43,12 +44,13 @@ function wpdr_en_send( button, action, data, use_extra ) {
 			data
 		),
 		success  : function ( response ) {
-			message.innerHTML = wpdr_en_result( response );
 			if ( ! response.error || ( response.logged_count > 0 && response.sent_count > 0 ) ) {
+				message.innerHTML = wpdr_en_result( response );
 				// Something was sent: the button now re-sends.
 				button.value = wpdr_en_obj.resend;
 			} else {
-				alert( response.error_msg + '\n\n[Error: ' + response.error_code + ']' );
+				// Nothing sent: the reason goes in the status region (announced), not in an alert box.
+				message.textContent = wpdr_en_obj.error_sending + ' ' + response.error_msg + ' [Error: ' + response.error_code + ']';
 			}
 		},
 		error    : function () {
@@ -62,7 +64,7 @@ function wpdr_en_send( button, action, data, use_extra ) {
 }
 
 /**
- * The message (HTML) for a send result.
+ * The message (HTML) for a send result where something was sent.
  *
  * Counts are numbers and the log link comes from the site, so neither can add markup.
  *
@@ -81,10 +83,7 @@ function wpdr_en_result( response ) {
 		// Emails sent successfully.
 		return '<br>' + sent + ' ' + wpdr_en_obj.notif_sent_check + ' ' + link.outerHTML + ' ' + wpdr_en_obj.for_details;
 	}
-	if ( 0 === logged || 0 === sent ) {
-		return wpdr_en_obj.error_sending;
-	}
-	// Some sent: say how many, and how many were not logged.
+	// Some sent (only called when something was sent and logged): say how many, and how many were not logged.
 	return sent + ' ' + wpdr_en_obj.email_out_of + ' ' + ( sent + errors ) + ' ' + wpdr_en_obj.sent_with + ' ' +
 		( sent + errors - logged ) + ' ' + wpdr_en_obj.log_issues + ' ' + link.outerHTML + ' ' + wpdr_en_obj.for_details;
 }

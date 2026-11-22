@@ -28,6 +28,10 @@ const strings = {
 	for_details: 'for details.',
 	add_address: 'Add Address to List',
 	edit_address: 'Edit existing Address',
+	address_added: 'Address added to the List.',
+	address_updated: 'Address updated.',
+	address_deleted: 'Address deleted from the List.',
+	confirm_delete: 'Delete this address from the List? This cannot be undone.',
 };
 
 /**
@@ -47,6 +51,8 @@ function loadScript( name, html ) {
 	const ajax              = jest.fn();
 	global.jQuery           = { ajax };
 	global.alert            = jest.fn();
+	// Deleting an address asks first; tests answer "OK" unless they change this.
+	window.confirm          = jest.fn( () => true );
 
 	const add = document.addEventListener;
 	document.addEventListener = function ( type, listener, options ) {

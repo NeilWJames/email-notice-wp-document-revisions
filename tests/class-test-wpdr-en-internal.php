@@ -97,7 +97,7 @@ class Test_WPDR_EN_Internal extends WPDR_EN_UnitTestCase {
 	}
 
 	/**
-	 * Mail is sent as HTML.
+	 * Mail is sent as an HTML document with its language, direction, character set and title.
 	 */
 	public function test_mail_is_html() {
 		self::subscribe( self::$users['subscriber'] );
@@ -107,6 +107,8 @@ class Test_WPDR_EN_Internal extends WPDR_EN_UnitTestCase {
 
 		$this->assertCount( 1, $this->mails );
 		$this->assertContains( 'Content-type: text/html', (array) $this->mails[0]['headers'] );
-		$this->assertStringStartsWith( '<html><body>', $this->mails[0]['message'] );
+		$this->assertStringStartsWith( '<!DOCTYPE html><html lang="' . get_bloginfo( 'language' ) . '" dir="ltr"><head><meta charset="' . get_bloginfo( 'charset' ) . '"><title>', $this->mails[0]['message'] );
+		$this->assertStringContainsString( '<title>' . esc_html( get_the_title( $doc ) ) . '</title></head><body>', $this->mails[0]['message'] );
+		$this->assertStringEndsWith( '</body></html>', $this->mails[0]['message'] );
 	}
 }

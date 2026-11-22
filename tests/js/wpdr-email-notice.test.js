@@ -17,7 +17,7 @@ function metabox( opts = {} ) {
 		<input type="button" id="wpdr-en-notify" value="Send notification email(s)">
 		<input type="checkbox" id="wpdr-en-int-extra" value="0" disabled${ notUse }>
 		<span id="dProgress" style="display:none"></span>
-		<span id="wpdr-en-message" style="display:none"></span>
+		<span id="wpdr-en-message" role="status" aria-live="polite"></span>
 		<input type="button" id="wpdr-en-ext-note" value="Send external list email(s)">
 		<input type="checkbox" id="wpdr-en-ext-extra" value="0" disabled>
 		<input name="wpdr-en-ext-list" type="checkbox" value="7" checked>
@@ -126,6 +126,12 @@ describe( 'results', () => {
 		expect( global.alert ).not.toHaveBeenCalled();
 	} );
 
+	test( 'a missing log address still gives a link element (to the current page)', () => {
+		const html = sendWith( { error: false, sent_count: 1, logged_count: 1 } );
+
+		expect( html ).toBe( '<br>1 notification(s) sent. Check <a href="">log</a> for details.' );
+	} );
+
 	test( 'partial success says how many were sent and not logged', () => {
 		const html = sendWith( { error: true, sent_count: 2, logged_count: 1, sending_error_count: 1, log_page_url: '/log' } );
 
@@ -135,12 +141,18 @@ describe( 'results', () => {
 		expect( document.getElementById( 'wpdr-en-notify' ).value ).toBe( 'Re-send notification email(s)' );
 	} );
 
-	test( 'nothing sent shows the error and an alert with its code', () => {
+	test( 'nothing sent shows the error and its code in the status region, without an alert', () => {
 		const html = sendWith( { error: true, error_msg: 'No permission', error_code: 'F-08', sent_count: 0, logged_count: 0 } );
 
-		expect( html ).toBe( 'Error sending emails.' );
-		expect( global.alert ).toHaveBeenCalledWith( 'No permission\n\n[Error: F-08]' );
+		expect( html ).toBe( 'Error sending emails. No permission [Error: F-08]' );
+		expect( global.alert ).not.toHaveBeenCalled();
 		expect( document.getElementById( 'wpdr-en-notify' ).value ).toBe( 'Send notification email(s)' );
+	} );
+
+	test( 'an error message cannot add markup', () => {
+		const html = sendWith( { error: true, error_msg: '<img src=x onerror=alert(1)>', error_code: 'F-08', sent_count: 0, logged_count: 0 } );
+
+		expect( html ).not.toContain( '<img' );
 	} );
 
 	test( 'response values cannot add markup', () => {

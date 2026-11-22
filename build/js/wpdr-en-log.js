@@ -1,1 +1,1 @@
-function wpdr_en_extra(e){const t=document.getElementById("extra_"+e);t&&(t.style.display="none"===getComputedStyle(t).display?"block":"none")}
+function wpdr_en_extra(e,t){const n=document.getElementById("extra_"+e);if(!n)return;const a="none"===getComputedStyle(n).display;n.style.display=a?"block":"none",t&&t.setAttribute("aria-expanded",a?"true":"false")}

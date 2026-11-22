@@ -1,6 +1,8 @@
 /*
 // Scripts for the Document External List edit screen (address list, Quick Edit).
 // @version: 4.0
+//
+// #wpdr-en-message is a status region (role="status"): what is written to it is announced by screen readers.
 */
 
 /**
@@ -19,16 +21,33 @@ function wpdr_en_stop() {
 /**
  * Show the List's address table returned by an address change, and reset the entry fields.
  *
+ * The result is written to the status region (so it is announced), and focus is put somewhere useful:
+ * replacing the table removes the button that was pressed.
+ *
  * @param {Object} response AJAX response; error_msg holds the table HTML, JSON-encoded.
+ * @param {string} done     Message to show when the change succeeded.
+ * @param {string} focus_id Element to focus when the change succeeded.
  */
-function wpdr_en_address_done( response ) {
+function wpdr_en_address_done( response, done, focus_id ) {
+	const message = document.getElementById( 'wpdr-en-message' );
 	if ( response.error ) {
-		document.getElementById('wpdr-en-message').textContent = response.error_msg + ' ( ' + response.error_code + ' )';
+		message.textContent = response.error_msg + ' ( ' + response.error_code + ' )';
+		if ( 'F-17' === response.error_code ) {
+			// Invalid email address: mark the field and take the user to it.
+			const email = document.getElementById( 'wpdr-en-email' );
+			email.setAttribute( 'aria-invalid', 'true' );
+			email.setAttribute( 'aria-describedby', 'wpdr-en-message wpdr-en-entry-help' );
+			email.focus();
+		}
 		return;
 	}
 	wpdr_en_reset_entry();
-	document.getElementById('wpdr-en-message').innerHTML = '';
-	document.getElementById("current-list").innerHTML    = JSON.parse(response.error_msg);
+	document.getElementById( 'current-list' ).innerHTML = JSON.parse( response.error_msg );
+	message.textContent = done;
+	const target = document.getElementById( focus_id );
+	if ( target ) {
+		target.focus();
+	}
 }
 
 /**
@@ -38,6 +57,8 @@ function wpdr_en_reset_entry() {
 	document.getElementById("wpdr-en-user-name").value     = "";
 	document.getElementById("wpdr-en-email").value         = "";
 	document.getElementById("wpdr-en-email").disabled      = false;
+	document.getElementById("wpdr-en-email").removeAttribute( 'aria-invalid' );
+	document.getElementById("wpdr-en-email").setAttribute( 'aria-describedby', 'wpdr-en-entry-help' );
 	document.getElementById("wpdr_pause").checked          = false;
 	document.getElementById("wpdr_pause").disabled         = false;
 	document.getElementById("clear_address").style.display = "none";
@@ -50,6 +71,8 @@ function wpdr_en_insert() {
 	const user_name = document.getElementById("wpdr-en-user-name").value;
 	const email     = document.getElementById("wpdr-en-email").value;
 	const pause     = + document.getElementById("wpdr_pause").checked;
+	// The button reads "Edit existing Address" while an address is being edited.
+	const done      = ( document.getElementById("add_address").value === wpdr_en_obj.edit_address ? wpdr_en_obj.address_updated : wpdr_en_obj.address_added );
 	// Add the message.
 	jQuery.ajax({
 		type     : 'POST',
@@ -63,13 +86,20 @@ function wpdr_en_insert() {
 			pause         : pause,
 			wpdr_en_nonce : wpdr_en_obj.wpdr_en_nonce
 		},
-		success  : wpdr_en_address_done
+		success  : function ( response ) {
+			// Ready for the next address.
+			wpdr_en_address_done( response, done, 'wpdr-en-user-name' );
+		}
 	});
 	wpdr_en_stop();
 }
 
 function wpdr_en_delete( id, rec_num ) {
-	// Add the message.
+	wpdr_en_stop();
+	// Deleting cannot be undone.
+	if ( ! window.confirm( wpdr_en_obj.confirm_delete ) ) {
+		return;
+	}
 	jQuery.ajax({
 		type     : 'POST',
 		dataType : 'json',
@@ -80,9 +110,11 @@ function wpdr_en_delete( id, rec_num ) {
 			del_rec       : rec_num,
 			wpdr_en_nonce : wpdr_en_obj.wpdr_en_nonce
 		},
-		success  : wpdr_en_address_done
+		success  : function ( response ) {
+			// The Delete button pressed is gone: focus the table heading.
+			wpdr_en_address_done( response, wpdr_en_obj.address_deleted, 'wpdr-en-list-heading' );
+		}
 	});
-	wpdr_en_stop();
 }
 
 function wpdr_en_edit( btn ) {
@@ -95,12 +127,15 @@ function wpdr_en_edit( btn ) {
 	document.getElementById("add_address").value           = wpdr_en_obj.edit_address;
 	document.getElementById("add_address").disabled        = false;
 	document.getElementById("user-entry").scrollIntoView();
+	// Take keyboard and screen reader users to the values being edited.
+	document.getElementById("wpdr-en-user-name").focus();
 	wpdr_en_stop();
 }
 
 function wpdr_en_clear() {
 	wpdr_en_reset_entry();
 	document.getElementById("user-entry").scrollIntoView();
+	document.getElementById("wpdr-en-user-name").focus();
 	wpdr_en_stop();
 }
 
@@ -143,7 +178,7 @@ function wpdr_en_attr_value( edit_row ) {
 /**
  * Copies the current attribute values into the Quick Edit row.
  *
- * @param {Event} event Click or key press on the list table.
+ * @param {Event} event Click on the list table (pressing Enter or Space on a button also clicks it).
  */
 function set_qe_values( event ) {
 	let tag = event.target.tagName.toLowerCase();
@@ -163,8 +198,9 @@ function set_qe_values( event ) {
 			let post_row = document.getElementById( "post-" + post_id );
 			let edit_row = document.getElementById( "edit-" + post_id );
 			let attr_val = post_row.querySelector( "#tm-rule-" + post_id ).value;
-			edit_row.querySelector('#tm_any').checked = ( 0 == attr_val );
-			edit_row.querySelector('#tm_all').checked = ( 1 == attr_val );
+			// By value, as the radios have no ids (they would be repeated in every Quick Edit row).
+			edit_row.querySelector('[name="tm_rule"][value="0"]').checked = ( 0 == attr_val );
+			edit_row.querySelector('[name="tm_rule"][value="1"]').checked = ( 1 == attr_val );
 			attr_val = post_row.querySelector( "#attach-" + post_id ).value;
 			let att     = edit_row.querySelector('[name="wpdr_en_attach"]');
 			att.value   = attr_val;
@@ -201,9 +237,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		list.parentElement.addEventListener('click', event => {
 			set_qe_values( event );
 		});
-		list.parentElement.addEventListener('keypress', event => {
-			set_qe_values( event );
-		});
+	}
+
+	// Enable or disable Add as the user types (not only when leaving a field).
+	for ( const id of [ 'wpdr-en-user-name', 'wpdr-en-email' ] ) {
+		const field = document.getElementById( id );
+		if ( field ) {
+			field.addEventListener( 'input', function () {
+				field.removeAttribute( 'aria-invalid' );
+				check_address();
+			} );
+		}
 	}
 
 })
