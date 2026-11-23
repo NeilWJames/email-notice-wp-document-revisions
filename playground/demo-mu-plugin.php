@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Email Notice demo helpers
- * Description: For the Email Notice for WP Document Revisions playground only: a Departments taxonomy on Documents, and emails recorded as sent without sending them.
+ * Description: For the Email Notice for WP Document Revisions playground only: a Departments taxonomy on Documents, emails recorded as sent without sending them, and no review request.
  *
  * Copied to wp-content/mu-plugins by playground/demo-content.php.
  *
@@ -52,3 +52,6 @@ add_filter( 'pre_wp_mail', 'wpdr_en_demo_no_mail' );
 
 // No pause between emails.
 add_filter( 'wpdr_en_mail_delay', '__return_zero' );
+
+// No WordPress.org review request from WP Document Revisions in the demo (its filter, since WP Document Revisions 5.6.0).
+add_filter( 'document_show_review_prompt', '__return_false' );

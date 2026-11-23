@@ -18,7 +18,7 @@ It has WP Document Revisions (the version on WordPress.org) and this plugin (the
   - *Newsletter*: Operations, but paused.
 - **Notifications already sent**, so both email logs have entries: the budget twice (the second with extra text and the "previously sent" repeat text), the payroll calendar, the purchasing policy (to its Lists only) and the staff handbook (private: only the administrator and Elena).
 
-A playground has no mail server, so a small must-use plugin (`playground/demo-mu-plugin.php`) records each email as sent without sending it. The logs show what would have been sent.
+A playground has no mail server, so a small must-use plugin (`playground/demo-mu-plugin.php`) records each email as sent without sending it. The logs show what would have been sent. It also turns off WP Document Revisions' request for a WordPress.org review.
 
 ## Things to try
 
