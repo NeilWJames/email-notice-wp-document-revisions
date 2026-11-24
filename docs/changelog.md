@@ -18,6 +18,8 @@ Release date: November 23, 2026
 * DEV: PHPStan static analysis at level 5 with WordPress's types (szepeviktor/phpstan-wordpress): `composer analyse` (phpstan.neon.dist) and a phpstan job in CI. Fixed what it found: wrong PHPDoc types (list table cells and sortable columns, hook parameters, send results, the repeat text), a save_post_document hook registered with three arguments for a one-argument callback, esc_url_raw() given a URL scheme where it takes a list of protocols, the DOING_AJAX constant (now wp_doing_ajax()), redundant or always-true checks, and a missing return in the address table. The daily clean-up hook now calls purge_logs_daily(), which returns nothing; purge_logs() still returns the counts.
 * DEV: End-to-end test helper works with WordPress 7.1.5, which serves no REST request when WP_ADMIN is defined: its routes now count as admin requests through an admin screen instead, and accept the logged-in cookie.
 * DEV: Accessibility tests: PHPUnit `class-test-wpdr-en-accessibility.php`; Jest tests for the status messages, focus, Delete confirmation and aria-expanded; end-to-end checks of labels, announcements and focus.
+* DEV: Playground demo (2026-11-24, after the release; the plugin is unchanged): on playground.wordpress.net (and the WordPress.org Live Preview) the emails you send now go through wp_mail() and appear, with their attachments, in Playground's Dev Tools > Email, instead of only being recorded as sent. The blueprints define WPDR_EN_DEMO_MAIL_CAPTURE for this; the local playground, the end-to-end tests and wp-env, which capture nothing, still record emails as sent without sending them, as does the demo set-up everywhere.
+
 
 ## 4.0.0
 

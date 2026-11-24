@@ -18,12 +18,15 @@ It has WP Document Revisions (the version on WordPress.org) and this plugin (the
   - *Newsletter*: Operations, but paused.
 - **Notifications already sent**, so both email logs have entries: the budget twice (the second with extra text and the "previously sent" repeat text), the payroll calendar, the purchasing policy (to its Lists only) and the staff handbook (private: only the administrator and Elena).
 
-A playground has no mail server, so a small must-use plugin (`playground/demo-mu-plugin.php`) records each email as sent without sending it. The logs show what would have been sent. It also turns off WP Document Revisions' request for a WordPress.org review.
+A playground has no mail server. On playground.wordpress.net Playground catches each email instead of delivering it: open **Dev Tools > Email** in the Dock to read the notifications you send, with their attachments (the blueprint defines `WPDR_EN_DEMO_MAIL_CAPTURE` for this). Nothing reaches the addresses, and the captured emails are gone when the page is reloaded. The notifications already sent when the demo is set up are only in the logs: Playground captures nothing until the site has started.
+
+Where nothing captures email (the local playground and the end-to-end tests run with the Playground CLI, and wp-env), a small must-use plugin (`playground/demo-mu-plugin.php`) records each email as sent without sending it, so the logs show what would have been sent. The must-use plugin also turns off WP Document Revisions' request for a WordPress.org review.
 
 ## Things to try
 
 - Open *Travel expenses form* and use **Send notification email(s)** and **Send external list email(s)** in the Document Email Notifications box (it matches the Auditors List); add some extra text first.
 - Open *Fire drill procedure*: no List matches Operations alone (Board members needs Finance too, and Newsletter is paused), so only internal users can be notified.
+- In **Dev Tools > Email** (playground.wordpress.net only), open the emails just sent: the extra text, the From name *Document Centre*, and the document attached for Sam and for the Auditors List.
 - Look at **Document Emails > Internal User Email Log** and **External User Email Log**, search them, and use **Export CSV**.
 - Edit a Document External List: addresses, match rule, Pause, Document Attach and the Email Log days.
 - Log in as `author`: Arthur can notify internal users about his own *Travel expenses form*, but sees no Lists or logs. Log in as `contributor`: no sending at all.

@@ -67,6 +67,8 @@ If the plugin WP Document Revisions is not activated, this plugin will output an
 
 = 4.0.1 =
 Accessibility fixes on every screen. Some admin markup ids and classes changed: check any custom CSS or scripts that target this plugin's screens.
+* DEV: Playground demo (2026-11-24, after the release; the plugin is unchanged): on playground.wordpress.net (and the WordPress.org Live Preview) the emails you send now go through wp_mail() and appear, with their attachments, in Playground's Dev Tools > Email, instead of only being recorded as sent. The blueprints define WPDR_EN_DEMO_MAIL_CAPTURE for this; the local playground, the end-to-end tests and wp-env, which capture nothing, still record emails as sent without sending them, as does the demo set-up everywhere.
+
 
 = 4.0.0 =
 Breaking: Document External Lists, the email logs and the External List part of the Document screen now need the new read_doc_ext_lists capability. Roles and users with edit_doc_ext_lists get it on upgrade; give it to anyone else who needs it.

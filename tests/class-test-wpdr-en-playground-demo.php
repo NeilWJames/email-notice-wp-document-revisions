@@ -112,4 +112,27 @@ class Test_WPDR_EN_Playground_Demo extends WPDR_EN_UnitTestCase {
 		);
 		$this->assertNotEmpty( $repeat );
 	}
+
+	/**
+	 * Where the playground captures email (WPDR_EN_DEMO_MAIL_CAPTURE, so the helper adds no short-circuit),
+	 * the demo still records its own set-up emails as sent without sending them, and then removes the
+	 * short-circuit so that later emails go through wp_mail().
+	 */
+	public function test_set_up_mail_short_circuit() {
+		require_once dirname( __DIR__ ) . '/playground/demo-mu-plugin.php';
+		remove_filter( 'pre_wp_mail', 'wpdr_en_demo_no_mail' );
+
+		$hooked = array();
+		$spy    = static function ( $short ) use ( &$hooked ) {
+			$hooked[] = has_filter( 'pre_wp_mail', 'wpdr_en_demo_no_mail' );
+			return $short;
+		};
+		add_filter( 'pre_wp_mail', $spy, 5 );
+		self::load_demo();
+		remove_filter( 'pre_wp_mail', $spy, 5 );
+
+		$this->assertNotEmpty( $hooked );
+		$this->assertNotContains( false, $hooked, 'every set-up email short-circuited' );
+		$this->assertFalse( has_filter( 'pre_wp_mail', 'wpdr_en_demo_no_mail' ), 'short-circuit removed after set-up' );
+	}
 }

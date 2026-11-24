@@ -6,7 +6,7 @@
  * plugin are active. It sets up a small document centre:
  *
  * - a Departments taxonomy on Documents (playground/demo-mu-plugin.php, which also records emails as
- *   sent without sending them, as a playground has no mail server);
+ *   sent without sending them, as a playground has no mail server, unless it captures them);
  * - users of each role (password "password"), some subscribed to notifications;
  * - Documents in several departments and states, some with a file to attach;
  * - Document External Lists that match on Departments (any or all terms, parent terms, a paused List
@@ -206,7 +206,8 @@ function wpdr_en_demo_list( $title, $departments, $settings, $addresses ) {
 function wpdr_en_demo_load( $install_mu_plugin = true ) {
 	global $wpdr_en;
 
-	// The Departments taxonomy and the "no mail server" filter, for this request and every later one.
+	// The Departments taxonomy and the "no mail server" filter, for this request and every later one
+	// (the filter only where the playground does not capture email).
 	if ( ! function_exists( 'wpdr_en_demo_register_taxonomy' ) ) {
 		$source = __DIR__ . '/demo-mu-plugin.php';
 		if ( $install_mu_plugin && wp_mkdir_p( WPMU_PLUGIN_DIR ) ) {
@@ -333,6 +334,12 @@ function wpdr_en_demo_load( $install_mu_plugin = true ) {
 	);
 
 	// Notifications already sent, so that the logs have entries. The budget is sent twice (repeat text).
+	// Playground only captures email once the site has started, not while the blueprint runs, so these
+	// are always recorded as sent without sending them, even where later emails are captured.
+	$short_circuit = ! has_filter( 'pre_wp_mail', 'wpdr_en_demo_no_mail' );
+	if ( $short_circuit ) {
+		add_filter( 'pre_wp_mail', 'wpdr_en_demo_no_mail' );
+	}
 	$wpdr_en->notify( $budget, '' );
 	$wpdr_en->notify( $budget, '<br/>Approved by the board on 1 October.' );
 	$wpdr_en->ext_notice( $budget, array(), '<br/>Approved by the board on 1 October.' );
@@ -340,4 +347,7 @@ function wpdr_en_demo_load( $install_mu_plugin = true ) {
 	$wpdr_en->ext_notice( $payroll, array(), '' );
 	$wpdr_en->ext_notice( $policy, array(), '' );
 	$wpdr_en->notify( $handbook, '' );
+	if ( $short_circuit ) {
+		remove_filter( 'pre_wp_mail', 'wpdr_en_demo_no_mail' );
+	}
 }
